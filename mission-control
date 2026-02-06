@@ -88,10 +88,31 @@ mkdir -p "$STATE_DIR"
 
 get_model_tier() {
     local task="$1" phase="$2"
+    # If explicit tier set, use it
     [ "$MODEL_TIER" != "auto" ] && echo "$MODEL_TIER" && return
-    if echo "$task" | grep -qiE "security|vulnerability|architecture|critical"; then echo "premium"; return; fi
-    if echo "$task" | grep -qiE "typo|rename|comment|format|simple|docs"; then echo "fast"; return; fi
-    case "$phase" in security) echo "premium" ;; document|commit) echo "fast" ;; *) echo "standard" ;; esac
+    
+    # Try to use the smart model selector if available
+    if [ -x ".copilot/model-selector.sh" ]; then
+        local crew
+        crew=$(get_crew_for_phase "$phase")
+        TRACK=false .copilot/model-selector.sh "$task" "$phase" "$crew" --quiet
+        return
+    fi
+    
+    # Fallback to simple keyword matching
+    if echo "$task" | grep -qiE "security|vulnerability|architecture|critical|audit|exploit|breach"; then 
+        echo "premium"
+        return
+    fi
+    if echo "$task" | grep -qiE "typo|rename|comment|format|simple|docs|trivial|readme|spelling"; then 
+        echo "fast"
+        return
+    fi
+    case "$phase" in 
+        security) echo "premium" ;; 
+        document|commit) echo "fast" ;; 
+        *) echo "standard" ;; 
+    esac
 }
 
 get_model_icon() { case "$1" in premium) echo "🔥" ;; fast) echo "💨" ;; *) echo "⚡" ;; esac; }
