@@ -6,3 +6,4 @@ export * from './cargo-bay.js';
 export * from './flight-plan.js';
 export * from './deploy.js';
 export * from './dashboard.js';
+export * from './ultrawork.js';

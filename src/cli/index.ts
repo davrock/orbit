@@ -17,7 +17,8 @@ import {
   generateIssuesFromPlan,
   runDeploy,
   generateDashboard,
-  openDashboard
+  openDashboard,
+  runUltrawork
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -128,6 +129,22 @@ program
   .option('--max-attempts <n>', 'Maximum retry attempts', '10')
   .action(async (task, options) => {
     await runMission({ mission: 'ralph', task, dryRun: options.dryRun });
+  });
+
+program
+  .command('ultrawork <task>')
+  .description('Parallel execution - distributes subtasks across concurrent sessions')
+  .option('--dry-run', 'Show what would happen')
+  .option('--concurrency <n>', 'Max concurrent sessions', '4')
+  .option('--premium', 'Use premium models (3x fuel)')
+  .option('--economy', 'Use fast models (0.5x fuel)')
+  .action(async (task, options) => {
+    await runUltrawork({
+      task,
+      dryRun: options.dryRun,
+      maxConcurrency: parseInt(options.concurrency) || 4,
+      modelTier: options.premium ? 'premium' : options.economy ? 'fast' : 'auto'
+    });
   });
 
 // Launch Sequence (self-improvement loop)
@@ -342,6 +359,7 @@ program
     console.log('  transmit    Documentation only');
     console.log('  apollo      All phases');
     console.log('  ralph       Persistent mode (retry with escalation until verified)');
+    console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
   });
 
 program

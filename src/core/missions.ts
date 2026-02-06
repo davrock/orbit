@@ -13,7 +13,8 @@ export const MISSION_PHASES: Record<MissionType, Phase[]> = {
   dock: ['plan', 'implement', 'test', 'document', 'commit'],
   transmit: ['implement', 'review', 'commit'],
   apollo: ['research', 'plan', 'implement', 'test', 'security', 'review', 'document', 'commit'],
-  ralph: ['implement', 'test', 'review', 'commit']
+  ralph: ['implement', 'test', 'review', 'commit'],
+  ultrawork: ['plan', 'implement', 'review', 'commit']
 };
 
 export const PHASE_CREWS: Record<Phase, CrewMember> = {
@@ -77,7 +78,8 @@ export const MISSION_DESCRIPTIONS: Record<MissionType, string> = {
   dock: 'API development',
   transmit: 'Documentation only',
   apollo: 'All phases',
-  ralph: 'Persistent mode (never gives up, retry with escalation)'
+  ralph: 'Persistent mode (never gives up, retry with escalation)',
+  ultrawork: 'Parallel execution (distributes subtasks across concurrent sessions)'
 };
 
 // Legacy quotes - kept for backwards compatibility, full quotes in quotes.ts
