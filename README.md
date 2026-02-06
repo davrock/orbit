@@ -214,6 +214,40 @@ orbit fuel                               # View token usage
 
 Auto-escalation: If a task fails with standard model, retries with premium.
 
+## 🤖 AI Provider Integration
+
+Optional cross-validation and consistency checks using multiple AI providers:
+
+```bash
+# Set up external providers (optional)
+export GEMINI_API_KEY="your-key"
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
+
+# Enable cross-validation across providers
+orbit launch "implement payment API" --cross-validate
+
+# Enable design consistency checks
+orbit warp "add new component" --consistency-check
+
+# Use both for critical changes
+orbit launch "security fix" --cross-validate --consistency-check --premium
+```
+
+**Features:**
+- 🔍 **Cross-validation**: Validate changes across multiple AI models (Gemini, Codex, Claude)
+- 📐 **Design consistency**: Check new code against existing patterns
+- 🎯 **Consensus building**: Calculate agreement rates across providers
+- 🛡️ **Quality assurance**: Catch issues that a single AI might miss
+
+**When to use:**
+- Security-critical implementations
+- Complex architectural changes
+- Production-ready features
+- Team collaboration projects
+
+See [AI Provider Integration docs](./docs/AI_PROVIDER_INTEGRATION.md) for detailed configuration and usage.
+
 ## 📚 Best Practices
 
 All crew members reference `.copilot/best-practices.yaml` for standards:

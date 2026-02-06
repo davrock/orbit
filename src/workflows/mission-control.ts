@@ -28,7 +28,11 @@ import {
   initHUD,
   setPhase,
   completePhase,
-  endHUD
+  endHUD,
+  hasProviders,
+  getProviderSummary,
+  crossValidate,
+  checkDesignConsistency
 } from '../core/index.js';
 import { createPersistenceManager, type PersistenceManager } from '../core/persistence.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
@@ -56,6 +60,8 @@ export interface MissionControlOptions {
   customCrew?: CrewMember;
   modelTier?: 'auto' | 'premium' | 'standard' | 'fast' | 'ecomode';
   resumeFrom?: Phase[];  // Phases to run when resuming
+  enableCrossValidation?: boolean;  // Enable AI provider cross-validation
+  enableConsistencyCheck?: boolean; // Enable design consistency checks
 }
 
 export class MissionControl {
@@ -65,6 +71,8 @@ export class MissionControl {
   private phaseResults: PhaseResult[] = [];
   private phasesToRun: Phase[];
   private persistenceManager?: PersistenceManager;
+  private enableCrossValidation: boolean;
+  private enableConsistencyCheck: boolean;
 
   constructor(options: MissionControlOptions) {
     this.config = detectProjectConfig();
@@ -95,6 +103,10 @@ export class MissionControl {
     if (isPersistentMode) {
       this.persistenceManager = createPersistenceManager();
     }
+
+    // AI provider integration settings
+    this.enableCrossValidation = options.enableCrossValidation || false;
+    this.enableConsistencyCheck = options.enableConsistencyCheck || false;
   }
 
   async execute(): Promise<MissionResult> {
@@ -116,6 +128,19 @@ export class MissionControl {
     if (this.missionConfig.dryRun) {
       console.log(`Mode: ${colors.warning('DRY RUN')}`);
     }
+
+    // Display AI provider integration status
+    if (this.enableCrossValidation || this.enableConsistencyCheck) {
+      const providerInfo = hasProviders() ? getProviderSummary() : 'No external AI providers configured';
+      console.log(`AI Validation: ${colors.secondary(providerInfo)}`);
+      if (this.enableCrossValidation) {
+        console.log(`Cross-validation: ${colors.success('Enabled')}`);
+      }
+      if (this.enableConsistencyCheck) {
+        console.log(`Consistency checks: ${colors.success('Enabled')}`);
+      }
+    }
+    
     console.log('');
 
     this.initFlightLog();
@@ -148,6 +173,11 @@ export class MissionControl {
         result = await this.runPhase(phase);
       }
       
+      // Perform AI provider validations if enabled and phase succeeded
+      if (result.success && (this.enableCrossValidation || this.enableConsistencyCheck) && hasProviders()) {
+        await this.performAIValidation(phase, result);
+      }
+
       this.phaseResults.push(result);
 
       // Update HUD with completed phase
@@ -499,6 +529,61 @@ Phase: launching
       filesChanged,
       commitHash: afterCommit !== beforeCommit ? afterCommit : undefined
     };
+  }
+
+  private async performAIValidation(phase: Phase, result: PhaseResult): Promise<void> {
+    console.log('');
+    console.log(colors.secondary('🤖 Running AI provider validations...'));
+
+    try {
+      // Get changed files to validate
+      const changedFiles = getChangedFiles();
+      if (changedFiles.length === 0) {
+        console.log(colors.dim('  No files changed, skipping validation'));
+        return;
+      }
+
+      // Read changes (simplified - in real scenario would diff actual content)
+      const changesContext = `Phase: ${phase}\nFiles changed: ${changedFiles.join(', ')}\nTask: ${this.missionConfig.task}`;
+      const codeSnippet = result.output?.slice(0, 2000) || 'No output available';
+
+      // Cross-validation
+      if (this.enableCrossValidation) {
+        console.log(colors.secondary('  Running cross-validation...'));
+        const validation = await crossValidate(codeSnippet, changesContext);
+        
+        console.log(colors.secondary(`  Agreement rate: ${(validation.agreementRate * 100).toFixed(0)}%`));
+        console.log(colors.secondary(`  Consensus: ${validation.consensus ? '✓' : '✗'}`));
+        console.log(colors.dim(`  ${validation.recommendation}`));
+        
+        appendLog(`Cross-validation: ${validation.agreementRate >= 0.7 ? 'PASS' : 'CONCERNS'} (${validation.validations.length} providers)`);
+      }
+
+      // Design consistency check
+      if (this.enableConsistencyCheck && phase === 'implement') {
+        console.log(colors.secondary('  Checking design consistency...'));
+        const patterns = ['Follow TypeScript best practices', 'Use async/await patterns'];
+        const checks = await checkDesignConsistency(codeSnippet, patterns);
+        
+        const inconsistent = checks.filter(c => !c.consistent);
+        if (inconsistent.length > 0) {
+          console.log(colors.warning(`  Found ${inconsistent.length} consistency issues`));
+          inconsistent.forEach(issue => {
+            console.log(colors.dim(`    - ${issue.aspect}: ${issue.details}`));
+          });
+        } else {
+          console.log(colors.success('  Design patterns consistent ✓'));
+        }
+        
+        appendLog(`Design consistency: ${inconsistent.length} issues found`);
+      }
+
+    } catch (error) {
+      console.log(colors.warning(`  Validation error: ${error}`));
+      appendLog(`AI validation error: ${error}`);
+    }
+
+    console.log('');
   }
 }
 

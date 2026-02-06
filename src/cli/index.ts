@@ -54,6 +54,8 @@ program
   .option('--economy', 'Use fast models (0.5x fuel)')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--crew <name>', 'Override crew member')
+  .option('--cross-validate', 'Enable AI provider cross-validation')
+  .option('--consistency-check', 'Enable design consistency checks')
   .action(async (task, options) => {
     // Handle plan mode if requested
     if (options.plan) {
@@ -74,7 +76,9 @@ program
           mission: 'ralph', 
           task: detected.cleanedTask, 
           dryRun: options.dryRun,
-          modelTier: detected.modelTier || 'auto'
+          modelTier: detected.modelTier || 'auto',
+          enableCrossValidation: options.crossValidate,
+          enableConsistencyCheck: options.consistencyCheck
         });
         return;
       } else if (detected.mission === 'ultrawork') {
@@ -109,7 +113,9 @@ program
       dryRun: options.dryRun,
       interactive: options.interactive,
       modelTier,
-      customCrew: options.crew
+      customCrew: options.crew,
+      enableCrossValidation: options.crossValidate,
+      enableConsistencyCheck: options.consistencyCheck
     });
   });
 
@@ -118,6 +124,8 @@ program
   .description('Bug fix mission (debug → implement → test → commit)')
   .option('--dry-run', 'Show what would happen')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
+  .option('--cross-validate', 'Enable AI provider cross-validation')
+  .option('--consistency-check', 'Enable design consistency checks')
   .action(async (task, options) => {
     const detected = detectMagicKeywords(task);
     
@@ -128,7 +136,9 @@ program
         mission: 'ralph', 
         task: detected.cleanedTask, 
         dryRun: options.dryRun,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
+        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
+        enableCrossValidation: options.crossValidate,
+        enableConsistencyCheck: options.consistencyCheck
       });
       return;
     } else if (detected.mission === 'ultrawork') {
@@ -153,7 +163,9 @@ program
       mission: 'repair', 
       task: detected.cleanedTask, 
       dryRun: options.dryRun,
-      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
+      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
+      enableCrossValidation: options.crossValidate,
+      enableConsistencyCheck: options.consistencyCheck
     });
   });
 
@@ -163,6 +175,8 @@ program
   .option('--dry-run', 'Show what would happen')
   .option('--plan', 'Conduct planning interview before execution')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
+  .option('--cross-validate', 'Enable AI provider cross-validation')
+  .option('--consistency-check', 'Enable design consistency checks')
   .action(async (task, options) => {
     // Handle plan mode if requested
     if (options.plan) {
@@ -180,7 +194,9 @@ program
         mission: 'ralph', 
         task: detected.cleanedTask, 
         dryRun: options.dryRun,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
+        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
+        enableCrossValidation: options.crossValidate,
+        enableConsistencyCheck: options.consistencyCheck
       });
       return;
     } else if (detected.mission === 'ultrawork') {
@@ -205,7 +221,9 @@ program
       mission: 'warp', 
       task: detected.cleanedTask, 
       dryRun: options.dryRun,
-      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
+      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
+      enableCrossValidation: options.crossValidate,
+      enableConsistencyCheck: options.consistencyCheck
     });
   });
 

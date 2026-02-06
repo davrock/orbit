@@ -12,3 +12,4 @@ export * from './notify.js';
 export * from './metrics.js';
 export * from './quotes.js';
 export * from './persistence.js';
+export * from './ai-providers.js';
