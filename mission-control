@@ -42,6 +42,28 @@ except: print('  No data yet')
 " || echo "  No data yet"
 }
 
+show_config() {
+    # Source config again to ensure detect functions are available
+    source .copilot/config.sh 2>/dev/null || true
+    local stack="${TECH_STACK:-$(detect_tech_stack 2>/dev/null || echo 'unknown')}"
+    echo -e "${CYAN}🔧 Auto-Detected Configuration${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${YELLOW}Project:${NC}  $PROJECT_NAME"
+    echo -e "  ${YELLOW}Stack:${NC}    $stack"
+    echo -e "  ${YELLOW}Branch:${NC}   $GIT_BRANCH"
+    echo ""
+    echo -e "  ${YELLOW}Type Check:${NC} ${TYPE_CHECK_CMD:-(none detected)}"
+    echo -e "  ${YELLOW}Test:${NC}       ${TEST_CMD:-(none detected)}"
+    echo -e "  ${YELLOW}Lint:${NC}       ${LINT_CMD:-(none detected)}"
+    echo ""
+    echo -e "  ${YELLOW}Model Tier:${NC} $MODEL_TIER"
+    echo -e "  ${YELLOW}Max Retries:${NC} $MAX_RETRIES"
+    echo -e "  ${YELLOW}Timeout:${NC}    ${TIMEOUT_DEFAULT}s"
+    echo ""
+    echo -e "${CYAN}Override with environment variables:${NC}"
+    echo "  TEST_CMD=\"pytest -v\" ./mission-control launch \"task\""
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY_RUN=true; shift ;;
@@ -51,6 +73,7 @@ while [ $# -gt 0 ]; do
         --missions) list_missions; exit 0 ;;
         --help|-h) SHOW_HELP=true; shift ;;
         --fuel) show_fuel; exit 0 ;;
+        --config) show_config; exit 0 ;;
         --economy) MODEL_TIER=fast; shift ;;
         --premium) MODEL_TIER=premium; shift ;;
         *) break ;;
@@ -113,13 +136,16 @@ Usage: ./mission-control [options] <mission> "task description"
   apollo       All phases
 
 OPTIONS:
-  --crew <name>      Override crew member
-  --premium          Use premium models (3x fuel)
-  --economy          Use fast models (0.5x fuel)
-  --dry-run          Show what would happen
-  --interactive, -i  Confirm each phase
-  --fuel             Show fuel usage
-  --help, -h         Show this help
+  --config         Show auto-detected configuration
+  --crew <name>    Override crew member
+  --premium        Use premium models (3x fuel)
+  --economy        Use fast models (0.5x fuel)
+  --dry-run        Show what would happen
+  --interactive,-i Confirm each phase
+  --fuel           Show fuel usage
+  --missions       List all missions
+  --crews          List all crew members
+  --help, -h       Show this help
 EOF
 }
 

@@ -1,0 +1,95 @@
+#!/bin/bash
+# 🛸 ORBIT Deploy - Install ORBIT into a target project
+
+set -e
+
+ORBIT_DIR="$(cd "$(dirname "$0")" && pwd)"
+TARGET_DIR="$1"
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+show_help() {
+    echo "🛸 ORBIT Deploy"
+    echo ""
+    echo "Usage: ./deploy <target-project-directory>"
+    echo ""
+    echo "Examples:"
+    echo "  ./deploy /home/user/my-project"
+    echo "  ./deploy ../another-project"
+    echo "  ./deploy ."
+    echo ""
+    echo "This copies all ORBIT files into the target project."
+}
+
+if [[ -z "$TARGET_DIR" || "$1" == "--help" || "$1" == "-h" ]]; then
+    show_help
+    exit 0
+fi
+
+# Resolve to absolute path
+TARGET_DIR="$(cd "$TARGET_DIR" 2>/dev/null && pwd)" || {
+    echo "❌ Directory does not exist: $1"
+    exit 1
+}
+
+echo -e "${CYAN}🛸 ORBIT Deploy${NC}"
+echo -e "   From: $ORBIT_DIR"
+echo -e "   To:   $TARGET_DIR"
+echo ""
+
+# Check if target is same as source
+if [[ "$ORBIT_DIR" == "$TARGET_DIR" ]]; then
+    echo "❌ Cannot deploy to ORBIT's own directory"
+    exit 1
+fi
+
+# Copy .copilot folder
+echo -e "${YELLOW}📁 Copying .copilot configuration...${NC}"
+cp -r "$ORBIT_DIR/.copilot" "$TARGET_DIR/"
+
+# Copy scripts
+echo -e "${YELLOW}📜 Copying scripts...${NC}"
+SCRIPTS=(
+    "mission-control"
+    "cargo-bay"
+    "launch-sequence"
+    "flight-plan"
+    "transmit-issues"
+    "mission-tracker"
+    "open-dashboard"
+)
+
+for script in "${SCRIPTS[@]}"; do
+    if [[ -f "$ORBIT_DIR/$script" ]]; then
+        cp "$ORBIT_DIR/$script" "$TARGET_DIR/"
+        chmod +x "$TARGET_DIR/$script"
+        echo "   ✓ $script"
+    fi
+done
+
+# Create empty state files if they don't exist
+echo -e "${YELLOW}📋 Initializing state...${NC}"
+mkdir -p "$TARGET_DIR/.copilot/state"
+mkdir -p "$TARGET_DIR/.copilot/plans"
+touch "$TARGET_DIR/.copilot/cargo_manifest.txt"
+
+echo ""
+echo -e "${GREEN}✅ ORBIT deployed successfully!${NC}"
+echo ""
+echo -e "${CYAN}🔧 Auto-detected configuration:${NC}"
+cd "$TARGET_DIR"
+source .copilot/config.sh 2>/dev/null
+echo "   Project: ${PROJECT_NAME:-$(basename "$TARGET_DIR")}"
+echo "   Stack:   $(detect_tech_stack 2>/dev/null || echo 'unknown')"
+echo "   Branch:  $(detect_git_branch 2>/dev/null || echo 'main')"
+echo ""
+echo "Next steps:"
+echo "  cd $TARGET_DIR"
+echo "  ./mission-control --config   # Review detected settings"
+echo "  ./mission-control --help     # See all commands"
+echo ""
+echo -e "${CYAN}🚀 Ready for liftoff!${NC}"

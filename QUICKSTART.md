@@ -7,7 +7,8 @@
 
 ## 📋 Table of Contents
 
-1. [Core Features](#-core-features)
+1. [Installation](#-installation)
+2. [Core Features](#-core-features)
    - [Mission Control](#1-mission-control---main-orchestrator)
    - [Cargo Bay](#2-cargo-bay---task-queue-processor)
    - [Launch Sequence](#3-launch-sequence---self-improvement-loop)
@@ -22,6 +23,52 @@
    - [Crew Members](#9-crew-agents)
 5. [Configuration](#-configuration)
 6. [Examples](#-examples)
+
+---
+
+## 📦 Installation
+
+### Install into Existing Project
+
+From the ORBIT directory, run the deploy script with your project path:
+
+```bash
+./deploy /path/to/your/project
+```
+
+This copies all ORBIT files and makes them executable.
+
+
+### Post-Installation
+
+**Zero configuration needed!** ORBIT auto-detects everything:
+
+- ✅ Project name (from package.json, Cargo.toml, go.mod, etc.)
+- ✅ Tech stack (Node, Python, Go, Rust, Java, Ruby, .NET, PHP)
+- ✅ Test command (npm test, pytest, go test, cargo test, etc.)
+- ✅ Type checker (tsc, mypy, go vet, cargo check, etc.)
+- ✅ Linter (eslint, ruff, clippy, etc.)
+- ✅ Git branch (current branch or main/master)
+- ✅ Package manager (npm, pnpm, yarn, pip, poetry, etc.)
+
+```bash
+# Verify what ORBIT detected
+./mission-control --config
+
+# Verify installation
+./mission-control --help
+```
+
+**Optional:** Add to .gitignore to not commit state:
+```
+.copilot/state/
+.copilot/*.log
+```
+
+**Override if needed:** Set environment variables:
+```bash
+TEST_CMD="pytest -v" ./mission-control launch "add feature"
+```
 
 ---
 
@@ -335,15 +382,37 @@ Specialized AI personas for different tasks:
 
 ## ⚙️ Configuration
 
-### Main Config: `.copilot/config.sh`
+### Zero-Config Auto-Detection
+
+ORBIT automatically detects everything based on your project files:
+
+| Detected From | Values |
+|---------------|--------|
+| `package.json` | Project name, Node.js stack, npm/pnpm/yarn |
+| `tsconfig.json` | TypeScript type checking |
+| `Cargo.toml` | Rust stack, cargo commands |
+| `go.mod` | Go stack, go commands |
+| `pom.xml` / `build.gradle` | Java stack, maven/gradle |
+| `requirements.txt` / `pyproject.toml` | Python stack, pip/poetry |
+| `.eslintrc.*` | ESLint for linting |
+| Current git branch | Default branch for commits |
+
+**View detected config:**
+```bash
+./mission-control --config
+```
+
+### Override When Needed
+
+Set environment variables to override any detection:
 
 ```bash
-PROJECT_NAME="MyProject"
-MAX_RETRIES=2
-GIT_BRANCH="development"
-TEST_CMD="npm test"
-MODEL_TIER=auto          # auto, premium, standard, fast
-TIMEOUT_DEFAULT=600      # seconds
+# One-time override
+TEST_CMD="pytest -v" ./mission-control launch "add tests"
+
+# Session override
+export GIT_BRANCH="feature-branch"
+./mission-control launch "new feature"
 ```
 
 ### File Structure
