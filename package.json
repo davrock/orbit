@@ -1,0 +1,50 @@
+{
+  "name": "orbit",
+  "version": "1.0.0",
+  "description": "🛸 ORBIT - Orchestrated Robotic Build & Integration Toolkit. AI-powered autonomous software development.",
+  "type": "module",
+  "main": "dist/cli/index.js",
+  "bin": {
+    "orbit": "./dist/cli/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli/index.ts",
+    "start": "node dist/cli/index.js",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davrock/orbit.git"
+  },
+  "keywords": [
+    "ai",
+    "automation",
+    "development",
+    "orchestration",
+    "copilot",
+    "cli"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/davrock/orbit/issues"
+  },
+  "homepage": "https://github.com/davrock/orbit#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

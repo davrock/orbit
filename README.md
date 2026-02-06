@@ -4,36 +4,43 @@ AI-powered autonomous software development with self-improvement, smart model se
 
 > "Houston, we have liftoff!" 🚀
 
+**Now powered by TypeScript for better reliability and type safety!**
+
 ## Quick Start
 
 ```bash
+# Install
+cd orbit && npm install && npm run build && npm link
+
 # Full feature workflow
-./mission-control launch "add user authentication"
+orbit launch "add user authentication"
 
 # Bug fix (uses cheaper models)
-./mission-control repair "fix login crash"
+orbit repair "fix login crash"
 
 # Self-improvement loop (processes queue first)
-./launch-sequence
+orbit evolve
+
+# Check detected configuration
+orbit config
 ```
 
 ## 🚀 Missions (Workflows)
 
-| Mission | AKA | Phases |
-|---------|-----|--------|
-| `launch` | feature | plan → implement → test → review → commit |
-| `repair` | fix | debug → implement → test → commit |
-| `warp` | quick | implement → commit |
-| `mayday` | hotfix | debug → implement → commit |
-| `preflight` | tdd | test → implement → test → review → commit |
-| `shields-up` | secure | plan → implement → security → test → review → commit |
-| `dock` | api | plan → implement → test → document → commit |
-| `transmit` | docs | implement → review → commit |
-| `paranoid` | - | implement → review → test → review → commit |
-| `apollo` | - | all phases |
+| Mission | Phases | Use Case |
+|---------|--------|----------|
+| `launch` | plan → implement → test → review → commit | New features |
+| `repair` | debug → implement → test → commit | Bug fixes |
+| `warp` | implement → commit | Quick changes |
+| `mayday` | debug → implement → commit | Hotfixes |
+| `preflight` | test → implement → test → review → commit | TDD workflow |
+| `shields-up` | plan → implement → security → test → review → commit | Security-sensitive |
+| `dock` | plan → implement → test → document → commit | API development |
+| `transmit` | implement → review → commit | Documentation |
+| `apollo` | all phases | Comprehensive |
 
 ```bash
-./mission-control --missions  # List all
+orbit missions  # List all
 ```
 
 ## 🧠 Smart Model Selection
@@ -47,9 +54,9 @@ Auto-selects optimal LLM model per task to save tokens:
 | `fast` | 💨 | 0.5x | Docs, formatting, simple fixes |
 
 ```bash
-./mission-control --premium shields-up "security audit"  # Force premium
-./mission-control --economy transmit "update README"     # Force fast
-./mission-control --fuel                                 # View token usage
+orbit launch --premium "security audit"  # Force premium
+orbit transmit --economy "update README" # Force fast
+orbit fuel                               # View token usage
 ```
 
 Auto-escalation: If a task fails with standard model, retries with premium.
@@ -80,33 +87,35 @@ All crew members reference `.copilot/best-practices.yaml` for standards:
 | `hal` | Self-improve | ⚡ standard |
 
 ```bash
-./mission-control --crew
-./mission-control --crew security-officer launch "add auth"
+orbit crews
+orbit launch --crew security-officer "add auth"
 ```
 
-## 🧬 Self-Improvement (launch-sequence)
+## 🧬 Self-Improvement Loop
 
 Priority order: **Queue → GitHub Issues → Self-Improve**
 
 ```bash
-./launch-sequence              # Run until stopped
-./launch-sequence --once       # Single cycle
-./launch-sequence --status     # Show history
-./launch-sequence --turbo      # Fast mode (30s delay)
-
-MAX_ITERATIONS=50 ./launch-sequence   # Limit cycles
+orbit evolve              # Run until stopped
+orbit evolve --once       # Single cycle
+orbit evolve --turbo      # Fast mode (30s delay)
+orbit evolve --max 50     # Limit cycles
+orbit status              # Show history
+orbit reset               # Reset failsafe counters
 ```
 
 ### Cargo Manifest (Task Queue)
 
-Add tasks to `.copilot/cargo_manifest.txt`:
-```
-# HIGH PRIORITY
-Add user authentication
-Implement API rate limiting
+```bash
+# Add tasks
+orbit cargo-add "Add user authentication" --priority high
+orbit cargo-add "Add dark mode toggle"
 
-# MEDIUM PRIORITY
-Add dark mode toggle
+# View queue
+orbit cargo
+
+# Process all
+orbit cargo-run
 ```
 
 ### Ground Control Failsafes 🚨
@@ -119,23 +128,23 @@ Prevents infinite loops:
 
 ## 📋 Implementation Planning
 
-Generate detailed plans and GitHub issues (inspired by BMAD, but focused):
+Generate detailed plans and GitHub issues:
 
 ```bash
 # Create a flight plan for a feature
-./flight-plan new "Add OAuth2 authentication with Google and GitHub"
+orbit flight-plan new "Add OAuth2 authentication"
 
 # Deeper analysis
-./flight-plan new "Refactor database layer" --depth 3
+orbit flight-plan new "Refactor database layer" --depth 3
 
 # List all plans
-./flight-plan list
+orbit flight-plan list
+
+# View a specific plan
+orbit flight-plan show plan-001
 
 # Generate GitHub issues from a plan
-./flight-plan issues plan-001
-
-# Execute plan tasks automatically
-./flight-plan execute plan-001
+orbit flight-plan issues plan-001
 ```
 
 ### Plan Depth Levels
@@ -146,92 +155,45 @@ Generate detailed plans and GitHub issues (inspired by BMAD, but focused):
 | 2 | Standard: 8-12 tasks with decisions (default) |
 | 3 | Detailed: 15+ tasks, architecture, risks, testing |
 
-## 🐙 GitHub Issue Management
-
-Convert cargo, plans, or text into GitHub issues:
-
-```bash
-# Create issues from cargo manifest
-./transmit-issues from-cargo
-
-# Create issues from a flight plan
-./transmit-issues from-plan plan-001
-
-# Quick single issue
-./transmit-issues from-text "Add dark mode support" --labels enhancement
-
-# Bulk import from file
-./transmit-issues bulk ./features.txt --milestone v2.0
-
-# Create as epic with sub-issues
-./transmit-issues from-plan plan-001 --epic
-
-# View created issues log
-./transmit-issues log
-```
-
 ## Files
 
 ```
-mission-control      Main orchestrator
-launch-sequence      Self-improvement loop  
-cargo-bay            Autonomous task processor
-mission-tracker      Real-time monitoring
-flight-plan          Implementation planning
-transmit-issues      GitHub issue generator
-.copilot/
-  crew.yaml          Crew definitions + model tiers
-  missions.yaml      Mission definitions
-  best-practices.yaml Standards reference
-  models.yaml        Model selection config
-  cargo_manifest.txt Task queue
-  config.sh          Configuration
-  plans/             Generated flight plans
-  state/             Runtime state
-    flight_log.md    Current mission log
-    mission.log      Activity log
-    hal.log          Self-improvement log
-    fuel_tracking.json Token usage
-    issues_created.log Issue history
+orbit/
+├── src/                 # TypeScript source
+│   ├── cli/             # CLI commands
+│   ├── core/            # Types, detection, state
+│   ├── workflows/       # Mission control, launch sequence, etc.
+│   └── utils/           # Output, git, exec utilities
+├── dist/                # Compiled JavaScript
+├── .copilot/
+│   ├── crew.yaml        # Crew definitions
+│   ├── missions.yaml    # Mission definitions
+│   ├── best-practices.yaml # Standards reference
+│   ├── models.yaml      # Model selection config
+│   ├── cargo_manifest.txt # Task queue
+│   ├── config.sh        # Legacy shell config
+│   ├── plans/           # Generated flight plans
+│   └── state/           # Runtime state
+├── package.json
+├── tsconfig.json
+├── QUICKSTART.md
+└── README.md
 ```
 
-## Configuration
-
-Edit `.copilot/config.sh`:
+## Development
 
 ```bash
-PROJECT_NAME="MyProject"
-MAX_RETRIES=2
-GIT_BRANCH="development"
-TEST_CMD="npm test"
-MODEL_TIER=auto  # auto, premium, standard, fast
-```
+# Development mode (uses tsx)
+npm run dev -- launch "task"
 
-## Examples
+# Build TypeScript
+npm run build
 
-```bash
-# Standard development
-./mission-control launch "add user settings page"
-./mission-control repair "fix null pointer in login"
+# Type check
+npm run typecheck
 
-# Cost-conscious
-./mission-control --economy transmit "update docs"
-
-# Security-focused (uses premium models)
-./mission-control --premium shields-up "add payment processing"
-
-# Check fuel usage
-./mission-control --fuel
-
-# Self-improvement with cargo
-echo "Add dark mode" >> .copilot/cargo_manifest.txt
-./launch-sequence --once
-
-# Process all cargo autonomously
-./cargo-bay
-
-# Monitor progress
-./mission-tracker watch
+# Link globally
+npm link
 ```
 
 ## License

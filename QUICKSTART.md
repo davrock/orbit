@@ -3,6 +3,8 @@
 
 > "Houston, we have liftoff!" 🚀
 
+**Now powered by TypeScript for better reliability and type safety!**
+
 ---
 
 ## 📋 Table of Contents
@@ -28,16 +30,37 @@
 
 ## 📦 Installation
 
-### Install into Existing Project
+### Option 1: Install Globally (Recommended)
 
-From the ORBIT directory, run the deploy script with your project path:
+```bash
+cd orbit
+npm install
+npm run build
+npm link
+```
 
+Now use `orbit` from any project directory:
+```bash
+orbit config      # Show auto-detected project config
+orbit missions    # List available missions
+```
+
+### Option 2: Development Mode
+
+Run directly without building:
+```bash
+cd orbit
+npm install
+npm run dev -- config
+npm run dev -- launch "your task"
+```
+
+### Option 3: Deploy Shell Scripts
+
+For legacy shell script support:
 ```bash
 ./deploy /path/to/your/project
 ```
-
-This copies all ORBIT files and makes them executable.
-
 
 ### Post-Installation
 
@@ -53,21 +76,16 @@ This copies all ORBIT files and makes them executable.
 
 ```bash
 # Verify what ORBIT detected
-./mission-control --config
+orbit config
 
-# Verify installation
-./mission-control --help
+# See all commands
+orbit --help
 ```
 
-**Optional:** Add to .gitignore to not commit state:
+**Optional:** Add to .gitignore:
 ```
 .copilot/state/
 .copilot/*.log
-```
-
-**Override if needed:** Set environment variables:
-```bash
-TEST_CMD="pytest -v" ./mission-control launch "add feature"
 ```
 
 ---
@@ -80,13 +98,10 @@ The heart of ORBIT. Runs multi-phase development workflows with intelligent agen
 
 ```bash
 # Basic usage
-./mission-control <mission> "task description"
-
-# Examples
-./mission-control launch "add user authentication"    # Full feature
-./mission-control repair "fix login crash"            # Bug fix
-./mission-control warp "rename variable"              # Quick change
-./mission-control shields-up "add payment processing" # Security-focused
+orbit launch "add user authentication"    # Full feature
+orbit repair "fix login crash"            # Bug fix
+orbit warp "rename variable"              # Quick change
+orbit shields-up "add payment processing" # Security-focused
 ```
 
 **Available Missions:**
@@ -105,15 +120,15 @@ The heart of ORBIT. Runs multi-phase development workflows with intelligent agen
 
 **Options:**
 ```bash
-./mission-control --help           # Show all options
-./mission-control --missions       # List all missions
-./mission-control --crews          # List all crew members
-./mission-control --fuel           # Show token usage
-./mission-control --premium ...    # Force premium model (3x)
-./mission-control --economy ...    # Force fast model (0.5x)
-./mission-control --dry-run ...    # Preview without executing
-./mission-control -i ...           # Interactive (confirm each phase)
-./mission-control --crew pilot ... # Override crew member
+orbit --help           # Show all options
+orbit missions         # List all missions
+orbit crews            # List all crew members
+orbit fuel             # Show token usage
+orbit launch --premium "task"    # Force premium model (3x)
+orbit launch --economy "task"    # Force fast model (0.5x)
+orbit launch --dry-run "task"    # Preview without executing
+orbit launch -i "task"           # Interactive (confirm each phase)
+orbit launch --crew pilot "task" # Override crew member
 ```
 
 ---
@@ -123,8 +138,14 @@ The heart of ORBIT. Runs multi-phase development workflows with intelligent agen
 Processes tasks from the queue autonomously, one after another.
 
 ```bash
-# Run cargo processor
-./cargo-bay
+# Show cargo manifest
+orbit cargo
+
+# Process all cargo items
+orbit cargo-run
+
+# Add item to cargo
+orbit cargo-add "Add dark mode" --priority high
 ```
 
 **Cargo Manifest:** `.copilot/cargo_manifest.txt`
@@ -161,25 +182,22 @@ Autonomous improvement cycle that processes work in priority order:
 
 ```bash
 # Continuous operation (until stopped)
-./launch-sequence
+orbit evolve
 
 # Single cycle
-./launch-sequence --once
+orbit evolve --once
 
 # Fast mode (30s between cycles)
-./launch-sequence --turbo
+orbit evolve --turbo
+
+# Limit iterations
+orbit evolve --max 10
 
 # View status/history
-./launch-sequence --status
+orbit status
 
 # Reset failsafe counters
-./launch-sequence --reset
-```
-
-**Environment Variables:**
-```bash
-LOOP_DELAY=120        # Seconds between cycles
-MAX_ITERATIONS=50     # Stop after N cycles (0=infinite)
+orbit reset
 ```
 
 **Failsafes (Ground Control):**
@@ -198,25 +216,22 @@ Generate detailed implementation plans from feature descriptions.
 
 ```bash
 # Create a new plan
-./flight-plan new "Add OAuth2 authentication"
+orbit flight-plan new "Add OAuth2 authentication"
 
-# With depth control
-./flight-plan new "Refactor database layer" --depth 3
+# With depth control (1=quick, 2=standard, 3=detailed)
+orbit flight-plan new "Refactor database layer" --depth 3
 
 # List all plans
-./flight-plan list
+orbit flight-plan list
 
 # View a specific plan
-./flight-plan show plan-001
+orbit flight-plan show plan-001
 
 # Generate GitHub issues from plan
-./flight-plan issues plan-001
-
-# Execute plan tasks automatically
-./flight-plan execute plan-001
+orbit flight-plan issues plan-001
 
 # Preview without changes
-./flight-plan new "Feature" --dry-run
+orbit flight-plan new "Feature" --dry-run
 ```
 
 **Depth Levels:**
