@@ -8,3 +8,4 @@ export * from './deploy.js';
 export * from './dashboard.js';
 export * from './ultrawork.js';
 export * from './swarm.js';
+export * from './pipeline.js';

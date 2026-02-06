@@ -64,3 +64,9 @@ missions:
     description: "Production-ready deployment"
     phases: [plan, implement, test, security, review, test, commit, deploy]
     aliases: [prod, release]
+
+  # Advanced Modes
+  pipeline:
+    description: "Sequential multi-stage processing with handoffs"
+    phases: [plan, implement, test, review, commit]
+    aliases: [sequential, stages]

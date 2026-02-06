@@ -53,6 +53,7 @@ orbit config
 | `ralph` | implement → test → review → commit | **Persistent mode** (never gives up) |
 | `ultrawork` | plan → implement → review → commit | **Parallel execution** (independent subtasks) |
 | `swarm` | plan → implement → review → commit | **Coordinated parallel** (with dependencies) |
+| `pipeline` | plan → implement → test → review → commit | **Sequential stages** (handoffs between stages) |
 
 ```bash
 orbit missions  # List all
@@ -127,6 +128,36 @@ orbit swarm --no-coordination "simple parallel tasks"
 **Ultrawork vs Swarm:**
 - **Ultrawork**: Simple parallelization, all tasks independent, faster planning
 - **Swarm**: Smart coordination, respects dependencies, better for complex work
+
+#### 🔀 Pipeline Mode - Sequential Multi-Stage Processing
+
+Sequential execution with explicit handoffs between stages:
+
+```bash
+orbit pipeline "implement data processing system"
+orbit pipeline --premium "complex refactoring with multiple stages"
+orbit pipeline --ecomode "step-by-step feature implementation"
+```
+
+**How it works:**
+- Breaks task into 3-7 sequential stages
+- Each stage completes before next begins
+- Stages hand off context to the next stage
+- Different crews can handle different stages
+- Clear progression from setup → implementation → testing → review
+- Each stage receives output from previous stage
+
+**Perfect for:**
+- Complex features that need step-by-step execution
+- When order matters and stages build on each other
+- Multi-phase implementations (setup → core → testing)
+- Learning-intensive tasks where each stage informs the next
+- Clear separation of concerns across stages
+
+**Pipeline vs Swarm vs Ultrawork:**
+- **Pipeline**: Sequential handoffs, stages build on each other, clear progression
+- **Swarm**: Parallel waves with dependencies, coordinated execution
+- **Ultrawork**: Pure parallel execution, all tasks independent
 
 ## 🧠 Smart Model Selection
 

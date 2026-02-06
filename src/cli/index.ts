@@ -19,7 +19,8 @@ import {
   generateDashboard,
   openDashboard,
   runUltrawork,
-  runSwarm
+  runSwarm,
+  runPipeline
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -193,6 +194,26 @@ program
       maxConcurrency: parseInt(options.concurrency) || 4,
       modelTier,
       enableCoordination: options.coordination
+    });
+  });
+
+program
+  .command('pipeline <task>')
+  .description('Sequential multi-stage processing with handoffs between stages')
+  .option('--dry-run', 'Show what would happen')
+  .option('--premium', 'Use premium models (3x fuel)')
+  .option('--economy', 'Use fast models (0.5x fuel)')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
+  .action(async (task, options) => {
+    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
+    if (options.premium) modelTier = 'premium';
+    else if (options.economy) modelTier = 'fast';
+    else if (options.ecomode) modelTier = 'ecomode';
+    
+    await runPipeline({
+      task,
+      dryRun: options.dryRun,
+      modelTier
     });
   });
 
@@ -410,6 +431,7 @@ program
     console.log('  ralph       Persistent mode (retry with escalation until verified)');
     console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
     console.log('  swarm       Coordinated parallel (intelligent task distribution with dependencies)');
+    console.log('  pipeline    Sequential multi-stage processing with handoffs between stages');
   });
 
 program
