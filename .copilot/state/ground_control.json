@@ -6,6 +6,6 @@
     "cargo",
     "cargo"
   ],
-  "cycles": 10,
-  "successes": 10
+  "cycles": 13,
+  "successes": 13
 }

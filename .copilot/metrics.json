@@ -546,11 +546,104 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T21:41:36.864Z"
+    },
+    {
+      "id": "run-1770414216989",
+      "task": "Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks",
+      "mission": "warp",
+      "started": "2026-02-06T21:43:36.989Z",
+      "totalDuration": 591,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:43:36.994Z",
+          "duration": 476,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:51:33.451Z",
+          "duration": 114,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 3,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:53:28.148Z"
+    },
+    {
+      "id": "run-1770414928230",
+      "task": "Implement design review agent that can optionally use external AI for UI/UX consistency feedback",
+      "mission": "warp",
+      "started": "2026-02-06T21:55:28.230Z",
+      "totalDuration": 693,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:55:28.235Z",
+          "duration": 625,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T22:05:53.549Z",
+          "duration": 67,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 9,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T22:07:01.441Z"
+    },
+    {
+      "id": "run-1770415741540",
+      "task": "Add internationalization support (multiple language READMEs like oh-my-claudecode)",
+      "mission": "warp",
+      "started": "2026-02-06T22:09:01.540Z",
+      "totalDuration": 590,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T22:09:01.545Z",
+          "duration": 530,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "fast"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T22:17:51.792Z",
+          "duration": 60,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "fast"
+        }
+      ],
+      "filesChanged": 9,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T22:18:52.227Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 16,
-    "successRate": 88,
+    "totalRuns": 19,
+    "successRate": 89,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -558,7 +651,7 @@
         "successRate": 0
       },
       "warp": {
-        "count": 11,
+        "count": 14,
         "successRate": 100
       },
       "ultrawork": {
@@ -576,12 +669,12 @@
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 169,
-        "successRate": 76
+        "avgDuration": 225,
+        "successRate": 80
       },
       "commit": {
-        "avgDuration": 48,
-        "successRate": 71
+        "avgDuration": 54,
+        "successRate": 76
       },
       "plan": {
         "avgDuration": 0,

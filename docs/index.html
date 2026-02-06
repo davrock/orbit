@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛸 ORBIT - Orchestrated Robotic Build & Integration Toolkit</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🛸 ORBIT</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#missions">Missions</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#playground">Playground</a></li>
+                <li><a href="#docs">Docs</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>🛸 ORBIT</h1>
+            <p class="tagline">Orchestrated Robotic Build & Integration Toolkit</p>
+            <p class="subtitle">AI-powered autonomous software development with self-improvement, smart model selection, and best practices enforcement.</p>
+            <div class="cta-buttons">
+                <a href="#quickstart" class="btn btn-primary">Get Started</a>
+                <a href="https://github.com/davrock/orbit" class="btn btn-secondary" target="_blank">View on GitHub</a>
+            </div>
+        </div>
+        <div class="hero-animation">
+            <div class="orbit-circle orbit-1"></div>
+            <div class="orbit-circle orbit-2"></div>
+            <div class="orbit-circle orbit-3"></div>
+            <div class="rocket">🚀</div>
+        </div>
+    </section>
+
+    <section id="quickstart" class="section">
+        <div class="container">
+            <h2>Quick Start</h2>
+            <div class="install-options">
+                <div class="install-card">
+                    <h3>📦 Install via npm</h3>
+                    <div class="code-block">
+                        <code>npm install -g @davrock/orbit</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+                <div class="install-card">
+                    <h3>🔧 From Source (Unix/macOS)</h3>
+                    <div class="code-block">
+                        <code>git clone https://github.com/davrock/orbit.git && cd orbit && ./install.sh</code>
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="usage-example">
+                <h3>🚀 First Flight</h3>
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> orbit launch "add user authentication"</div>
+                        <div class="terminal-line output">🚀 Mission: launch | Task: add user authentication</div>
+                        <div class="terminal-line output">📋 Phase: plan (mission-planner, ⚡ standard)</div>
+                        <div class="terminal-line output">✓ Planning complete</div>
+                        <div class="terminal-line output">⚙️  Phase: implement (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">✓ Implementation complete</div>
+                        <div class="terminal-line output">🧪 Phase: test (specialist, ⚡ standard)</div>
+                        <div class="terminal-line output">✓ Tests passing</div>
+                        <div class="terminal-line output">✅ Mission complete!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section section-dark">
+        <div class="container">
+            <h2>Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <h3>Multi-Phase Missions</h3>
+                    <p>Orchestrate complex development workflows with predefined mission templates for features, bugs, security, and more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>Smart Model Selection</h3>
+                    <p>Auto-select optimal LLM tier per task. Premium for security, standard for dev, fast for docs. Save tokens intelligently.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Self-Improvement Loop</h3>
+                    <p>Autonomous evolution system that processes task queues, GitHub issues, and self-identifies improvements.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Zero Configuration</h3>
+                    <p>Auto-detects project type, tech stack, test commands, and tools from your existing project files.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Best Practices Built-in</h3>
+                    <p>All agents reference coding standards, testing patterns, security guidelines, and documentation conventions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Parallel Execution</h3>
+                    <p>Ultrawork, Swarm, and Pipeline modes for intelligent parallel and sequential task distribution.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="missions" class="section">
+        <div class="container">
+            <h2>Mission Types</h2>
+            <div class="missions-selector">
+                <button class="mission-btn active" onclick="showMission('launch')">🚀 Launch</button>
+                <button class="mission-btn" onclick="showMission('repair')">🔧 Repair</button>
+                <button class="mission-btn" onclick="showMission('warp')">⚡ Warp</button>
+                <button class="mission-btn" onclick="showMission('shields-up')">🛡️ Shields-Up</button>
+                <button class="mission-btn" onclick="showMission('ralph')">🔄 Ralph</button>
+                <button class="mission-btn" onclick="showMission('swarm')">🐝 Swarm</button>
+            </div>
+
+            <div id="mission-launch" class="mission-detail active">
+                <div class="mission-header">
+                    <h3>🚀 Launch Mission</h3>
+                    <span class="mission-phases">plan → implement → test → review → commit</span>
+                </div>
+                <p>Full feature development workflow with comprehensive planning, implementation, testing, and review phases.</p>
+                <div class="code-block">
+                    <code>orbit launch "add user authentication"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ Complete feature development</li>
+                    <li>✓ Automated testing and review</li>
+                    <li>✓ Best practices enforcement</li>
+                </ul>
+            </div>
+
+            <div id="mission-repair" class="mission-detail">
+                <div class="mission-header">
+                    <h3>🔧 Repair Mission</h3>
+                    <span class="mission-phases">debug → implement → test → commit</span>
+                </div>
+                <p>Bug fix workflow with debugging phase, implementation, testing, and commit.</p>
+                <div class="code-block">
+                    <code>orbit repair "fix login crash on mobile"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ Root cause analysis</li>
+                    <li>✓ Regression test creation</li>
+                    <li>✓ Cheaper models for cost savings</li>
+                </ul>
+            </div>
+
+            <div id="mission-warp" class="mission-detail">
+                <div class="mission-header">
+                    <h3>⚡ Warp Mission</h3>
+                    <span class="mission-phases">implement → commit</span>
+                </div>
+                <p>Quick changes and simple updates. Minimal overhead for fast iterations.</p>
+                <div class="code-block">
+                    <code>orbit warp "rename userId to userID"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ Fastest execution</li>
+                    <li>✓ Simple refactoring</li>
+                    <li>✓ Documentation updates</li>
+                </ul>
+            </div>
+
+            <div id="mission-shields-up" class="mission-detail">
+                <div class="mission-header">
+                    <h3>🛡️ Shields-Up Mission</h3>
+                    <span class="mission-phases">plan → implement → security → test → review → commit</span>
+                </div>
+                <p>Security-focused workflow with dedicated security review phase using premium models.</p>
+                <div class="code-block">
+                    <code>orbit shields-up "add payment processing"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ OWASP Top 10 checks</li>
+                    <li>✓ Vulnerability scanning</li>
+                    <li>✓ Security-officer review</li>
+                </ul>
+            </div>
+
+            <div id="mission-ralph" class="mission-detail">
+                <div class="mission-header">
+                    <h3>🔄 Ralph Mission (Persistent)</h3>
+                    <span class="mission-phases">implement → test → review → commit (with auto-retry)</span>
+                </div>
+                <p>Never-give-up mode with automatic retries, model escalation, and crew rotation.</p>
+                <div class="code-block">
+                    <code>orbit ralph "implement complex feature"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ Up to 10 retry attempts</li>
+                    <li>✓ Auto model escalation</li>
+                    <li>✓ Crew rotation for fresh perspective</li>
+                </ul>
+            </div>
+
+            <div id="mission-swarm" class="mission-detail">
+                <div class="mission-header">
+                    <h3>🐝 Swarm Mission (Parallel)</h3>
+                    <span class="mission-phases">plan → parallel execution → review → commit</span>
+                </div>
+                <p>Intelligent parallel execution with dependency awareness and coordinated task distribution.</p>
+                <div class="code-block">
+                    <code>orbit swarm "implement user authentication system"</code>
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                </div>
+                <ul class="mission-benefits">
+                    <li>✓ Dependency graph analysis</li>
+                    <li>✓ Wave-based parallel execution</li>
+                    <li>✓ Context sharing between tasks</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section id="examples" class="section section-dark">
+        <div class="container">
+            <h2>Interactive Examples</h2>
+            <div class="examples-tabs">
+                <button class="example-tab active" onclick="showExample('feature')">Feature Development</button>
+                <button class="example-tab" onclick="showExample('bugfix')">Bug Fix</button>
+                <button class="example-tab" onclick="showExample('security')">Security</button>
+                <button class="example-tab" onclick="showExample('autonomous')">Autonomous</button>
+            </div>
+
+            <div id="example-feature" class="example-content active">
+                <h3>Feature Development Workflow</h3>
+                <p>Complete end-to-end feature implementation with planning, development, and testing.</p>
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> orbit launch "add user profile page with avatar upload"</div>
+                        <div class="terminal-line output">🚀 Mission: launch | Task: add user profile page with avatar upload</div>
+                        <div class="terminal-line output">📋 Phase: plan (mission-planner, ⚡ standard)</div>
+                        <div class="terminal-line output">   Creating implementation plan...</div>
+                        <div class="terminal-line output">   ✓ Task breakdown: 5 subtasks identified</div>
+                        <div class="terminal-line output">   ✓ Dependencies mapped</div>
+                        <div class="terminal-line output">⚙️  Phase: implement (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">   Creating profile component...</div>
+                        <div class="terminal-line output">   Adding avatar upload with validation...</div>
+                        <div class="terminal-line output">   ✓ Implementation complete</div>
+                        <div class="terminal-line output">🧪 Phase: test (specialist, ⚡ standard)</div>
+                        <div class="terminal-line output">   Running test suite...</div>
+                        <div class="terminal-line output">   ✓ All 12 tests passing</div>
+                        <div class="terminal-line output">👁️  Phase: review (navigator, ⚡ standard)</div>
+                        <div class="terminal-line output">   Code review in progress...</div>
+                        <div class="terminal-line output">   ✓ No issues found</div>
+                        <div class="terminal-line output">📝 Phase: commit (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">   ✓ Changes committed: feat: add user profile page with avatar upload</div>
+                        <div class="terminal-line output">✅ Mission complete! 🎉</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="example-bugfix" class="example-content">
+                <h3>Bug Fix with Root Cause Analysis</h3>
+                <p>Debug and fix issues with comprehensive testing.</p>
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> orbit repair "null pointer exception in user service"</div>
+                        <div class="terminal-line output">🔧 Mission: repair | Task: null pointer exception in user service</div>
+                        <div class="terminal-line output">🔍 Phase: debug (engineer, 🔥 premium)</div>
+                        <div class="terminal-line output">   Analyzing stack trace...</div>
+                        <div class="terminal-line output">   Root cause: Missing null check on user.email</div>
+                        <div class="terminal-line output">   Location: src/services/userService.ts:42</div>
+                        <div class="terminal-line output">⚙️  Phase: implement (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">   Adding null safety check...</div>
+                        <div class="terminal-line output">   Adding validation...</div>
+                        <div class="terminal-line output">   ✓ Fix implemented</div>
+                        <div class="terminal-line output">🧪 Phase: test (specialist, ⚡ standard)</div>
+                        <div class="terminal-line output">   Running regression tests...</div>
+                        <div class="terminal-line output">   ✓ Original issue resolved</div>
+                        <div class="terminal-line output">   ✓ No new failures introduced</div>
+                        <div class="terminal-line output">📝 Phase: commit (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">   ✓ Committed: fix: add null check for user.email in userService</div>
+                        <div class="terminal-line output">✅ Bug fixed! 🐛→✨</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="example-security" class="example-content">
+                <h3>Security-Critical Implementation</h3>
+                <p>Implement payment processing with comprehensive security review.</p>
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> orbit shields-up "add payment API integration"</div>
+                        <div class="terminal-line output">🛡️  Mission: shields-up | Task: add payment API integration</div>
+                        <div class="terminal-line output">📋 Phase: plan (mission-planner, 🔥 premium)</div>
+                        <div class="terminal-line output">   Planning secure payment flow...</div>
+                        <div class="terminal-line output">⚙️  Phase: implement (pilot, ⚡ standard)</div>
+                        <div class="terminal-line output">   Implementing payment service...</div>
+                        <div class="terminal-line output">   Adding encryption layer...</div>
+                        <div class="terminal-line output">🔐 Phase: security (security-officer, 🔥 premium)</div>
+                        <div class="terminal-line output">   Checking OWASP Top 10...</div>
+                        <div class="terminal-line output">   ✓ Input validation: PASS</div>
+                        <div class="terminal-line output">   ✓ Authentication: PASS</div>
+                        <div class="terminal-line output">   ✓ Data encryption: PASS</div>
+                        <div class="terminal-line output">   ✓ No secrets in code: PASS</div>
+                        <div class="terminal-line output">🧪 Phase: test (specialist, ⚡ standard)</div>
+                        <div class="terminal-line output">   Testing payment flows...</div>
+                        <div class="terminal-line output">   ✓ All security tests passing</div>
+                        <div class="terminal-line output">👁️  Phase: review (navigator, ⚡ standard)</div>
+                        <div class="terminal-line output">   Final security review...</div>
+                        <div class="terminal-line output">   ✓ Approved</div>
+                        <div class="terminal-line output">✅ Secure implementation complete! 🔒</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="example-autonomous" class="example-content">
+                <h3>Autonomous Self-Improvement</h3>
+                <p>Continuous evolution with task queue processing and auto-improvement.</p>
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line"><span class="prompt">$</span> orbit evolve --max 3</div>
+                        <div class="terminal-line output">🔄 Starting evolution cycle...</div>
+                        <div class="terminal-line output"></div>
+                        <div class="terminal-line output">📦 Cycle 1: Processing cargo manifest...</div>
+                        <div class="terminal-line output">   Found task: "Add dark mode toggle"</div>
+                        <div class="terminal-line output">   ✓ Dark mode implemented</div>
+                        <div class="terminal-line output">   ✓ Tests passing</div>
+                        <div class="terminal-line output"></div>
+                        <div class="terminal-line output">📦 Cycle 2: Checking GitHub issues...</div>
+                        <div class="terminal-line output">   Found issue #42: "Improve error messages"</div>
+                        <div class="terminal-line output">   ✓ Enhanced error handling</div>
+                        <div class="terminal-line output">   ✓ Issue closed</div>
+                        <div class="terminal-line output"></div>
+                        <div class="terminal-line output">🧠 Cycle 3: Self-improvement scan...</div>
+                        <div class="terminal-line output">   Identified: Unused dependencies</div>
+                        <div class="terminal-line output">   ✓ Cleaned up package.json</div>
+                        <div class="terminal-line output">   ✓ Bundle size reduced by 15%</div>
+                        <div class="terminal-line output"></div>
+                        <div class="terminal-line output">✅ Evolution complete! 3 improvements made 🚀</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="playground" class="section">
+        <div class="container">
+            <h2>Command Playground</h2>
+            <p class="section-subtitle">Try different ORBIT commands and see the expected workflow</p>
+            
+            <div class="playground">
+                <div class="playground-input">
+                    <label for="command-input">Enter ORBIT Command:</label>
+                    <div class="input-group">
+                        <span class="input-prefix">orbit</span>
+                        <input type="text" id="command-input" placeholder='launch "add user authentication"' />
+                        <button class="btn btn-primary" onclick="executeCommand()">Run</button>
+                    </div>
+                </div>
+
+                <div class="playground-output">
+                    <div class="output-header">Expected Output:</div>
+                    <div id="playground-result" class="terminal">
+                        <div class="terminal-header">
+                            <span class="terminal-dot red"></span>
+                            <span class="terminal-dot yellow"></span>
+                            <span class="terminal-dot green"></span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line placeholder">Enter a command to see the expected workflow...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="command-suggestions">
+                    <p>Try these commands:</p>
+                    <div class="suggestions-grid">
+                        <button class="suggestion-btn" onclick="setCommand('launch &quot;add user settings&quot;')">launch "add user settings"</button>
+                        <button class="suggestion-btn" onclick="setCommand('repair &quot;fix memory leak&quot;')">repair "fix memory leak"</button>
+                        <button class="suggestion-btn" onclick="setCommand('warp &quot;update README&quot;')">warp "update README"</button>
+                        <button class="suggestion-btn" onclick="setCommand('shields-up &quot;add OAuth&quot;')">shields-up "add OAuth"</button>
+                        <button class="suggestion-btn" onclick="setCommand('ralph &quot;complex refactor&quot;')">ralph "complex refactor"</button>
+                        <button class="suggestion-btn" onclick="setCommand('evolve --max 5')">evolve --max 5</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="docs" class="section section-dark">
+        <div class="container">
+            <h2>Documentation</h2>
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <h3>📖 Getting Started</h3>
+                    <ul>
+                        <li><a href="../README.md">Main README</a></li>
+                        <li><a href="../QUICKSTART.md">Quick Start Guide</a></li>
+                        <li><a href="#quickstart">Installation</a></li>
+                    </ul>
+                </div>
+                <div class="doc-card">
+                    <h3>🚀 Mission Reference</h3>
+                    <ul>
+                        <li><a href="#missions">Mission Types</a></li>
+                        <li><a href="#examples">Usage Examples</a></li>
+                        <li><a href="#playground">Command Playground</a></li>
+                    </ul>
+                </div>
+                <div class="doc-card">
+                    <h3>🧠 Advanced Features</h3>
+                    <ul>
+                        <li><a href="AI_PROVIDER_INTEGRATION.md">AI Provider Integration</a></li>
+                        <li><a href="DESIGN_REVIEW.md">Design Review</a></li>
+                        <li><a href="#features">Smart Model Selection</a></li>
+                    </ul>
+                </div>
+                <div class="doc-card">
+                    <h3>🔧 Configuration</h3>
+                    <ul>
+                        <li><a href="#quickstart">Auto-Detection</a></li>
+                        <li>Best Practices YAML</li>
+                        <li>Crew & Model Config</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>🛸 ORBIT</h4>
+                    <p>AI-powered autonomous development</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links</h4>
+                    <ul>
+                        <li><a href="https://github.com/davrock/orbit">GitHub</a></li>
+                        <li><a href="https://www.npmjs.com/package/@davrock/orbit">npm</a></li>
+                        <li><a href="../README.md">Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#examples">Examples</a></li>
+                        <li><a href="#playground">Playground</a></li>
+                        <li><a href="https://github.com/davrock/orbit/issues">Issues</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>MIT License | "To infinity and beyond!" 🚀</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

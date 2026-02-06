@@ -24,11 +24,11 @@
 # ✓ Add 'plan' mode that conducts planning interview before execution to gather requirements (2026-02-06)
 
 # MEDIUM PRIORITY - Multi-AI Orchestration
-Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks
-Implement design review agent that can optionally use external AI for UI/UX consistency feedback
+# ✓ Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks (2026-02-06)
+# ✓ Implement design review agent that can optionally use external AI for UI/UX consistency feedback (2026-02-06)
 
 # LOW PRIORITY - Polish
-Add internationalization support (multiple language READMEs like oh-my-claudecode)
+# ✓ Add internationalization support (multiple language READMEs like oh-my-claudecode) (2026-02-06)
 Create interactive website/documentation with examples
 Add sponsor/contribution section to README
 

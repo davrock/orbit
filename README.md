@@ -8,6 +8,8 @@ AI-powered autonomous software development with self-improvement, smart model se
 
 **Now powered by TypeScript for better reliability and type safety!**
 
+📚 **[Interactive Documentation](docs/index.html)** - Try ORBIT commands in the browser playground!
+
 ## Quick Start
 
 ### Install
