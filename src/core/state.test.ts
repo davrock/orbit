@@ -2,7 +2,7 @@
 // Tests for persistence layer
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { existsSync, rmSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
   loadGroundControl,
@@ -12,12 +12,23 @@ import {
   resetGroundControl,
   loadFuelUsage,
   saveFuelUsage,
-  trackFuel
+  trackFuel,
+  loadSkills,
+  saveSkill,
+  findMatchingSkill,
+  loadCargo,
+  getNextCargoItem,
+  markCargoDelivered,
+  addCargoItem,
+  appendLog
 } from './state.js';
 
 const TEST_STATE_DIR = '.copilot/state';
+const TEST_SKILLS_DIR = '.copilot/skills';
+const TEST_CARGO_FILE = '.copilot/cargo_manifest.txt';
 const TEST_GC_FILE = join(TEST_STATE_DIR, 'ground_control.json');
 const TEST_FUEL_FILE = join(TEST_STATE_DIR, 'fuel_tracking.json');
+const TEST_LOG_FILE = join(TEST_STATE_DIR, 'mission.log');
 
 describe('State Management', () => {
   beforeEach(() => {
@@ -25,12 +36,24 @@ describe('State Management', () => {
     if (existsSync(TEST_STATE_DIR)) {
       rmSync(TEST_STATE_DIR, { recursive: true, force: true });
     }
+    if (existsSync(TEST_SKILLS_DIR)) {
+      rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
+    }
+    if (existsSync(TEST_CARGO_FILE)) {
+      rmSync(TEST_CARGO_FILE, { force: true });
+    }
   });
 
   afterEach(() => {
     // Clean up test state after each test
     if (existsSync(TEST_STATE_DIR)) {
       rmSync(TEST_STATE_DIR, { recursive: true, force: true });
+    }
+    if (existsSync(TEST_SKILLS_DIR)) {
+      rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
+    }
+    if (existsSync(TEST_CARGO_FILE)) {
+      rmSync(TEST_CARGO_FILE, { force: true });
     }
   });
 
@@ -157,6 +180,287 @@ describe('State Management', () => {
         cycles: 0,
         successes: 0
       });
+    });
+  });
+
+  describe('Skills Management', () => {
+    it('should return empty array when skills directory does not exist', () => {
+      const skills = loadSkills();
+      expect(skills).toEqual([]);
+    });
+
+    it('should save and load a skill correctly', () => {
+      const skill = {
+        id: 'test-skill-1',
+        pattern: 'test pattern',
+        solution: 'test solution',
+        context: 'test context',
+        successCount: 0,
+        lastUsed: new Date('2024-01-01')
+      };
+      
+      saveSkill(skill);
+      const skills = loadSkills();
+      
+      expect(skills).toHaveLength(1);
+      expect(skills[0].id).toBe('test-skill-1');
+      expect(skills[0].pattern).toBe('test pattern');
+    });
+
+    it('should load multiple skills from directory', () => {
+      const skill1 = {
+        id: 'skill-1',
+        pattern: 'pattern 1',
+        solution: 'solution 1',
+        context: 'context 1',
+        successCount: 1,
+        lastUsed: new Date()
+      };
+      
+      const skill2 = {
+        id: 'skill-2',
+        pattern: 'pattern 2',
+        solution: 'solution 2',
+        context: 'context 2',
+        successCount: 2,
+        lastUsed: new Date()
+      };
+
+      saveSkill(skill1);
+      saveSkill(skill2);
+
+      const skills = loadSkills();
+      expect(skills).toHaveLength(2);
+      expect(skills.map(s => s.id)).toContain('skill-1');
+      expect(skills.map(s => s.id)).toContain('skill-2');
+    });
+
+    it('should skip invalid JSON files when loading skills', () => {
+      mkdirSync(TEST_SKILLS_DIR, { recursive: true });
+      writeFileSync(join(TEST_SKILLS_DIR, 'valid.json'), JSON.stringify({
+        id: 'valid',
+        pattern: 'test',
+        solution: 'test',
+        context: 'test',
+        successCount: 0,
+        lastUsed: new Date()
+      }));
+      writeFileSync(join(TEST_SKILLS_DIR, 'invalid.json'), 'not valid json');
+
+      const skills = loadSkills();
+      expect(skills).toHaveLength(1);
+      expect(skills[0].id).toBe('valid');
+    });
+
+    it('should find matching skill by pattern (exact match)', () => {
+      saveSkill({
+        id: 'test-1',
+        pattern: 'fix typescript error',
+        solution: 'use type assertion',
+        context: 'typescript',
+        successCount: 0,
+        lastUsed: new Date()
+      });
+
+      const skill = findMatchingSkill('fix typescript error in file');
+      expect(skill).toBeDefined();
+      expect(skill?.id).toBe('test-1');
+    });
+
+    it('should find matching skill by pattern (partial match)', () => {
+      saveSkill({
+        id: 'test-2',
+        pattern: 'install dependencies',
+        solution: 'npm install',
+        context: 'node',
+        successCount: 0,
+        lastUsed: new Date()
+      });
+
+      const skill = findMatchingSkill('need to install dependencies');
+      expect(skill).toBeDefined();
+      expect(skill?.id).toBe('test-2');
+    });
+
+    it('should return undefined when no matching skill found', () => {
+      saveSkill({
+        id: 'test-3',
+        pattern: 'debug python error',
+        solution: 'use debugger',
+        context: 'python',
+        successCount: 0,
+        lastUsed: new Date()
+      });
+
+      const skill = findMatchingSkill('fix java compilation issue');
+      expect(skill).toBeUndefined();
+    });
+
+    it('should be case-insensitive when finding skills', () => {
+      saveSkill({
+        id: 'test-4',
+        pattern: 'Run Tests',
+        solution: 'npm test',
+        context: 'testing',
+        successCount: 0,
+        lastUsed: new Date()
+      });
+
+      const skill = findMatchingSkill('run tests in ci');
+      expect(skill).toBeDefined();
+      expect(skill?.id).toBe('test-4');
+    });
+  });
+
+  describe('Cargo Management', () => {
+    it('should return empty array when cargo file does not exist', () => {
+      const items = loadCargo();
+      expect(items).toEqual([]);
+    });
+
+    it('should load cargo items with correct priorities', () => {
+      const content = `# 🚀 ORBIT Cargo Manifest
+# HIGH PRIORITY
+Implement critical feature
+Fix security bug
+
+# MEDIUM PRIORITY
+Add new API endpoint
+
+# LOW PRIORITY
+Update documentation`;
+
+      mkdirSync('.copilot', { recursive: true });
+      writeFileSync(TEST_CARGO_FILE, content);
+
+      const items = loadCargo();
+      expect(items).toHaveLength(4);
+      expect(items[0].priority).toBe('high');
+      expect(items[2].priority).toBe('medium');
+      expect(items[3].priority).toBe('low');
+    });
+
+    it('should mark completed items correctly', () => {
+      const content = `# HIGH PRIORITY
+# ✓ Completed task (2024-01-01)
+Active task`;
+
+      mkdirSync('.copilot', { recursive: true });
+      writeFileSync(TEST_CARGO_FILE, content);
+
+      const items = loadCargo();
+      expect(items).toHaveLength(2);
+      expect(items[0].delivered).toBe(true);
+      expect(items[1].delivered).toBe(false);
+    });
+
+    it('should get next undelivered cargo item', () => {
+      const content = `# HIGH PRIORITY
+# ✓ Done task (2024-01-01)
+Next task
+Another task`;
+
+      mkdirSync('.copilot', { recursive: true });
+      writeFileSync(TEST_CARGO_FILE, content);
+
+      const next = getNextCargoItem();
+      expect(next).toBeDefined();
+      expect(next?.task).toBe('Next task');
+      expect(next?.delivered).toBe(false);
+    });
+
+    it('should return undefined when all cargo delivered', () => {
+      const content = `# HIGH PRIORITY
+# ✓ Task 1 (2024-01-01)
+# ✓ Task 2 (2024-01-02)`;
+
+      mkdirSync('.copilot', { recursive: true });
+      writeFileSync(TEST_CARGO_FILE, content);
+
+      const next = getNextCargoItem();
+      expect(next).toBeUndefined();
+    });
+
+    it('should mark cargo item as delivered', () => {
+      const content = `# HIGH PRIORITY
+Complete this task
+Another task`;
+
+      mkdirSync('.copilot', { recursive: true });
+      writeFileSync(TEST_CARGO_FILE, content);
+
+      markCargoDelivered('Complete this task');
+
+      const updatedContent = readFileSync(TEST_CARGO_FILE, 'utf-8');
+      expect(updatedContent).toContain('# ✓ Complete this task');
+    });
+
+    it('should add cargo item to high priority section', () => {
+      addCargoItem('New high priority task', 'high');
+
+      const content = readFileSync(TEST_CARGO_FILE, 'utf-8');
+      expect(content).toContain('# HIGH PRIORITY');
+      expect(content).toContain('New high priority task');
+    });
+
+    it('should add cargo item to medium priority section by default', () => {
+      addCargoItem('New task');
+
+      const content = readFileSync(TEST_CARGO_FILE, 'utf-8');
+      expect(content).toContain('# MEDIUM PRIORITY');
+      expect(content).toContain('New task');
+    });
+
+    it('should add cargo item to low priority section', () => {
+      addCargoItem('Low priority task', 'low');
+
+      const content = readFileSync(TEST_CARGO_FILE, 'utf-8');
+      expect(content).toContain('# LOW PRIORITY');
+      expect(content).toContain('Low priority task');
+    });
+
+    it('should create cargo file with template if it does not exist', () => {
+      addCargoItem('First task', 'medium');
+
+      expect(existsSync(TEST_CARGO_FILE)).toBe(true);
+      const content = readFileSync(TEST_CARGO_FILE, 'utf-8');
+      expect(content).toContain('🚀 ORBIT Cargo Manifest');
+      expect(content).toContain('First task');
+    });
+  });
+
+  describe('Log Management', () => {
+    const TEST_LOG_FILE = join(TEST_STATE_DIR, 'mission.log');
+
+    it('should create log file and append message', () => {
+      appendLog('Test log message');
+
+      expect(existsSync(TEST_LOG_FILE)).toBe(true);
+      const content = readFileSync(TEST_LOG_FILE, 'utf-8');
+      expect(content).toContain('Test log message');
+      expect(content).toMatch(/\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]/);
+    });
+
+    it('should append to existing log file', () => {
+      appendLog('First message');
+      appendLog('Second message');
+
+      const content = readFileSync(TEST_LOG_FILE, 'utf-8');
+      expect(content).toContain('First message');
+      expect(content).toContain('Second message');
+      
+      const lines = content.trim().split('\n');
+      expect(lines).toHaveLength(2);
+    });
+
+    it('should format timestamp correctly', () => {
+      appendLog('Test');
+      
+      const content = readFileSync(TEST_LOG_FILE, 'utf-8');
+      const timestampMatch = content.match(/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/);
+      
+      expect(timestampMatch).toBeTruthy();
+      expect(timestampMatch![1]).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
     });
   });
 

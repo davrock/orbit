@@ -159,6 +159,7 @@ export function findMatchingSkill(task: string): Skill | undefined {
   const taskLower = task.toLowerCase();
   
   return skills.find(skill => {
+    if (!skill.pattern) return false;
     const patternLower = skill.pattern.toLowerCase();
     return taskLower.includes(patternLower) || patternLower.includes(taskLower);
   });
