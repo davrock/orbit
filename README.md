@@ -387,6 +387,49 @@ npm run typecheck
 npm link
 ```
 
+## 💖 Support & Contribute
+
+### Sponsor
+
+If ORBIT saves you time and boosts your productivity, consider sponsoring:
+
+- ⭐ **Star this repo** - it helps others discover ORBIT
+- 💰 **GitHub Sponsors** - [Sponsor @davrock](https://github.com/sponsors/davrock)
+- ☕ **Buy me a coffee** - Support continued development
+
+### Contribute
+
+Contributions welcome! Here's how:
+
+```bash
+# Fork and clone
+git clone https://github.com/your-username/orbit.git
+cd orbit
+
+# Install dependencies
+npm install
+
+# Make your changes
+npm run dev -- launch "your improvement"
+
+# Build and test
+npm run build
+npm run typecheck
+
+# Submit PR
+git push origin feature/your-improvement
+```
+
+**Ways to contribute:**
+- 🐛 Report bugs and issues
+- 💡 Suggest new features or missions
+- 📚 Improve documentation
+- 🧪 Add tests and improve coverage
+- 🌍 Add translations
+- 🎨 Enhance UI/UX
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
 ## License
 
 MIT
