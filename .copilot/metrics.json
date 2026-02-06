@@ -211,11 +211,136 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T20:45:19.101Z"
+    },
+    {
+      "id": "run-1770410839227",
+      "task": "Add 'ecomode' for budget-conscious execution that aggressively uses fast/cheap models where possible (target 30-50% token savings)",
+      "mission": "warp",
+      "started": "2026-02-06T20:47:19.227Z",
+      "totalDuration": 315,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:47:19.233Z",
+          "duration": 247,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:51:27.175Z",
+          "duration": 67,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 3,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:52:34.494Z"
+    },
+    {
+      "id": "run-1770411517189",
+      "task": "Add user authentication with login and registration",
+      "mission": "swarm",
+      "started": "2026-02-06T20:58:37.189Z",
+      "totalDuration": 2,
+      "phases": [
+        {
+          "name": "plan",
+          "started": "2026-02-06T20:58:37.194Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:58:37.200Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:58:38.206Z",
+          "duration": 0,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:58:39.214Z",
+          "duration": 0,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "review",
+          "started": "2026-02-06T20:58:39.219Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:58:39.223Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 11,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:58:39.232Z"
+    },
+    {
+      "id": "run-1770411274623",
+      "task": "Add 'swarm' mode for coordinated parallel execution of independent tasks",
+      "mission": "warp",
+      "started": "2026-02-06T20:54:34.623Z",
+      "totalDuration": 400,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:54:34.627Z",
+          "duration": 353,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:00:28.075Z",
+          "duration": 46,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:01:14.857Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 7,
-    "successRate": 71,
+    "totalRuns": 10,
+    "successRate": 80,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -223,22 +348,26 @@
         "successRate": 0
       },
       "warp": {
-        "count": 4,
+        "count": 6,
         "successRate": 100
       },
       "ultrawork": {
+        "count": 1,
+        "successRate": 100
+      },
+      "swarm": {
         "count": 1,
         "successRate": 100
       }
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 137,
-        "successRate": 67
+        "avgDuration": 129,
+        "successRate": 73
       },
       "commit": {
         "avgDuration": 37,
-        "successRate": 60
+        "successRate": 63
       },
       "plan": {
         "avgDuration": 0,

@@ -13,8 +13,8 @@
 # HIGH PRIORITY - Execution Modes
 # ✓ Add 'ralph' persistence mode that won't give up until task is verified complete (retry with escalation, different approaches) (2026-02-06)
 # ✓ Add 'ultrawork' parallel execution mode that distributes subtasks across multiple concurrent agent sessions (2026-02-06)
-Add 'ecomode' for budget-conscious execution that aggressively uses fast/cheap models where possible (target 30-50% token savings)
-Add 'swarm' mode for coordinated parallel execution of independent tasks
+# ✓ Add 'ecomode' for budget-conscious execution that aggressively uses fast/cheap models where possible (target 30-50% token savings) (2026-02-06)
+# ✓ Add 'swarm' mode for coordinated parallel execution of independent tasks (2026-02-06)
 Add 'pipeline' mode for sequential multi-stage processing with handoffs between stages
 
 # MEDIUM PRIORITY - Additional Agents
