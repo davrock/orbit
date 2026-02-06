@@ -10,6 +10,10 @@
   "files": [
     "dist",
     "README.md",
+    "README.ko.md",
+    "README.zh.md",
+    "README.ja.md",
+    "README.es.md",
     "LICENSE"
   ],
   "scripts": {
