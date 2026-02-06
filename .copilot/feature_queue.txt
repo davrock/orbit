@@ -1,18 +1,12 @@
-# Feature Queue - Priority Order
-# Process with: ./process-feature-queue
-# Evolve checks this first before self-improving
+# 🚀 ORBIT Flight Plan - Feature Queue
+# Priority order: HIGH → MEDIUM → LOW
 
-# HIGH PRIORITY - Foundation
-Load all best practices for each agent type to reference (coding standards, testing patterns, security guidelines, documentation conventions) - agents should follow industry best practices for their domain
-Add LLM model selection automation - choose optimal model per task (don't use 3x premium when not needed, match model strengths to task types)
+# HIGH PRIORITY
+Add comprehensive best practices for each crew member type (coding standards, testing patterns, security guidelines, documentation conventions) to best-practices.yaml so agents can reference them
+Implement smart LLM model selection that automatically chooses the optimal model tier (premium/standard/fast) based on task complexity and type to optimize token usage
 
-# MEDIUM PRIORITY - Core Features
-Add GitHub Issues integration to evolve script
-Add parallel agent execution for independent phases
-Add workflow templates library
-Add metrics dashboard improvements
+# MEDIUM PRIORITY
 
-# LOWER PRIORITY - Polish
-Add voice/audio feedback option
-Add Slack/Discord notifications
-Add multi-project support
+# LOW PRIORITY
+
+# COMPLETED
