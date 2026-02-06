@@ -1,8 +1,0 @@
-{
-  "id": "skill-1770412787834",
-  "pattern": "Add 'doctor' diagnostic command that checks ORBIT installation, validates configuration, and suggests fixes for common issues",
-  "solution": "Files: │, with | IMPLEMENT COMPLETE | │ 10  +  Successfully implemented the orbit doctor command with comprehensive diagnostics:   │",
-  "context": "warp",
-  "successCount": 1,
-  "lastUsed": "2026-02-06T21:19:47.834Z"
-}
