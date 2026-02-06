@@ -1,0 +1,182 @@
+# 📚 Best Practices Reference
+# Each agent should follow these standards for their domain
+
+# === CODING STANDARDS ===
+coding:
+  general:
+    - Follow single responsibility principle
+    - Keep functions under 50 lines
+    - Use meaningful names (no abbreviations)
+    - Prefer composition over inheritance
+    - Handle errors explicitly, never silently swallow
+    - Use early returns to reduce nesting
+    - DRY but don't over-abstract
+  
+  typescript:
+    - Use strict mode always
+    - Prefer interfaces over types for objects
+    - No 'any' - use 'unknown' with guards
+    - Explicit return types on functions
+    - Use readonly where possible
+    - Prefer const, avoid let, never var
+    
+  python:
+    - Follow PEP 8
+    - Use type hints
+    - Prefer dataclasses for data containers
+    - Use context managers for resources
+    - Explicit > implicit
+    
+  javascript:
+    - Use const by default
+    - Prefer async/await over callbacks
+    - Use optional chaining (?.) and nullish coalescing (??)
+    - Destructure for cleaner code
+
+# === TESTING STANDARDS ===
+testing:
+  principles:
+    - Test behavior, not implementation
+    - One assertion per test (ideally)
+    - Use descriptive test names
+    - Arrange-Act-Assert pattern
+    - Isolate tests - no shared state
+    - Mock external dependencies
+    - Fast tests > slow tests
+    
+  coverage:
+    - Aim for 80%+ on core logic
+    - 100% on utilities and helpers
+    - Don't chase coverage for its own sake
+    
+  naming:
+    - "should [expected behavior] when [condition]"
+    - "returns [value] for [input]"
+    - "throws [error] if [condition]"
+
+# === SECURITY STANDARDS ===
+security:
+  input_validation:
+    - Validate all user input
+    - Use allowlists over denylists
+    - Sanitize before display (XSS)
+    - Parameterize queries (SQL injection)
+    
+  authentication:
+    - Never store plaintext passwords
+    - Use secure session management
+    - Implement rate limiting
+    - Use HTTPS everywhere
+    
+  data:
+    - Encrypt PII at rest
+    - Minimize data collection
+    - Audit access to sensitive data
+    - Secure API keys in env vars
+    
+  dependencies:
+    - Audit dependencies regularly
+    - Pin versions
+    - Check for known vulnerabilities
+
+# === DOCUMENTATION STANDARDS ===
+documentation:
+  code_comments:
+    - Comment WHY, not WHAT
+    - Keep comments up to date
+    - Use JSDoc/docstrings for public APIs
+    
+  readme:
+    - Quick start in first 30 seconds
+    - Installation instructions
+    - Usage examples
+    - Configuration options
+    - Troubleshooting section
+    
+  api_docs:
+    - Document all endpoints
+    - Include request/response examples
+    - List error codes and meanings
+    - Note authentication requirements
+
+# === PERFORMANCE STANDARDS ===
+performance:
+  general:
+    - Measure before optimizing
+    - Profile to find bottlenecks
+    - Cache expensive operations
+    - Use pagination for large datasets
+    
+  frontend:
+    - Minimize bundle size
+    - Lazy load routes/components
+    - Optimize images
+    - Use virtualization for long lists
+    
+  backend:
+    - Use connection pooling
+    - Index database queries
+    - Batch operations where possible
+    - Consider caching layers
+
+# === GIT/VERSION CONTROL ===
+git:
+  commits:
+    - Use conventional commits (feat:, fix:, docs:, etc.)
+    - Keep commits atomic and focused
+    - Write clear, descriptive messages
+    - Reference issues when applicable
+    
+  branches:
+    - feature/description, fix/description
+    - Keep branches short-lived
+    - Rebase to keep history clean
+    
+  reviews:
+    - Review for logic, not style (use linters)
+    - Be constructive, not critical
+    - Approve quickly or explain clearly
+
+# === AGENT-SPECIFIC GUIDELINES ===
+agent_guidelines:
+  neo:
+    - Follow coding standards strictly
+    - Write self-documenting code
+    - Add tests for new functionality
+    - Keep changes minimal and focused
+    
+  testman:
+    - Follow testing standards
+    - Cover happy path and edge cases
+    - Use mocks appropriately
+    - Make tests fast and reliable
+    
+  cipher:
+    - Follow security standards
+    - Check OWASP Top 10
+    - Validate all inputs
+    - Review auth flows carefully
+    
+  linus:
+    - Check against all standards
+    - Be thorough but fair
+    - Suggest, don't demand
+    - Focus on important issues
+    
+  scribe:
+    - Follow documentation standards
+    - Keep it concise
+    - Include examples
+    - Update existing docs, don't duplicate
+    
+  sherlock:
+    - Reproduce before fixing
+    - Find root cause, not symptoms
+    - Add regression test
+    - Document the fix
+    
+  flash:
+    - Follow performance standards
+    - Measure before and after
+    - Document optimization rationale
+    - Don't sacrifice readability

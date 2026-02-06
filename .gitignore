@@ -1,0 +1,37 @@
+# Orchestration state and logs
+.copilot/state/*.log
+.copilot/queue_processor.log
+queue_output.log
+
+# Temporary files
+/tmp/copilot_*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (if testing in Node projects)
+node_modules/
+npm-debug.log*
+
+# Python (if testing in Python projects)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+venv/
+
+# Go (if testing in Go projects)
+*.test
+*.out
+
+# Build artifacts (adapt to your needs)
+dist/
+build/
+*.log

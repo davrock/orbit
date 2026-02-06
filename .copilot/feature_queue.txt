@@ -1,0 +1,18 @@
+# Feature Queue - Priority Order
+# Process with: ./process-feature-queue
+# Evolve checks this first before self-improving
+
+# HIGH PRIORITY - Foundation
+Load all best practices for each agent type to reference (coding standards, testing patterns, security guidelines, documentation conventions) - agents should follow industry best practices for their domain
+Add LLM model selection automation - choose optimal model per task (don't use 3x premium when not needed, match model strengths to task types)
+
+# MEDIUM PRIORITY - Core Features
+Add GitHub Issues integration to evolve script
+Add parallel agent execution for independent phases
+Add workflow templates library
+Add metrics dashboard improvements
+
+# LOWER PRIORITY - Polish
+Add voice/audio feedback option
+Add Slack/Discord notifications
+Add multi-project support

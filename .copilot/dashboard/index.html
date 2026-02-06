@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copilot Orchestrator Dashboard</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #eaeaea;
+            --text-secondary: #a0a0a0;
+            --accent: #e94560;
+            --success: #00d26a;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --info: #3498db;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--bg-card);
+        }
+        
+        h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
+        h1::before { content: "🤖"; }
+        
+        .btn {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: var(--accent); }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.error { color: var(--error); }
+        
+        .stat-label {
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--bg-card); }
+        th { color: var(--text-secondary); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-success { background: rgba(0, 210, 106, 0.2); color: var(--success); }
+        .status-failed { background: rgba(231, 76, 60, 0.2); color: var(--error); }
+        .status-skipped { background: rgba(243, 156, 18, 0.2); color: var(--warning); }
+        
+        .chart-container {
+            height: 180px;
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            padding: 20px 0;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            background: var(--info);
+            border-radius: 4px 4px 0 0;
+            min-height: 8px;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .chart-bar:hover { background: var(--accent); }
+        .chart-bar::after {
+            content: attr(data-value);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        
+        .no-data { text-align: center; color: var(--text-secondary); padding: 40px; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .phase-chip {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background: var(--bg-card);
+            margin: 1px;
+        }
+        
+        .file-input { margin-bottom: 20px; }
+        .file-input input { display: none; }
+        .file-input label {
+            display: inline-block;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .file-input label:hover { background: var(--accent); }
+        #file-name { margin-left: 15px; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Orchestrator Dashboard</h1>
+            <button class="btn" onclick="loadData()">🔄 Refresh</button>
+        </header>
+        
+        <div class="file-input">
+            <input type="file" id="metrics-file" accept=".json" onchange="loadFile(this)">
+            <label for="metrics-file">📂 Load metrics.json</label>
+            <span id="file-name">No file loaded</span>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-runs">-</div>
+                <div class="stat-label">Total Runs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value success" id="success-rate">-</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-duration">-</div>
+                <div class="stat-label">Avg Duration</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-files">-</div>
+                <div class="stat-label">Files Changed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-tests">-</div>
+                <div class="stat-label">Tests Added</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value warning" id="total-retries">-</div>
+                <div class="stat-label">Total Retries</div>
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div class="section">
+                <h2 class="section-title">📊 Duration by Run</h2>
+                <div class="chart-container" id="duration-chart">
+                    <div class="no-data">Load metrics.json to see chart</div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">📈 Success vs Failure</h2>
+                <div class="chart-container" id="success-chart">
+                    <div class="no-data">Load metrics.json to see chart</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">📋 Recent Runs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Workflow</th>
+                        <th>Task</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Files</th>
+                        <th>Phases</th>
+                    </tr>
+                </thead>
+                <tbody id="runs-body">
+                    <tr><td colspan="7" class="no-data">Load metrics.json to see runs</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        let data = null;
+        
+        function loadFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            document.getElementById('file-name').textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    data = JSON.parse(e.target.result);
+                    render();
+                } catch (err) { alert('Error: ' + err.message); }
+            };
+            reader.readAsText(file);
+        }
+        
+        function loadData() {
+            fetch('../metrics.json')
+                .then(r => r.json())
+                .then(d => { data = d; render(); })
+                .catch(() => {});
+        }
+        
+        function render() {
+            if (!data?.runs) return;
+            const runs = data.runs;
+            const success = runs.filter(r => r.status === 'success');
+            const failed = runs.filter(r => r.status === 'failed');
+            
+            document.getElementById('total-runs').textContent = runs.length;
+            document.getElementById('success-rate').textContent = 
+                runs.length ? Math.round((success.length / runs.length) * 100) + '%' : '0%';
+            
+            const avg = success.length 
+                ? Math.round(success.reduce((a, r) => a + (r.total_duration || 0), 0) / success.length) 
+                : 0;
+            document.getElementById('avg-duration').textContent = `${Math.floor(avg/60)}m ${avg%60}s`;
+            document.getElementById('total-files').textContent = runs.reduce((a, r) => a + (r.files_changed || 0), 0);
+            document.getElementById('total-tests').textContent = runs.reduce((a, r) => a + (r.tests_added || 0), 0);
+            document.getElementById('total-retries').textContent = runs.reduce((a, r) => a + (r.retries || 0), 0);
+            
+            // Duration chart
+            const dc = document.getElementById('duration-chart');
+            const last20 = runs.slice(-20);
+            if (last20.length) {
+                const max = Math.max(...last20.map(r => r.total_duration || 0));
+                dc.innerHTML = last20.map(r => {
+                    const h = max ? Math.max(8, ((r.total_duration || 0) / max) * 160) : 8;
+                    return `<div class="chart-bar" style="height:${h}px" data-value="${Math.floor((r.total_duration||0)/60)}m"></div>`;
+                }).join('');
+            }
+            
+            // Success chart
+            const sc = document.getElementById('success-chart');
+            const total = success.length + failed.length;
+            if (total) {
+                sc.innerHTML = `
+                    <div class="chart-bar" style="height:${(success.length/total)*160}px;background:var(--success);flex:0 0 45%" data-value="${success.length}"></div>
+                    <div style="flex:0 0 10%;text-align:center;align-self:center;color:var(--text-secondary)">vs</div>
+                    <div class="chart-bar" style="height:${(failed.length/total)*160}px;background:var(--error);flex:0 0 45%" data-value="${failed.length}"></div>
+                `;
+            }
+            
+            // Table
+            const tbody = document.getElementById('runs-body');
+            const recent = runs.slice(-10).reverse();
+            tbody.innerHTML = recent.length ? recent.map(r => `
+                <tr>
+                    <td>${r.started ? new Date(r.started).toLocaleDateString() : '-'}</td>
+                    <td>${r.workflow || '-'}</td>
+                    <td>${(r.task || '').substring(0, 35)}${(r.task || '').length > 35 ? '...' : ''}</td>
+                    <td><span class="status-badge status-${r.status || 'skipped'}">${r.status || '-'}</span></td>
+                    <td>${r.total_duration ? `${Math.floor(r.total_duration/60)}m ${r.total_duration%60}s` : '-'}</td>
+                    <td>${r.files_changed || 0}</td>
+                    <td>${(r.phases || []).map(p => `<span class="phase-chip">${p.name}</span>`).join('') || '-'}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="7" class="no-data">No runs</td></tr>';
+        }
+        
+        loadData();
+    </script>
+</body>
+</html>

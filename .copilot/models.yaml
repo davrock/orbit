@@ -1,0 +1,111 @@
+# 🧠 LLM Model Selection Configuration
+# Optimize cost & quality by matching models to tasks
+
+models:
+  # Premium models (3x tokens) - complex reasoning tasks
+  premium:
+    - claude-sonnet-4-20250514
+    - gpt-4o
+  
+  # Standard models (1x tokens) - general tasks  
+  standard:
+    - claude-3.5-haiku
+    - gpt-4o-mini
+    - gemini-flash
+
+  # Fast/cheap - simple tasks
+  fast:
+    - gpt-4o-mini
+    - claude-3.5-haiku
+
+# Task-to-model mapping (use cheapest that works well)
+task_routing:
+  # Complex reasoning → Premium
+  architecture_design: premium
+  security_audit: premium
+  complex_debugging: premium
+  code_review_critical: premium
+  performance_optimization: premium
+  
+  # General development → Standard
+  implement_feature: standard
+  write_tests: standard
+  code_review: standard
+  documentation: standard
+  refactoring: standard
+  bug_fix: standard
+  
+  # Simple/routine → Fast
+  formatting: fast
+  simple_fix: fast
+  rename: fast
+  comment_code: fast
+  linting: fast
+  commit_message: fast
+  simple_docs: fast
+
+# Phase-to-complexity mapping
+phase_complexity:
+  plan: standard        # Planning doesn't need premium
+  implement: standard   # Most implementation is standard
+  test: standard        # Test writing is pattern-based
+  review: standard      # Code review - standard unless critical
+  debug: standard       # Start standard, escalate if stuck
+  security: premium     # Security needs thorough analysis
+  document: fast        # Docs are straightforward
+  commit: fast          # Commit messages are simple
+
+# Agent-to-model preferences
+agent_models:
+  # These agents handle complex tasks
+  jarvis: premium       # Architecture needs deep thinking
+  cipher: premium       # Security is critical
+  sherlock: premium     # Complex debugging
+  
+  # Standard capability agents
+  neo: standard
+  testman: standard
+  linus: standard
+  oracle: standard
+  flash: standard
+  
+  # Simple task agents
+  scribe: fast
+  devops-dan: standard
+
+# Cost tracking
+cost_multipliers:
+  premium: 3.0
+  standard: 1.0
+  fast: 0.5
+
+# Escalation rules
+escalation:
+  # If task fails with standard, escalate to premium
+  max_retries_before_escalate: 2
+  # If premium fails, that's a real problem
+  max_premium_retries: 1
+  
+# Auto-selection heuristics
+heuristics:
+  # File count thresholds
+  files_over_10: standard → premium
+  files_under_3: standard → fast
+  
+  # Task keywords that trigger premium
+  premium_keywords:
+    - security
+    - vulnerability
+    - architecture
+    - redesign
+    - performance critical
+    - production bug
+    
+  # Keywords that allow fast
+  fast_keywords:
+    - typo
+    - rename
+    - comment
+    - format
+    - simple
+    - minor

@@ -1,0 +1,59 @@
+{
+  "task": "Fix Android E2E test build and run tests on attached physical device",
+  "workflow": "bugfix",
+  "started": "2026-01-26T00:00:00+00:00",
+  "phase": "debugger",
+  "specialist": "debugger",
+  "sequence": "debugger implementer tester reviewer",
+  "context": {
+    "issue": "Duplicate native library conflict (libfbjni.so) between react-native-gesture-handler and react-android when building AndroidTest APK for Detox E2E tests",
+    "device": "Samsung SM-G950F (physical device connected via USB, authorized)",
+    "metro_status": "Running on port 8081",
+    "adb_reverse": "tcp:8081 tcp:8081 configured",
+    "detox_config": "android.att.debug (uses attached device)",
+    "kvm_status": "Not available - emulator won't work, must use physical device"
+  },
+  "fixes_attempted": [
+    {
+      "attempt": 1,
+      "action": "Added android.packagingOptions.pickFirsts to gradle.properties",
+      "result": "Failed - only applies to main app, not library subprojects"
+    },
+    {
+      "attempt": 2,
+      "action": "Added pickFirsts to app/build.gradle packagingOptions",
+      "result": "Failed - still not applied to react-native-gesture-handler AndroidTest APK"
+    },
+    {
+      "attempt": 3,
+      "action": "Added subprojects afterEvaluate block in root build.gradle to apply pickFirsts to all subprojects",
+      "result": "Pending - build was interrupted"
+    }
+  ],
+  "files_modified": [
+    "android/gradle.properties",
+    "android/app/build.gradle",
+    "android/build.gradle"
+  ],
+  "next_steps": [
+    "Clean Android build cache",
+    "Retry detox build with android.att.debug configuration",
+    "If build succeeds, run E2E tests on attached device",
+    "Verify Metro connection from device"
+  ],
+  "commands": {
+    "clean": "cd android && ./gradlew clean",
+    "build": "npx detox build --configuration android.att.debug",
+    "test": "npx detox test --configuration android.att.debug"
+  },
+  "artifacts": [],
+  "errors": [
+    "Execution failed for task ':react-native-gesture-handler:mergeDebugAndroidTestNativeLibs' - 2 files found with path 'lib/arm64-v8a/libfbjni.so'"
+  ],
+  "quality_gates": {
+    "typescript": null,
+    "tests": null,
+    "e2e_build": "failed",
+    "e2e_tests": null
+  }
+}
