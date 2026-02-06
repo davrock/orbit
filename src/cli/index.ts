@@ -5,6 +5,7 @@
 import { Command } from 'commander';
 import { 
   runMission,
+  resumeMission,
   launchSequence,
   showStatus,
   reset,
@@ -238,7 +239,8 @@ program
     console.log(colors.secondary('📍 Checkpoint found:'));
     console.log(info);
     console.log('');
-    console.log(colors.warning('Resume not yet implemented in this version'));
+    
+    await resumeMission();
   });
 
 // Skills

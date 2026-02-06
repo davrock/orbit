@@ -32,6 +32,7 @@ import {
 } from '../utils/output.js';
 import { getCurrentCommit, hasChanges, getChangedFiles } from '../utils/git.js';
 import { exec, execCopilot, commandExists } from '../utils/exec.js';
+import { saveCheckpoint, clearCheckpoint, loadCheckpoint, shouldResume, getResumePhases } from '../core/checkpoint.js';
 
 const STATE_DIR = '.copilot/state';
 
@@ -42,6 +43,7 @@ export interface MissionControlOptions {
   interactive?: boolean;
   customCrew?: CrewMember;
   modelTier?: 'auto' | 'premium' | 'standard' | 'fast';
+  resumeFrom?: Phase[];  // Phases to run when resuming
 }
 
 export class MissionControl {
@@ -49,6 +51,7 @@ export class MissionControl {
   private missionConfig: MissionConfig;
   private startTime: Date;
   private phaseResults: PhaseResult[] = [];
+  private phasesToRun: Phase[];
 
   constructor(options: MissionControlOptions) {
     this.config = detectProjectConfig();
@@ -68,15 +71,26 @@ export class MissionControl {
       interactive: options.interactive || false,
       customCrew: options.customCrew
     };
+
+    // Use resumeFrom phases if provided, otherwise run all phases
+    this.phasesToRun = options.resumeFrom || phases;
   }
 
   async execute(): Promise<MissionResult> {
     this.ensureStateDir();
     printBanner();
 
+    const isResuming = this.phasesToRun.length < this.missionConfig.phases.length;
+    const completedPhases = this.missionConfig.phases.filter(p => !this.phasesToRun.includes(p));
+
     console.log(`Task: ${colors.secondary(this.missionConfig.task)}`);
     console.log(`Mission: ${colors.secondary(this.missionConfig.type)}`);
-    console.log(`Phases: ${colors.secondary(this.missionConfig.phases.join(' → '))}`);
+    if (isResuming) {
+      console.log(`Resuming: ${colors.warning(this.phasesToRun.join(' → '))}`);
+      console.log(`Completed: ${colors.success(completedPhases.join(', '))}`);
+    } else {
+      console.log(`Phases: ${colors.secondary(this.missionConfig.phases.join(' → '))}`);
+    }
     
     if (this.missionConfig.dryRun) {
       console.log(`Mode: ${colors.warning('DRY RUN')}`);
@@ -84,19 +98,33 @@ export class MissionControl {
     console.log('');
 
     this.initFlightLog();
-    appendLog(`Starting mission: ${this.missionConfig.task} (${this.missionConfig.type})`);
+    appendLog(`${isResuming ? 'Resuming' : 'Starting'} mission: ${this.missionConfig.task} (${this.missionConfig.type})`);
 
     const beforeCommit = getCurrentCommit();
 
-    for (const phase of this.missionConfig.phases) {
+    for (const phase of this.phasesToRun) {
+      // Save checkpoint before each phase
+      saveCheckpoint(
+        this.missionConfig.type,
+        this.missionConfig.task,
+        phase,
+        completedPhases.concat(this.phaseResults.map(r => r.phase)),
+        this.missionConfig.modelTier,
+        this.missionConfig.dryRun
+      );
+
       const result = await this.runPhase(phase);
       this.phaseResults.push(result);
 
       if (!result.success) {
         printError(`Mission failed at phase: ${phase}`);
+        printWarning('Run "orbit resume" to retry from this phase');
         return this.buildResult(false, beforeCommit);
       }
     }
+
+    // Clear checkpoint on successful completion
+    clearCheckpoint();
 
     const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
     printMissionComplete(this.phaseResults.length, duration);
@@ -246,8 +274,19 @@ Phase: launching
   }
 
   private async confirmPhase(phase: Phase): Promise<boolean> {
-    // In a real CLI, this would prompt the user
-    return true;
+    const readline = await import('readline');
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+      rl.question(`${colors.warning(`Execute phase "${phase}"? [Y/n] `)}`, (answer) => {
+        rl.close();
+        const normalized = answer.trim().toLowerCase();
+        resolve(normalized === '' || normalized === 'y' || normalized === 'yes');
+      });
+    });
   }
 
   private buildResult(success: boolean, beforeCommit?: string): MissionResult {
@@ -270,5 +309,43 @@ Phase: launching
 // CLI entry point
 export async function runMission(options: MissionControlOptions): Promise<MissionResult> {
   const controller = new MissionControl(options);
+  return controller.execute();
+}
+
+// Resume from checkpoint
+export async function resumeMission(): Promise<MissionResult | null> {
+  const checkpoint = loadCheckpoint();
+  
+  if (!checkpoint) {
+    printWarning('No checkpoint found. Nothing to resume.');
+    return null;
+  }
+
+  if (!shouldResume(checkpoint)) {
+    printWarning('Checkpoint is too old (>1 hour). Starting fresh is recommended.');
+    printWarning('Clear with: orbit reset');
+    return null;
+  }
+
+  const allPhases = getPhasesForMission(checkpoint.mission);
+  const remainingPhases = getResumePhases(allPhases, checkpoint);
+
+  if (remainingPhases.length === 0) {
+    printSuccess('All phases already completed!');
+    clearCheckpoint();
+    return null;
+  }
+
+  console.log(colors.secondary('📍 Resuming from checkpoint...'));
+  console.log('');
+
+  const controller = new MissionControl({
+    mission: checkpoint.mission,
+    task: checkpoint.task,
+    dryRun: checkpoint.dryRun,
+    modelTier: checkpoint.modelTier,
+    resumeFrom: remainingPhases
+  });
+
   return controller.execute();
 }
