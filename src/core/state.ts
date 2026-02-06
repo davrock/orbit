@@ -6,25 +6,51 @@ import { join } from 'path';
 import { readJsonFile, writeJsonFile, updateJsonFile } from '../utils/json-file.js';
 import type { GroundControlState, FuelUsage, Skill, ModelTier, CargoItem } from './types.js';
 
-const STATE_DIR = '.copilot/state';
-const GC_FILE = join(STATE_DIR, 'ground_control.json');
-const FUEL_FILE = join(STATE_DIR, 'fuel_tracking.json');
-const SKILLS_DIR = '.copilot/skills';
-const CARGO_FILE = '.copilot/cargo_manifest.txt';
+interface StateConfig {
+  stateDir: string;
+  skillsDir: string;
+  cargoFile: string;
+}
+
+let config: StateConfig = {
+  stateDir: '.copilot/state',
+  skillsDir: '.copilot/skills',
+  cargoFile: '.copilot/cargo_manifest.txt'
+};
+
+export function setStateConfig(newConfig: Partial<StateConfig>): void {
+  config = { ...config, ...newConfig };
+}
+
+export function resetStateConfig(): void {
+  config = {
+    stateDir: '.copilot/state',
+    skillsDir: '.copilot/skills',
+    cargoFile: '.copilot/cargo_manifest.txt'
+  };
+}
+
+function getGcFile(): string {
+  return join(config.stateDir, 'ground_control.json');
+}
+
+function getFuelFile(): string {
+  return join(config.stateDir, 'fuel_tracking.json');
+}
 
 function ensureStateDir(): void {
-  if (!existsSync(STATE_DIR)) {
-    mkdirSync(STATE_DIR, { recursive: true });
+  if (!existsSync(config.stateDir)) {
+    mkdirSync(config.stateDir, { recursive: true });
   }
-  if (!existsSync(SKILLS_DIR)) {
-    mkdirSync(SKILLS_DIR, { recursive: true });
+  if (!existsSync(config.skillsDir)) {
+    mkdirSync(config.skillsDir, { recursive: true });
   }
 }
 
 // Ground Control State
 export function loadGroundControl(): GroundControlState {
   ensureStateDir();
-  return readJsonFile(GC_FILE, {
+  return readJsonFile(getGcFile(), {
     defaultValue: createInitialGCState(),
     validate: (data: any) => ({
       fails: data.fails || 0,
@@ -50,13 +76,13 @@ function createInitialGCState(): GroundControlState {
 
 export function saveGroundControl(state: GroundControlState): void {
   ensureStateDir();
-  writeJsonFile(GC_FILE, state);
+  writeJsonFile(getGcFile(), state);
 }
 
 export function recordSuccess(taskType: string): void {
   ensureStateDir();
   updateJsonFile(
-    GC_FILE,
+    getGcFile(),
     { defaultValue: createInitialGCState() },
     (state) => ({
       ...state,
@@ -72,7 +98,7 @@ export function recordSuccess(taskType: string): void {
 export function recordFailure(error?: string): void {
   ensureStateDir();
   updateJsonFile(
-    GC_FILE,
+    getGcFile(),
     { defaultValue: createInitialGCState() },
     (state) => ({
       ...state,
@@ -91,7 +117,7 @@ export function resetGroundControl(): void {
 // Fuel Tracking
 export function loadFuelUsage(): FuelUsage {
   ensureStateDir();
-  return readJsonFile(FUEL_FILE, {
+  return readJsonFile(getFuelFile(), {
     defaultValue: createInitialFuelUsage(),
     validate: (data: any) => {
       const byTier = data.byTier || data.by_tier || { premium: 0, standard: 0, fast: 0, ecomode: 0 };
@@ -119,14 +145,14 @@ function createInitialFuelUsage(): FuelUsage {
 
 export function saveFuelUsage(usage: FuelUsage): void {
   ensureStateDir();
-  writeJsonFile(FUEL_FILE, usage);
+  writeJsonFile(getFuelFile(), usage);
 }
 
 export function trackFuel(tier: ModelTier): void {
   ensureStateDir();
   const multipliers: Record<ModelTier, number> = { premium: 3.0, standard: 1.0, fast: 0.5, ecomode: 0.6 };
   updateJsonFile(
-    FUEL_FILE,
+    getFuelFile(),
     { defaultValue: createInitialFuelUsage() },
     (usage) => ({
       total: usage.total + multipliers[tier],
@@ -141,15 +167,15 @@ export function trackFuel(tier: ModelTier): void {
 
 // Skills
 export function loadSkills(): Skill[] {
-  if (!existsSync(SKILLS_DIR)) return [];
+  if (!existsSync(config.skillsDir)) return [];
   
   const skills: Skill[] = [];
-  const files = readdirSync(SKILLS_DIR);
+  const files = readdirSync(config.skillsDir);
   
   for (const file of files) {
     if (file.endsWith('.json')) {
       try {
-        const skill = JSON.parse(readFileSync(join(SKILLS_DIR, file), 'utf-8'));
+        const skill = JSON.parse(readFileSync(join(config.skillsDir, file), 'utf-8'));
         skills.push(skill);
       } catch {
         // Skip invalid files
@@ -161,7 +187,7 @@ export function loadSkills(): Skill[] {
 
 export function saveSkill(skill: Skill): void {
   ensureStateDir();
-  const file = join(SKILLS_DIR, `${skill.id}.json`);
+  const file = join(config.skillsDir, `${skill.id}.json`);
   writeJsonFile(file, skill);
 }
 
@@ -178,9 +204,9 @@ export function findMatchingSkill(task: string): Skill | undefined {
 
 // Cargo
 export function loadCargo(): CargoItem[] {
-  if (!existsSync(CARGO_FILE)) return [];
+  if (!existsSync(config.cargoFile)) return [];
   
-  const content = readFileSync(CARGO_FILE, 'utf-8');
+  const content = readFileSync(config.cargoFile, 'utf-8');
   const lines = content.split('\n');
   const items: CargoItem[] = [];
   let currentPriority: 'high' | 'medium' | 'low' = 'medium';
@@ -211,15 +237,15 @@ export function getNextCargoItem(): CargoItem | undefined {
 }
 
 export function markCargoDelivered(task: string): void {
-  if (!existsSync(CARGO_FILE)) return;
+  if (!existsSync(config.cargoFile)) return;
   
-  let content = readFileSync(CARGO_FILE, 'utf-8');
+  let content = readFileSync(config.cargoFile, 'utf-8');
   const date = new Date().toISOString().split('T')[0];
   content = content.replace(
     new RegExp(`^${escapeRegExp(task)}$`, 'm'),
     `# ✓ ${task} (${date})`
   );
-  writeFileSync(CARGO_FILE, content);
+  writeFileSync(config.cargoFile, content);
 }
 
 function escapeRegExp(str: string): string {
@@ -230,8 +256,8 @@ export function addCargoItem(task: string, priority: 'high' | 'medium' | 'low' =
   ensureStateDir();
   
   let content = '';
-  if (existsSync(CARGO_FILE)) {
-    content = readFileSync(CARGO_FILE, 'utf-8');
+  if (existsSync(config.cargoFile)) {
+    content = readFileSync(config.cargoFile, 'utf-8');
   } else {
     content = `# 🚀 ORBIT Cargo Manifest - Feature Queue
 # Priority order: HIGH → MEDIUM → LOW
@@ -256,13 +282,13 @@ export function addCargoItem(task: string, priority: 'high' | 'medium' | 'low' =
     content += '\n' + task;
   }
   
-  writeFileSync(CARGO_FILE, content);
+  writeFileSync(config.cargoFile, content);
 }
 
 // Log file
 export function appendLog(message: string): void {
   ensureStateDir();
-  const logFile = join(STATE_DIR, 'mission.log');
+  const logFile = join(config.stateDir, 'mission.log');
   const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
   const entry = `[${timestamp}] ${message}\n`;
   

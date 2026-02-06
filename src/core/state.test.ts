@@ -20,40 +20,48 @@ import {
   getNextCargoItem,
   markCargoDelivered,
   addCargoItem,
-  appendLog
+  appendLog,
+  setStateConfig,
+  resetStateConfig
 } from './state.js';
 
-const TEST_STATE_DIR = '.copilot/state';
-const TEST_SKILLS_DIR = '.copilot/skills';
-const TEST_CARGO_FILE = '.copilot/cargo_manifest.txt';
+const TEST_STATE_DIR = '.copilot-test/state';
+const TEST_SKILLS_DIR = '.copilot-test/skills';
+const TEST_CARGO_FILE = '.copilot-test/cargo_manifest.txt';
 const TEST_GC_FILE = join(TEST_STATE_DIR, 'ground_control.json');
 const TEST_FUEL_FILE = join(TEST_STATE_DIR, 'fuel_tracking.json');
 const TEST_LOG_FILE = join(TEST_STATE_DIR, 'mission.log');
 
 describe('State Management', () => {
   beforeEach(() => {
-    // Clean up test state before each test
-    if (existsSync(TEST_STATE_DIR)) {
-      rmSync(TEST_STATE_DIR, { recursive: true, force: true });
-    }
-    if (existsSync(TEST_SKILLS_DIR)) {
-      rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
-    }
-    if (existsSync(TEST_CARGO_FILE)) {
-      rmSync(TEST_CARGO_FILE, { force: true });
+    // Configure to use test directories
+    setStateConfig({
+      stateDir: TEST_STATE_DIR,
+      skillsDir: TEST_SKILLS_DIR,
+      cargoFile: TEST_CARGO_FILE
+    });
+    
+    // Clean up test state before each test - use sync operations
+    try {
+      if (existsSync('.copilot-test')) {
+        rmSync('.copilot-test', { recursive: true, force: true, maxRetries: 3 });
+      }
+    } catch (e) {
+      // Ignore cleanup errors in beforeEach
     }
   });
 
   afterEach(() => {
+    // Reset to default configuration first
+    resetStateConfig();
+    
     // Clean up test state after each test
-    if (existsSync(TEST_STATE_DIR)) {
-      rmSync(TEST_STATE_DIR, { recursive: true, force: true });
-    }
-    if (existsSync(TEST_SKILLS_DIR)) {
-      rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
-    }
-    if (existsSync(TEST_CARGO_FILE)) {
-      rmSync(TEST_CARGO_FILE, { force: true });
+    try {
+      if (existsSync('.copilot-test')) {
+        rmSync('.copilot-test', { recursive: true, force: true, maxRetries: 3 });
+      }
+    } catch (e) {
+      // Ignore cleanup errors in afterEach
     }
   });
 
@@ -330,7 +338,7 @@ Add new API endpoint
 # LOW PRIORITY
 Update documentation`;
 
-      mkdirSync('.copilot', { recursive: true });
+      mkdirSync('.copilot-test', { recursive: true });
       writeFileSync(TEST_CARGO_FILE, content);
 
       const items = loadCargo();
@@ -345,7 +353,7 @@ Update documentation`;
 # ✓ Completed task (2024-01-01)
 Active task`;
 
-      mkdirSync('.copilot', { recursive: true });
+      mkdirSync('.copilot-test', { recursive: true });
       writeFileSync(TEST_CARGO_FILE, content);
 
       const items = loadCargo();
@@ -360,7 +368,7 @@ Active task`;
 Next task
 Another task`;
 
-      mkdirSync('.copilot', { recursive: true });
+      mkdirSync('.copilot-test', { recursive: true });
       writeFileSync(TEST_CARGO_FILE, content);
 
       const next = getNextCargoItem();
@@ -374,7 +382,7 @@ Another task`;
 # ✓ Task 1 (2024-01-01)
 # ✓ Task 2 (2024-01-02)`;
 
-      mkdirSync('.copilot', { recursive: true });
+      mkdirSync('.copilot-test', { recursive: true });
       writeFileSync(TEST_CARGO_FILE, content);
 
       const next = getNextCargoItem();
@@ -386,7 +394,7 @@ Another task`;
 Complete this task
 Another task`;
 
-      mkdirSync('.copilot', { recursive: true });
+      mkdirSync('.copilot-test', { recursive: true });
       writeFileSync(TEST_CARGO_FILE, content);
 
       markCargoDelivered('Complete this task');
