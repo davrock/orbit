@@ -20,7 +20,8 @@ import {
   openDashboard,
   runUltrawork,
   runSwarm,
-  runPipeline
+  runPipeline,
+  runDoctor
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -451,6 +452,14 @@ program
     console.log('  mission-planner    Task breakdown');
     console.log('  scout              Research');
     console.log('  hal                Self-improvement');
+  });
+
+// Doctor
+program
+  .command('doctor')
+  .description('Run system diagnostics and check installation')
+  .action(async () => {
+    await runDoctor();
   });
 
 program.parse();

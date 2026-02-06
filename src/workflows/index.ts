@@ -9,3 +9,4 @@ export * from './dashboard.js';
 export * from './ultrawork.js';
 export * from './swarm.js';
 export * from './pipeline.js';
+export * from './doctor.js';
