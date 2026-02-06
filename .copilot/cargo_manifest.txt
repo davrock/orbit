@@ -1,12 +1,35 @@
-# 🚀 ORBIT Flight Plan - Feature Queue
+# 🚀 ORBIT Cargo Manifest - Feature Queue
 # Priority order: HIGH → MEDIUM → LOW
+# Source: oh-my-claudecode features + existing queue
 
-# HIGH PRIORITY
-Add comprehensive best practices for each crew member type (coding standards, testing patterns, security guidelines, documentation conventions) to best-practices.yaml so agents can reference them
+# HIGH PRIORITY - Core Features from oh-my-claudecode
+# ✓ Add comprehensive best practices for each crew member type (coding standards, testing patterns, security guidelines, documentation conventions) to best-practices.yaml so agents can reference them (2026-02-06)
 Implement smart LLM model selection that automatically chooses the optimal model tier (premium/standard/fast) based on task complexity and type to optimize token usage
+Add HUD statusline feature that shows real-time orchestration metrics (current phase, crew, model tier, time elapsed) in terminal during mission execution
+Implement skill learning system that extracts reusable problem-solving patterns from completed missions and stores them for future reference
+Add analytics and cost tracking dashboard that shows token usage, model tier distribution, and success rates across all sessions
+Implement rate limit detection and auto-resume (wait and retry when hitting API limits with exponential backoff)
 
-# MEDIUM PRIORITY
+# HIGH PRIORITY - Execution Modes (from oh-my-claudecode)
+Add 'ralph' persistence mode that won't give up until task is verified complete (retry with escalation, different approaches)
+Add 'ultrawork' parallel execution mode that distributes subtasks across multiple concurrent agent sessions
+Add 'ecomode' for budget-conscious execution that aggressively uses fast/cheap models where possible (target 30-50% token savings)
+Add 'swarm' mode for coordinated parallel execution of independent tasks
+Add 'pipeline' mode for sequential multi-stage processing with handoffs between stages
 
-# LOW PRIORITY
+# MEDIUM PRIORITY - Additional Agents
+Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect
+Add 'doctor' diagnostic command that checks ORBIT installation, validates configuration, and suggests fixes for common issues
+Implement magic keyword detection in task descriptions (ralph, eco, plan, ulw) to auto-select execution modes
+Add 'plan' mode that conducts planning interview before execution to gather requirements
+
+# MEDIUM PRIORITY - Multi-AI Orchestration
+Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks
+Implement design review agent that can optionally use external AI for UI/UX consistency feedback
+
+# LOW PRIORITY - Polish
+Add internationalization support (multiple language READMEs like oh-my-claudecode)
+Create interactive website/documentation with examples
+Add sponsor/contribution section to README
 
 # COMPLETED

@@ -62,10 +62,12 @@ mark_delivered() {
 }
 
 get_work() {
-    local q=$(get_cargo_item) && echo "cargo:$q" && return 0
-    local g=$(get_github_issue) && echo "github:$g" && return 0
-    local p=$(get_pending_plan) && echo "plan:$p" && return 0
+    local q g p
+    q=$(get_cargo_item 2>/dev/null) && [ -n "$q" ] && echo "cargo:$q" && return 0
+    g=$(get_github_issue 2>/dev/null) && [ -n "$g" ] && echo "github:$g" && return 0
+    p=$(get_pending_plan 2>/dev/null) && [ -n "$p" ] && echo "plan:$p" && return 0
     echo "self:improve"
+    return 0
 }
 
 quote() { echo "${QUOTES[$RANDOM % ${#QUOTES[@]}]}"; }
@@ -239,7 +241,7 @@ main() {
     
     local i=0
     while true; do
-        ((i++))
+        i=$((i + 1))
         [ "$MAX_ITERATIONS" -gt 0 ] && [ "$i" -gt "$MAX_ITERATIONS" ] && break
         
         local result=0
