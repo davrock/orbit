@@ -4,3 +4,5 @@ export * from './mission-control.js';
 export * from './launch-sequence.js';
 export * from './cargo-bay.js';
 export * from './flight-plan.js';
+export * from './deploy.js';
+export * from './dashboard.js';

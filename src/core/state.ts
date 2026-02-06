@@ -1,7 +1,7 @@
 // 🛸 ORBIT State Management
 // Persists ground control state, fuel usage, and skills
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
 import { join } from 'path';
 import type { GroundControlState, FuelUsage, Skill, ModelTier, CargoItem } from './types.js';
 
@@ -25,7 +25,17 @@ export function loadGroundControl(): GroundControlState {
   ensureStateDir();
   if (existsSync(GC_FILE)) {
     try {
-      return JSON.parse(readFileSync(GC_FILE, 'utf-8'));
+      const data = JSON.parse(readFileSync(GC_FILE, 'utf-8'));
+      // Handle legacy snake_case format
+      return {
+        fails: data.fails || 0,
+        noProgress: data.noProgress ?? data.no_progress ?? 0,
+        types: data.types || [],
+        cycles: data.cycles || 0,
+        successes: data.successes || 0,
+        lastTask: data.lastTask || data.last_task,
+        lastError: data.lastError || data.last_error
+      };
     } catch {
       return createInitialGCState();
     }
@@ -76,7 +86,18 @@ export function loadFuelUsage(): FuelUsage {
   ensureStateDir();
   if (existsSync(FUEL_FILE)) {
     try {
-      return JSON.parse(readFileSync(FUEL_FILE, 'utf-8'));
+      const data = JSON.parse(readFileSync(FUEL_FILE, 'utf-8'));
+      // Handle legacy snake_case format
+      const byTier = data.byTier || data.by_tier || { premium: 0, standard: 0, fast: 0 };
+      return {
+        total: data.total || 0,
+        byTier: {
+          premium: byTier.premium || 0,
+          standard: byTier.standard || 0,
+          fast: byTier.fast || 0
+        },
+        sessions: data.sessions || 0
+      };
     } catch {
       return createInitialFuelUsage();
     }
@@ -111,7 +132,7 @@ export function loadSkills(): Skill[] {
   if (!existsSync(SKILLS_DIR)) return [];
   
   const skills: Skill[] = [];
-  const files = existsSync(SKILLS_DIR) ? require('fs').readdirSync(SKILLS_DIR) : [];
+  const files = readdirSync(SKILLS_DIR);
   
   for (const file of files) {
     if (file.endsWith('.json')) {

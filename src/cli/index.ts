@@ -13,12 +13,19 @@ import {
   createFlightPlan,
   listFlightPlans,
   showFlightPlan,
-  generateIssuesFromPlan
+  generateIssuesFromPlan,
+  runDeploy,
+  generateDashboard,
+  openDashboard
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
   loadFuelUsage,
-  addCargoItem
+  addCargoItem,
+  getCheckpointInfo,
+  getSkillStats,
+  getMetricsSummary,
+  printHUD
 } from '../core/index.js';
 import { printBanner, printKeyValue, colors } from '../utils/output.js';
 
@@ -194,6 +201,84 @@ flightPlan
   .option('--dry-run', 'Show what would happen')
   .action(async (planId, options) => {
     await generateIssuesFromPlan(planId, { dryRun: options.dryRun });
+  });
+
+// Deploy
+program
+  .command('deploy <targetDir>')
+  .description('Install ORBIT into a target project')
+  .option('-f, --force', 'Overwrite existing .copilot')
+  .action((targetDir, options) => {
+    runDeploy(targetDir, { force: options.force });
+  });
+
+// Dashboard
+program
+  .command('dashboard')
+  .description('Open analytics dashboard')
+  .option('--generate', 'Just generate, do not open')
+  .action((options) => {
+    if (options.generate) {
+      generateDashboard();
+    } else {
+      openDashboard();
+    }
+  });
+
+// Resume
+program
+  .command('resume')
+  .description('Resume from last checkpoint')
+  .action(async () => {
+    const info = getCheckpointInfo();
+    if (!info) {
+      console.log(colors.warning('No checkpoint found'));
+      return;
+    }
+    console.log(colors.secondary('📍 Checkpoint found:'));
+    console.log(info);
+    console.log('');
+    console.log(colors.warning('Resume not yet implemented in this version'));
+  });
+
+// Skills
+program
+  .command('skills')
+  .description('Show learned skills')
+  .action(() => {
+    const stats = getSkillStats();
+    console.log(colors.secondary('🧠 Skills'));
+    console.log(`  Total: ${stats.total}`);
+    console.log('  By category:');
+    for (const [cat, count] of Object.entries(stats.byCategory)) {
+      const rate = stats.successRates[cat] || 0;
+      console.log(`    ${cat}: ${count} (${rate}% success)`);
+    }
+  });
+
+// HUD
+program
+  .command('hud')
+  .description('Show current mission HUD')
+  .action(() => {
+    printHUD();
+  });
+
+// Metrics
+program
+  .command('metrics')
+  .description('Show performance metrics')
+  .action(() => {
+    const summary = getMetricsSummary();
+    console.log(colors.secondary('📊 Metrics Summary'));
+    console.log(`  Total runs: ${summary.totalRuns}`);
+    console.log(`  Success rate: ${summary.successRate}%`);
+    console.log(`  Avg duration: ${summary.avgDuration}s`);
+    console.log('');
+    console.log('  By mission:');
+    for (const [mission, data] of Object.entries(summary.byMission)) {
+      console.log(`    ${mission}: ${(data as any).count} runs (${(data as any).successRate}% success)`);
+    }
   });
 
 // Config

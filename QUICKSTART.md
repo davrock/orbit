@@ -3,7 +3,7 @@
 
 > "Houston, we have liftoff!" 🚀
 
-**Now powered by TypeScript for better reliability and type safety!**
+**Powered by TypeScript for reliability and type safety!**
 
 ---
 
@@ -11,18 +11,11 @@
 
 1. [Installation](#-installation)
 2. [Core Features](#-core-features)
-   - [Mission Control](#1-mission-control---main-orchestrator)
-   - [Cargo Bay](#2-cargo-bay---task-queue-processor)
-   - [Launch Sequence](#3-launch-sequence---self-improvement-loop)
-2. [Planning & Issues](#-planning--issues)
-   - [Flight Plan](#4-flight-plan---implementation-planning)
-   - [Transmit Issues](#5-transmit-issues---github-issue-generator)
-3. [Monitoring](#-monitoring)
-   - [Mission Tracker](#6-mission-tracker---real-time-dashboard)
+   - [Mission Control](#1-mission-control)
+   - [Cargo Bay](#2-cargo-bay)
+   - [Launch Sequence](#3-launch-sequence)
+3. [Planning & Issues](#-planning--issues)
 4. [Smart Features](#-smart-features)
-   - [Model Selection](#7-smart-model-selection)
-   - [Best Practices](#8-best-practices-enforcement)
-   - [Crew Members](#9-crew-agents)
 5. [Configuration](#-configuration)
 6. [Examples](#-examples)
 
@@ -30,7 +23,7 @@
 
 ## 📦 Installation
 
-### Option 1: Install Globally (Recommended)
+### Install Globally (Recommended)
 
 ```bash
 cd orbit
@@ -43,61 +36,41 @@ Now use `orbit` from any project directory:
 ```bash
 orbit config      # Show auto-detected project config
 orbit missions    # List available missions
+orbit --help      # Show all commands
 ```
 
-### Option 2: Development Mode
+### Development Mode
 
 Run directly without building:
 ```bash
-cd orbit
-npm install
 npm run dev -- config
 npm run dev -- launch "your task"
 ```
 
-### Option 3: Deploy Shell Scripts
+### Zero Configuration
 
-For legacy shell script support:
-```bash
-./deploy /path/to/your/project
-```
+ORBIT auto-detects everything from your project files:
 
-### Post-Installation
-
-**Zero configuration needed!** ORBIT auto-detects everything:
-
-- ✅ Project name (from package.json, Cargo.toml, go.mod, etc.)
+- ✅ Project name (package.json, Cargo.toml, go.mod, pom.xml, etc.)
 - ✅ Tech stack (Node, Python, Go, Rust, Java, Ruby, .NET, PHP)
-- ✅ Test command (npm test, pytest, go test, cargo test, etc.)
-- ✅ Type checker (tsc, mypy, go vet, cargo check, etc.)
-- ✅ Linter (eslint, ruff, clippy, etc.)
-- ✅ Git branch (current branch or main/master)
-- ✅ Package manager (npm, pnpm, yarn, pip, poetry, etc.)
+- ✅ Test command (npm test, pytest, go test, cargo test)
+- ✅ Type checker (tsc, mypy, go vet, cargo check)
+- ✅ Linter (eslint, ruff, clippy)
+- ✅ Git branch, package manager
 
 ```bash
-# Verify what ORBIT detected
-orbit config
-
-# See all commands
-orbit --help
-```
-
-**Optional:** Add to .gitignore:
-```
-.copilot/state/
-.copilot/*.log
+orbit config   # Verify detection
 ```
 
 ---
 
 ## 🚀 Core Features
 
-### 1. Mission Control - Main Orchestrator
+### 1. Mission Control
 
-The heart of ORBIT. Runs multi-phase development workflows with intelligent agent selection.
+The main orchestrator. Runs multi-phase development workflows.
 
 ```bash
-# Basic usage
 orbit launch "add user authentication"    # Full feature
 orbit repair "fix login crash"            # Bug fix
 orbit warp "rename variable"              # Quick change
@@ -113,351 +86,184 @@ orbit shields-up "add payment processing" # Security-focused
 | `warp` | implement → commit | Quick changes |
 | `mayday` | debug → implement → commit | Hotfixes |
 | `preflight` | test → implement → test → review → commit | TDD workflow |
-| `shields-up` | plan → implement → security → test → review → commit | Security-sensitive |
+| `shields-up` | plan → implement → security → test → review → commit | Security |
 | `dock` | plan → implement → test → document → commit | API development |
 | `transmit` | implement → review → commit | Documentation |
 | `apollo` | all phases | Comprehensive |
 
 **Options:**
 ```bash
-orbit --help           # Show all options
-orbit missions         # List all missions
-orbit crews            # List all crew members
-orbit fuel             # Show token usage
+orbit missions              # List all
+orbit crews                 # List crew members
 orbit launch --premium "task"    # Force premium model (3x)
 orbit launch --economy "task"    # Force fast model (0.5x)
-orbit launch --dry-run "task"    # Preview without executing
-orbit launch -i "task"           # Interactive (confirm each phase)
-orbit launch --crew pilot "task" # Override crew member
+orbit launch --dry-run "task"    # Preview
+orbit launch -i "task"           # Interactive mode
+orbit launch --crew pilot "task" # Override crew
 ```
 
 ---
 
-### 2. Cargo Bay - Task Queue Processor
+### 2. Cargo Bay
 
-Processes tasks from the queue autonomously, one after another.
+Task queue processor.
 
 ```bash
-# Show cargo manifest
-orbit cargo
-
-# Process all cargo items
-orbit cargo-run
-
-# Add item to cargo
-orbit cargo-add "Add dark mode" --priority high
+orbit cargo                         # Show manifest
+orbit cargo-add "Add dark mode"     # Add task
+orbit cargo-add "Fix bug" -p high   # High priority
+orbit cargo-run                     # Process all
 ```
 
-**Cargo Manifest:** `.copilot/cargo_manifest.txt`
+**Manifest:** `.copilot/cargo_manifest.txt`
 
 ```text
-# 📦 Cargo Manifest
-
 # HIGH PRIORITY
 Add user authentication
-Fix critical security bug
 
 # MEDIUM PRIORITY
 Add dark mode toggle
-Improve error messages
 
 # LOW PRIORITY
 Update dependencies
-```
 
-- Tasks are processed top-to-bottom
-- Completed tasks are marked with `# ✓`
-- Failed tasks remain for retry
+# COMPLETED
+# ✓ Initial setup (2024-01-15)
+```
 
 ---
 
-### 3. Launch Sequence - Self-Improvement Loop
+### 3. Launch Sequence
 
-Autonomous improvement cycle that processes work in priority order:
+Self-improvement loop. Processes work in priority order:
 
-1. **Queue** → Tasks from cargo manifest
-2. **GitHub Issues** → Open issues from the repo
-3. **Flight Plans** → Pending plan executions
-4. **Self-Improve** → AI finds and implements improvements
+1. **Cargo** → Tasks from manifest
+2. **GitHub Issues** → Open issues
+3. **Self-Improve** → AI finds improvements
 
 ```bash
-# Continuous operation (until stopped)
-orbit evolve
-
-# Single cycle
-orbit evolve --once
-
-# Fast mode (30s between cycles)
-orbit evolve --turbo
-
-# Limit iterations
-orbit evolve --max 10
-
-# View status/history
-orbit status
-
-# Reset failsafe counters
-orbit reset
+orbit evolve              # Continuous (Ctrl+C to stop)
+orbit evolve --once       # Single cycle
+orbit evolve --turbo      # Fast mode (30s delay)
+orbit evolve --max 10     # Limit iterations
+orbit status              # View state
+orbit reset               # Reset failsafes
 ```
 
 **Failsafes (Ground Control):**
-- ✅ Max 3 consecutive failures → 60s cooldown
-- ✅ Max 5 no-progress cycles → abort mission
-- ✅ Detects stuck loops and repetitive patterns
-- ✅ Auto-escalates to premium model on failure
+- Max 3 failures → 60s cooldown
+- Max 5 no-progress → abort
+- Stuck loop detection
+- Auto-escalates model on failure
 
 ---
 
 ## 📋 Planning & Issues
 
-### 4. Flight Plan - Implementation Planning
+### Flight Plan
 
-Generate detailed implementation plans from feature descriptions.
+Generate implementation plans:
 
 ```bash
-# Create a new plan
-orbit flight-plan new "Add OAuth2 authentication"
-
-# With depth control (1=quick, 2=standard, 3=detailed)
-orbit flight-plan new "Refactor database layer" --depth 3
-
-# List all plans
-orbit flight-plan list
-
-# View a specific plan
-orbit flight-plan show plan-001
-
-# Generate GitHub issues from plan
-orbit flight-plan issues plan-001
-
-# Preview without changes
-orbit flight-plan new "Feature" --dry-run
+orbit flight-plan new "Add OAuth2"              # Create plan
+orbit flight-plan new "Refactor DB" --depth 3   # Detailed
+orbit flight-plan list                          # List all
+orbit flight-plan show plan-001                 # View plan
+orbit flight-plan issues plan-001               # → GitHub issues
 ```
 
 **Depth Levels:**
 
-| Depth | Tasks | Detail Level |
-|-------|-------|--------------|
-| 1 | 3-5 | Quick, high-level |
-| 2 | 8-12 | Standard with decisions (default) |
-| 3 | 15+ | Comprehensive with architecture, risks |
+| Depth | Tasks | Detail |
+|-------|-------|--------|
+| 1 | 3-5 | Quick |
+| 2 | 8-12 | Standard (default) |
+| 3 | 15+ | Comprehensive |
 
-**Plan Output:** `.copilot/plans/plan-XXX.md`
-
----
-
-### 5. Transmit Issues - GitHub Issue Generator
-
-Convert tasks, plans, or text into well-structured GitHub issues.
-
-```bash
-# From cargo manifest
-./transmit-issues from-cargo
-
-# From a flight plan
-./transmit-issues from-plan plan-001
-
-# Quick single issue
-./transmit-issues from-text "Add dark mode support"
-
-# With labels and milestone
-./transmit-issues from-text "Fix bug" --labels bug,urgent --milestone v2.0
-
-# Bulk import from file
-./transmit-issues bulk ./features.txt
-
-# Create as epic with sub-issues
-./transmit-issues from-plan plan-001 --epic
-
-# View created issues
-./transmit-issues log
-
-# Show templates
-./transmit-issues templates
-```
-
-**Options:**
-```bash
---labels <l1,l2>    # Add labels (comma-separated)
---milestone <name>  # Add to milestone
---assignee <user>   # Assign to user
---project <name>    # Add to GitHub project
---epic              # Create parent epic with linked sub-issues
---dry-run           # Preview without creating
-```
-
----
-
-## 📡 Monitoring
-
-### 6. Mission Tracker - Real-time Dashboard
-
-Monitor operations in real-time.
-
-```bash
-# Show current status
-./mission-tracker
-
-# Auto-refreshing dashboard (every 5s)
-./mission-tracker watch
-
-# Follow mission log
-./mission-tracker tail
-
-# Follow cargo processing
-./mission-tracker cargo
-
-# View flight log
-./mission-tracker flight
-
-# View HAL/self-improvement log
-./mission-tracker hal
-```
-
-**Alternative: Open Dashboard**
-```bash
-./open-dashboard    # Opens web-based dashboard (if configured)
-```
+**Output:** `.copilot/plans/plan-XXX.md`
 
 ---
 
 ## 🧠 Smart Features
 
-### 7. Smart Model Selection
+### Model Selection
 
-ORBIT auto-selects the optimal LLM model tier based on task complexity:
+Auto-selects optimal LLM tier:
 
-| Tier | Icon | Cost | Auto-Selected For |
-|------|------|------|-------------------|
-| `premium` | 🔥 | 3x | Security, architecture, complex debugging |
-| `standard` | ⚡ | 1x | General development, tests, reviews |
-| `fast` | 💨 | 0.5x | Docs, formatting, simple fixes, commits |
+| Tier | Icon | Cost | Used For |
+|------|------|------|----------|
+| `premium` | 🔥 | 3x | Security, architecture, complex debug |
+| `standard` | ⚡ | 1x | Development, tests, reviews |
+| `fast` | 💨 | 0.5x | Docs, formatting, simple fixes |
 
-**Behavior:**
-- Keywords trigger tier selection (e.g., "security" → premium)
-- Phases have default tiers (e.g., document → fast)
-- Failed tasks auto-escalate to premium on retry
-
-**Manual Override:**
 ```bash
-./mission-control --premium shields-up "security audit"
-./mission-control --economy transmit "update README"
+orbit fuel   # View usage
 ```
 
-**Track Usage:**
+### Best Practices
+
+All agents reference `.copilot/best-practices.yaml`:
+- Coding standards (TypeScript, Python, JS)
+- Testing patterns (AAA, naming)
+- Security guidelines (OWASP)
+- Documentation conventions
+- Git commit standards
+
+### Crew (Agents)
+
+| Crew | Role | Tier |
+|------|------|------|
+| `commander` | Architect | 🔥 |
+| `pilot` | Implementer | ⚡ |
+| `engineer` | Debugger | 🔥 |
+| `navigator` | Reviewer | ⚡ |
+| `specialist` | QA | ⚡ |
+| `security-officer` | Security | 🔥 |
+| `comms` | Docs | 💨 |
+| `hal` | Self-improve | ⚡ |
+
 ```bash
-./mission-control --fuel
+orbit crews   # List all
 ```
-
-**Config:** `.copilot/models.yaml`
-
----
-
-### 8. Best Practices Enforcement
-
-All crew members reference `.copilot/best-practices.yaml` for standards:
-
-- **Coding**: TypeScript, Python, JavaScript conventions
-- **Testing**: Arrange-Act-Assert, naming, coverage
-- **Security**: OWASP guidelines, input validation
-- **Documentation**: Format, structure, examples
-- **Git**: Commit message conventions
-
-Crew prompts include: "Reference .copilot/best-practices.yaml for standards."
-
----
-
-### 9. Crew (Agents)
-
-Specialized AI personas for different tasks:
-
-| Crew | Role | Default Tier |
-|------|------|--------------|
-| `commander` | System architect, design decisions | 🔥 premium |
-| `pilot` | Code implementation | ⚡ standard |
-| `engineer` | Debugging, root cause analysis | 🔥 premium |
-| `navigator` | Code review, quality checks | ⚡ standard |
-| `specialist` | Testing, QA | ⚡ standard |
-| `security-officer` | Security audits, vulnerability fixes | 🔥 premium |
-| `propulsion` | Performance optimization | ⚡ standard |
-| `comms` | Documentation | 💨 fast |
-| `ground-control` | DevOps, automation | ⚡ standard |
-| `mission-planner` | Task breakdown, planning | ⚡ standard |
-| `scout` | Research, exploration | ⚡ standard |
-| `hal` | Self-improvement analysis | ⚡ standard |
-
-**Override crew for a task:**
-```bash
-./mission-control --crew security-officer launch "add auth"
-```
-
-**Config:** `.copilot/crew.yaml`
 
 ---
 
 ## ⚙️ Configuration
 
-### Zero-Config Auto-Detection
+### Auto-Detection
 
-ORBIT automatically detects everything based on your project files:
-
-| Detected From | Values |
-|---------------|--------|
-| `package.json` | Project name, Node.js stack, npm/pnpm/yarn |
-| `tsconfig.json` | TypeScript type checking |
-| `Cargo.toml` | Rust stack, cargo commands |
-| `go.mod` | Go stack, go commands |
-| `pom.xml` / `build.gradle` | Java stack, maven/gradle |
-| `requirements.txt` / `pyproject.toml` | Python stack, pip/poetry |
-| `.eslintrc.*` | ESLint for linting |
-| Current git branch | Default branch for commits |
-
-**View detected config:**
-```bash
-./mission-control --config
-```
-
-### Override When Needed
-
-Set environment variables to override any detection:
+| Source | Detects |
+|--------|---------|
+| `package.json` | Name, Node stack, npm/pnpm/yarn |
+| `tsconfig.json` | TypeScript |
+| `Cargo.toml` | Rust, cargo |
+| `go.mod` | Go |
+| `pom.xml` / `build.gradle` | Java, maven/gradle |
+| `requirements.txt` | Python, pip |
+| `.eslintrc.*` | ESLint |
+| git | Branch |
 
 ```bash
-# One-time override
-TEST_CMD="pytest -v" ./mission-control launch "add tests"
-
-# Session override
-export GIT_BRANCH="feature-branch"
-./mission-control launch "new feature"
+orbit config   # View all
 ```
 
 ### File Structure
 
 ```
 orbit/
-├── mission-control      # Main orchestrator
-├── cargo-bay            # Task queue processor
-├── launch-sequence      # Self-improvement loop
-├── flight-plan          # Implementation planning
-├── transmit-issues      # GitHub issue generator
-├── mission-tracker      # Real-time monitoring
-├── open-dashboard       # Web dashboard launcher
-│
-└── .copilot/
-    ├── config.sh          # Main configuration
-    ├── crew.yaml          # Crew/agent definitions
-    ├── missions.yaml      # Mission definitions
-    ├── models.yaml        # Model selection rules
-    ├── best-practices.yaml # Standards reference
-    ├── cargo_manifest.txt # Task queue
-    ├── plans/             # Generated flight plans
-    └── state/             # Runtime state
-        ├── flight_log.md      # Current mission log
-        ├── mission.log        # Activity log
-        ├── cargo.log          # Cargo processing log
-        ├── launch.log         # Self-improvement log
-        ├── ground_control.json # Failsafe state
-        ├── fuel_tracking.json # Token usage
-        └── issues_created.log # Issue history
+├── src/                    # TypeScript source
+│   ├── cli/                # CLI commands
+│   ├── core/               # Types, detection, state
+│   ├── workflows/          # Mission control, cargo, etc.
+│   └── utils/              # Output, git, exec
+├── dist/                   # Compiled JS
+├── .copilot/
+│   ├── best-practices.yaml # Standards
+│   ├── cargo_manifest.txt  # Task queue
+│   ├── plans/              # Flight plans
+│   └── state/              # Runtime state
+├── package.json
+└── tsconfig.json
 ```
 
 ---
@@ -467,67 +273,33 @@ orbit/
 ### Daily Development
 
 ```bash
-# Start a new feature
-./mission-control launch "add user settings page"
-
-# Fix a bug
-./mission-control repair "null pointer in login handler"
-
-# Quick doc update (uses fast model, saves tokens)
-./mission-control --economy transmit "update API docs"
-
-# Security-critical change
-./mission-control --premium shields-up "add payment processing"
+orbit launch "add user settings page"
+orbit repair "null pointer in login"
+orbit transmit "update API docs"
+orbit shields-up "add payment"
 ```
 
 ### Batch Processing
 
 ```bash
-# Add tasks to queue
-echo "Add dark mode" >> .copilot/cargo_manifest.txt
-echo "Improve error messages" >> .copilot/cargo_manifest.txt
-
-# Process all tasks
-./cargo-bay
+orbit cargo-add "Add dark mode" -p high
+orbit cargo-add "Improve errors"
+orbit cargo-run
 ```
 
 ### Autonomous Operation
 
 ```bash
-# Let ORBIT improve itself until you stop it
-./launch-sequence
-
-# Or limit to 10 cycles
-MAX_ITERATIONS=10 ./launch-sequence
+orbit evolve              # Until stopped
+orbit evolve --max 10     # 10 cycles
 ```
 
 ### Planning Workflow
 
 ```bash
-# 1. Create detailed plan
-./flight-plan new "Add OAuth2 with Google and GitHub" --depth 3
-
-# 2. Review the plan
-./flight-plan show plan-001
-
-# 3. Create GitHub issues
-./flight-plan issues plan-001
-
-# 4. Execute automatically
-./flight-plan execute plan-001
-```
-
-### Monitor Progress
-
-```bash
-# Real-time dashboard
-./mission-tracker watch
-
-# Follow logs
-./mission-tracker tail
-
-# Check token usage
-./mission-control --fuel
+orbit flight-plan new "Add OAuth2" --depth 3
+orbit flight-plan show plan-001
+orbit flight-plan issues plan-001
 ```
 
 ---
@@ -536,16 +308,15 @@ MAX_ITERATIONS=10 ./launch-sequence
 
 | Command | Purpose |
 |---------|---------|
-| `./mission-control launch "task"` | Full feature workflow |
-| `./mission-control repair "task"` | Bug fix workflow |
-| `./mission-control warp "task"` | Quick change |
-| `./cargo-bay` | Process task queue |
-| `./launch-sequence` | Self-improvement loop |
-| `./flight-plan new "feature"` | Create implementation plan |
-| `./transmit-issues from-cargo` | Convert queue to issues |
-| `./mission-tracker watch` | Real-time monitoring |
-| `./mission-control --fuel` | Check token usage |
+| `orbit launch "task"` | Full feature workflow |
+| `orbit repair "task"` | Bug fix |
+| `orbit warp "task"` | Quick change |
+| `orbit cargo-run` | Process queue |
+| `orbit evolve` | Self-improvement loop |
+| `orbit flight-plan new "feat"` | Create plan |
+| `orbit config` | Show configuration |
+| `orbit fuel` | Token usage |
 
 ---
 
-*Generated by ORBIT - "To infinity and beyond!"* 🚀
+*"To infinity and beyond!"* 🚀

@@ -78,6 +78,7 @@ export const MISSION_DESCRIPTIONS: Record<MissionType, string> = {
   apollo: 'All phases'
 };
 
+// Legacy quotes - kept for backwards compatibility, full quotes in quotes.ts
 export const SPACE_QUOTES = [
   "Houston, we have a problem!",
   "That's one small step for code, one giant leap for the project.",
@@ -86,7 +87,3 @@ export const SPACE_QUOTES = [
   "I'm sorry Dave, I can't let you merge that.",
   "Ground control to Major Tom..."
 ];
-
-export function getRandomQuote(): string {
-  return SPACE_QUOTES[Math.floor(Math.random() * SPACE_QUOTES.length)];
-}
