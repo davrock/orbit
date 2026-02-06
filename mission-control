@@ -227,14 +227,23 @@ get_crew_prompt() {
 
 run_phase() {
     local phase="$1" attempt="${2:-1}"
-    local crew=$(get_crew_for_phase "$phase")
-    local tier=$(get_model_tier "$TASK" "$phase")
-    local icon=$(get_model_icon "$tier")
+    local crew
+    crew=$(get_crew_for_phase "$phase")
+    local tier
+    tier=$(get_model_tier "$TASK" "$phase")
+    local icon
+    icon=$(get_model_icon "$tier")
+    
+    # Update HUD
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh phase "$phase" "$crew" "$tier" 2>/dev/null
     
     echo ""
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${CYAN}  PHASE: ${phase^^} │ Crew: $crew │ Model: $icon $tier${NC}"
     echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    # Show HUD inline if available
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh render inline 2>/dev/null
     
     [ "$DRY_RUN" = "true" ] && echo -e "${YELLOW}[DRY RUN] Would run phase: $phase${NC}" && return 0
     
@@ -279,8 +288,9 @@ PROMPT_EOF
     echo ""
     echo -e "${YELLOW}Executing task directly...${NC}"
     
-    # For now, we mark as complete and let the calling agent handle it
-    # In practice, this script sets up the context and the agent processes it
+    # Mark phase complete in HUD
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh complete 2>/dev/null
+    
     log "Phase $phase prepared"
     echo -e "${GREEN}✓ $phase complete${NC}"
     return 0
@@ -291,9 +301,13 @@ main() {
     
     print_header
     
-    local phases=$(get_phases "$MISSION")
+    local phases
+    phases=$(get_phases "$MISSION")
     [ -z "$phases" ] && echo -e "${RED}Unknown mission: $MISSION${NC}" && print_usage && exit 1
     [ -z "$TASK" ] && echo -e "${RED}No task provided${NC}" && print_usage && exit 1
+    
+    # Initialize HUD
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh start "$TASK" "$phases" 2>/dev/null
     
     echo -e "Task: ${CYAN}$TASK${NC}"
     echo -e "Mission: ${CYAN}$MISSION${NC}"
@@ -314,17 +328,33 @@ Phase: launching
 EOF
     
     log "Starting: $TASK (mission: $MISSION)"
-    local start_time=$(date +%s) completed=0
+    local start_time
+    start_time=$(date +%s)
+    local completed=0
     
     for phase in $phases; do
-        run_phase "$phase" && ((completed++)) || { echo -e "${RED}Mission failed at: $phase${NC}"; exit 1; }
+        if run_phase "$phase"; then
+            completed=$((completed + 1))
+        else
+            # End HUD with failed status
+            [ -x ".copilot/hud.sh" ] && .copilot/hud.sh end failed 2>/dev/null
+            echo -e "${RED}Mission failed at: $phase${NC}"
+            exit 1
+        fi
     done
+    
+    # End HUD with complete status
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh end complete 2>/dev/null
     
     local duration=$(($(date +%s) - start_time))
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo -e "${GREEN}  🎯 MISSION COMPLETE │ Phases: $completed │ Time: $((duration/60))m $((duration%60))s${NC}"
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    
+    # Show final HUD
+    [ -x ".copilot/hud.sh" ] && .copilot/hud.sh render box 2>/dev/null
+    
     log "Completed in ${duration}s"
 }
 

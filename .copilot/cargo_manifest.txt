@@ -5,7 +5,7 @@
 # HIGH PRIORITY - Core Features from oh-my-claudecode
 # ✓ Add comprehensive best practices for each crew member type (coding standards, testing patterns, security guidelines, documentation conventions) to best-practices.yaml so agents can reference them (2026-02-06)
 # ✓ Implement smart LLM model selection that automatically chooses the optimal model tier (premium/standard/fast) based on task complexity and type to optimize token usage (2026-02-06)
-Add HUD statusline feature that shows real-time orchestration metrics (current phase, crew, model tier, time elapsed) in terminal during mission execution
+# ✓ Add HUD statusline feature that shows real-time orchestration metrics (current phase, crew, model tier, time elapsed) in terminal during mission execution (2026-02-06)
 Implement skill learning system that extracts reusable problem-solving patterns from completed missions and stores them for future reference
 Add analytics and cost tracking dashboard that shows token usage, model tier distribution, and success rates across all sessions
 Implement rate limit detection and auto-resume (wait and retry when hitting API limits with exponential backoff)

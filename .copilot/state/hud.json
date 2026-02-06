@@ -1,0 +1,10 @@
+{
+  "phase": "implement",
+  "crew": "pilot",
+  "model_tier": "standard",
+  "task": "Test task",
+  "start_time": 1770346240,
+  "phases_complete": 0,
+  "phases_total": 4,
+  "status": "running"
+}
