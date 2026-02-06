@@ -367,11 +367,159 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T21:09:25.324Z"
+    },
+    {
+      "id": "run-1770412285377",
+      "task": "Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect",
+      "mission": "warp",
+      "started": "2026-02-06T21:11:25.377Z",
+      "totalDuration": 152,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:11:25.384Z",
+          "duration": 56,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:12:22.262Z",
+          "duration": 96,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 3,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:13:58.309Z"
+    },
+    {
+      "id": "run-1770412558433",
+      "task": "Add 'doctor' diagnostic command that checks ORBIT installation, validates configuration, and suggests fixes for common issues",
+      "mission": "warp",
+      "started": "2026-02-06T21:15:58.433Z",
+      "totalDuration": 229,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:15:58.438Z",
+          "duration": 176,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:18:55.374Z",
+          "duration": 52,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 9,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:19:47.840Z"
+    },
+    {
+      "id": "run-1770413354749",
+      "task": "test keyword",
+      "mission": "launch",
+      "started": "2026-02-06T21:29:14.749Z",
+      "totalDuration": 0,
+      "phases": [
+        {
+          "name": "plan",
+          "started": "2026-02-06T21:29:14.754Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:29:14.755Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "test",
+          "started": "2026-02-06T21:29:14.755Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "review",
+          "started": "2026-02-06T21:29:14.756Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:29:14.756Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 11,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:29:14.762Z"
+    },
+    {
+      "id": "run-1770412907963",
+      "task": "Implement magic keyword detection in task descriptions (ralph, eco, plan, ulw) to auto-select execution modes",
+      "mission": "warp",
+      "started": "2026-02-06T21:21:47.963Z",
+      "totalDuration": 540,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:21:47.968Z",
+          "duration": 463,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:29:31.810Z",
+          "duration": 76,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 9,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:30:48.253Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 11,
-    "successRate": 82,
+    "totalRuns": 15,
+    "successRate": 87,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -379,7 +527,7 @@
         "successRate": 0
       },
       "warp": {
-        "count": 7,
+        "count": 10,
         "successRate": 100
       },
       "ultrawork": {
@@ -389,22 +537,30 @@
       "swarm": {
         "count": 1,
         "successRate": 100
+      },
+      "launch": {
+        "count": 1,
+        "successRate": 100
       }
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 143,
+        "avgDuration": 151,
         "successRate": 75
       },
       "commit": {
-        "avgDuration": 41,
-        "successRate": 67
+        "avgDuration": 46,
+        "successRate": 69
       },
       "plan": {
         "avgDuration": 0,
         "successRate": 0
       },
       "review": {
+        "avgDuration": 0,
+        "successRate": 0
+      },
+      "test": {
         "avgDuration": 0,
         "successRate": 0
       }

@@ -1,7 +1,7 @@
 // 🛸 ORBIT Mission Control
 // Main orchestrator for executing missions
 
-import { existsSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import {
   type MissionType,
@@ -378,15 +378,54 @@ export class MissionControl {
   private generatePrompt(phase: Phase, crew: CrewMember): string {
     const crewPrompt = getAgentSystemPrompt(crew);
     
+    // Check if plan requirements exist
+    let planSection = '';
+    try {
+      const planReqs = this.loadPlanRequirements();
+      if (planReqs) {
+        planSection = `
+
+REQUIREMENTS SPECIFICATION (from planning interview):
+
+Detailed Requirements:
+${planReqs.detailedRequirements}
+
+Technical Approach:
+${planReqs.technicalApproach}
+
+Acceptance Criteria:
+${planReqs.acceptanceCriteria.map((c: string) => `✓ ${c}`).join('\n')}
+
+User Interview Q&A:
+${planReqs.userAnswers.map((qa: any, i: number) => `Q${i+1}: ${qa.question}\nA${i+1}: ${qa.answer}`).join('\n\n')}
+`;
+      }
+    } catch (error) {
+      // No plan requirements available, continue normally
+    }
+    
     return `${crewPrompt}
 
-TASK: ${this.missionConfig.task}
+TASK: ${this.missionConfig.task}${planSection}
 PHASE: ${phase}
 PROJECT: ${this.config.name}
 
 Read .copilot/state/flight_log.md first, update when done.
 Reference .copilot/best-practices.yaml for standards.
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
+  }
+
+  private loadPlanRequirements(): any | null {
+    const specFile = join(STATE_DIR, 'plan_requirements.json');
+    if (!existsSync(specFile)) {
+      return null;
+    }
+    try {
+      const content = readFileSync(specFile, 'utf-8');
+      return JSON.parse(content);
+    } catch (error) {
+      return null;
+    }
   }
 
   private writePromptFile(phase: Phase, prompt: string): void {

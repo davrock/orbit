@@ -51,6 +51,7 @@ orbit config
 | `transmit` | implement → review → commit | Documentation |
 | `apollo` | all phases | Comprehensive |
 | `ralph` | implement → test → review → commit | **Persistent mode** (never gives up) |
+| `plan` | interview → requirements | **Requirements gathering** (planning interview) |
 | `ultrawork` | plan → implement → review → commit | **Parallel execution** (independent subtasks) |
 | `swarm` | plan → implement → review → commit | **Coordinated parallel** (with dependencies) |
 | `pipeline` | plan → implement → test → review → commit | **Sequential stages** (handoffs between stages) |
@@ -58,6 +59,38 @@ orbit config
 ```bash
 orbit missions  # List all
 ```
+
+### 🎤 Plan Mode - Interactive Requirements Gathering
+
+The `plan` command conducts an interactive planning interview to gather detailed requirements before execution:
+
+```bash
+# Standalone requirements gathering
+orbit plan "add shopping cart feature"
+
+# Use with any mission via --plan flag
+orbit launch --plan "add user authentication"
+orbit warp --plan "refactor database layer"
+```
+
+**How it works:**
+- **AI-Generated Questions**: Generates 5-7 clarifying questions based on your task
+- **Interactive Interview**: Asks questions via Copilot CLI interaction
+- **Smart Synthesis**: Creates detailed requirements specification from answers
+- **Automatic Integration**: Requirements flow to crew members during execution
+- **Saves Specification**: Stores gathered requirements in `.copilot/state/plan_requirements.json`
+
+**Perfect for:**
+- Features with unclear or incomplete requirements
+- Complex tasks needing detailed specification
+- Gathering acceptance criteria before implementation
+- Ensuring alignment on technical approach
+
+**What gets captured:**
+- Detailed requirements (comprehensive description)
+- Technical approach (recommended implementation)
+- Acceptance criteria (testable success conditions)
+- User interview Q&A (for context)
 
 ### 🔄 Ralph Mode - Persistence That Never Gives Up
 

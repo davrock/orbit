@@ -21,7 +21,8 @@ import {
   runUltrawork,
   runSwarm,
   runPipeline,
-  runDoctor
+  runDoctor,
+  runPlanMode
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -48,11 +49,20 @@ program
   .description('Full feature mission (plan → implement → test → review → commit)')
   .option('--dry-run', 'Show what would happen')
   .option('-i, --interactive', 'Confirm each phase')
+  .option('--plan', 'Conduct planning interview before execution')
   .option('--premium', 'Use premium models (3x fuel)')
   .option('--economy', 'Use fast models (0.5x fuel)')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--crew <name>', 'Override crew member')
   .action(async (task, options) => {
+    // Handle plan mode if requested
+    if (options.plan) {
+      await runPlanMode({ task, dryRun: options.dryRun });
+      console.log('');
+      console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
+      console.log('');
+    }
+    
     // Detect magic keywords in task description
     const detected = detectMagicKeywords(task);
     
@@ -151,8 +161,17 @@ program
   .command('warp <task>')
   .description('Minimal mission (implement → commit)')
   .option('--dry-run', 'Show what would happen')
+  .option('--plan', 'Conduct planning interview before execution')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
+    // Handle plan mode if requested
+    if (options.plan) {
+      await runPlanMode({ task, dryRun: options.dryRun });
+      console.log('');
+      console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
+      console.log('');
+    }
+    
     const detected = detectMagicKeywords(task);
     
     if (detected.mission === 'ralph') {
@@ -561,6 +580,17 @@ program
     });
   });
 
+program
+  .command('plan <task>')
+  .description('Planning interview mode - gather requirements before execution')
+  .option('--dry-run', 'Show what would happen')
+  .action(async (task, options) => {
+    await runPlanMode({
+      task,
+      dryRun: options.dryRun
+    });
+  });
+
 // Launch Sequence (self-improvement loop)
 program
   .command('evolve')
@@ -773,6 +803,8 @@ program
     console.log('  transmit    Documentation only');
     console.log('  apollo      All phases');
     console.log('  ralph       Persistent mode (retry with escalation until verified)');
+    console.log('  plan        Planning interview mode (gather requirements before execution)');
+    console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
     console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
     console.log('  swarm       Coordinated parallel (intelligent task distribution with dependencies)');
     console.log('  pipeline    Sequential multi-stage processing with handoffs between stages');
