@@ -333,3 +333,64 @@ export function detectProjectConfig(): ProjectConfig {
     lintCmd: detectLintCmd(techStack),
   };
 }
+
+/**
+ * Magic keyword detection for auto-selecting execution modes
+ * Keywords: ralph, eco/ecomode, plan, ulw/ultrawork
+ */
+export interface MagicKeywordResult {
+  mission?: 'ralph' | 'ultrawork';
+  modelTier?: 'ecomode' | 'fast';
+  shouldCreatePlan?: boolean;
+  cleanedTask: string;
+}
+
+export function detectMagicKeywords(task: string): MagicKeywordResult {
+  const result: MagicKeywordResult = {
+    cleanedTask: task
+  };
+
+  // Normalize task for keyword detection (case-insensitive)
+  const normalized = task.toLowerCase();
+
+  // Ralph detection - persistent mode keyword
+  // Match: ralph, @ralph, #ralph as standalone words
+  const ralphMatch = normalized.match(/(?:^|\s)(@ralph|#ralph|ralph)(?:\s|$)/i);
+  if (ralphMatch) {
+    result.mission = 'ralph';
+    // Remove the keyword from the task
+    result.cleanedTask = task.replace(/(?:^|\s)(@ralph|#ralph|ralph)(?:\s|$)/i, ' ').trim();
+  }
+
+  // Ultrawork detection - parallel execution keyword
+  // Match: ulw, ultrawork, @ulw, #ultrawork as standalone words
+  const ulwMatch = normalized.match(/(?:^|\s)(@ulw|#ultrawork|@ultrawork|#ulw|ulw|ultrawork)(?:\s|$)/i);
+  if (ulwMatch && !result.mission) {
+    result.mission = 'ultrawork';
+    // Remove the keyword from the task
+    result.cleanedTask = task.replace(/(?:^|\s)(@ulw|#ultrawork|@ultrawork|#ulw|ulw|ultrawork)(?:\s|$)/i, ' ').trim();
+  }
+
+  // Eco mode detection - budget-conscious mode
+  // Match: eco, ecomode, economy, @eco, #eco as standalone words
+  const ecoMatch = normalized.match(/(?:^|\s)(@eco|#eco|@ecomode|#ecomode|eco|ecomode|economy)(?:\s|$)/i);
+  if (ecoMatch) {
+    result.modelTier = 'ecomode';
+    // Remove the keyword from the task
+    result.cleanedTask = result.cleanedTask.replace(/(?:^|\s)(@eco|#eco|@ecomode|#ecomode|eco|ecomode|economy)(?:\s|$)/i, ' ').trim();
+  }
+
+  // Plan detection - create flight plan
+  // Match: plan, @plan, #plan as standalone words
+  const planMatch = normalized.match(/(?:^|\s)(@plan|#plan|plan)(?:\s|$)/i);
+  if (planMatch) {
+    result.shouldCreatePlan = true;
+    // Remove the keyword from the task
+    result.cleanedTask = result.cleanedTask.replace(/(?:^|\s)(@plan|#plan|plan)(?:\s|$)/i, ' ').trim();
+  }
+
+  // Clean up extra whitespace
+  result.cleanedTask = result.cleanedTask.replace(/\s+/g, ' ').trim();
+
+  return result;
+}
