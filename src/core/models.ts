@@ -2,6 +2,7 @@
 // Smart LLM tier selection based on task complexity
 
 import type { ModelTier, Phase, CrewMember } from './types.js';
+import { safeParseModelTier } from './validation.js';
 
 interface ModelConfig {
   premiumKeywords: string[];
@@ -115,11 +116,18 @@ export function selectModelTier(
 ): ModelTier {
   // Explicit override takes precedence
   if (override && override !== 'standard') {
+    // Validate the override is a valid ModelTier
+    const validOverride = safeParseModelTier(override);
+    if (!validOverride) {
+      console.warn(`Invalid model tier override: "${override}". Falling back to standard.`);
+      return 'standard';
+    }
+    
     // Ecomode is a special mode that uses its own tier mapping
-    if (override === 'ecomode') {
+    if (validOverride === 'ecomode') {
       return selectEcomodeTier(task, phase, crew);
     }
-    return override;
+    return validOverride;
   }
 
   const taskLower = task.toLowerCase();

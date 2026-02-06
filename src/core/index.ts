@@ -13,3 +13,4 @@ export * from './metrics.js';
 export * from './quotes.js';
 export * from './persistence.js';
 export * from './ai-providers.js';
+export * from './validation.js';
