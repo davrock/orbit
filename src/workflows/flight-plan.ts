@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 
 import { join } from 'path';
 import { appendLog } from '../core/index.js';
 import { printSection, printSuccess, printError, colors } from '../utils/output.js';
-import { commandExists, execQuiet } from '../utils/exec.js';
+import { commandExists, execQuiet, execCopilot } from '../utils/exec.js';
 
 const PLANS_DIR = '.copilot/plans';
 
@@ -74,12 +74,69 @@ export class FlightPlanGenerator {
     console.log(`Depth: ${colors.secondary(String(this.options.depth))}`);
     console.log('');
 
-    const template = this.generateTemplate(planId, feature);
-    writeFileSync(planFile, template);
-
     if (this.options.dryRun) {
-      console.log(colors.warning('[DRY RUN] Would generate plan'));
+      const template = this.generateTemplate(planId, feature);
+      writeFileSync(planFile, template);
+      console.log(colors.warning('[DRY RUN] Would generate plan with AI analysis'));
       return planId;
+    }
+
+    // Check if Copilot CLI is available
+    if (!commandExists('copilot')) {
+      console.log(colors.warning('Copilot CLI not found - generating template only'));
+      const template = this.generateTemplate(planId, feature);
+      writeFileSync(planFile, template);
+      printSuccess(`Flight plan template created: ${planFile}`);
+      return planId;
+    }
+
+    console.log(colors.warning('🚀 Analyzing codebase with Copilot CLI...'));
+    console.log('');
+
+    const depthDescriptions: Record<number, string> = {
+      1: '3-5 high-level tasks',
+      2: '8-12 tasks with architecture decisions',
+      3: '15+ detailed tasks with risks, testing strategy, and dependencies'
+    };
+
+    const prompt = `You are a software architect creating an implementation plan.
+
+FEATURE: ${feature}
+
+Analyze this codebase and create a detailed flight plan (implementation plan) for the feature above.
+
+DEPTH LEVEL: ${this.options.depth} (${depthDescriptions[this.options.depth || 2]})
+
+Create a markdown file at: ${planFile}
+
+The plan MUST include:
+1. Objective - clear description of what will be built
+2. Requirements - specific requirements derived from analyzing the codebase
+3. Architecture Decisions - key technical decisions based on existing patterns
+4. Implementation Phases - organized tasks with checkboxes (- [ ] Task description)
+5. Testing Strategy - unit, integration, e2e tests needed
+6. Documentation Updates - what docs need updating
+
+Format each task as a checkbox: - [ ] Task description
+
+After creating the plan, say 'FLIGHT PLAN COMPLETE'.`;
+
+    const result = await execCopilot(prompt, {
+      timeout: 300,
+      allowAllPaths: true
+    });
+
+    if (!result.success) {
+      console.log(colors.warning('AI analysis failed - generating template'));
+      const template = this.generateTemplate(planId, feature);
+      writeFileSync(planFile, template);
+    }
+
+    // Verify the plan was created
+    if (!existsSync(planFile)) {
+      console.log(colors.warning('Plan file not created - generating template'));
+      const template = this.generateTemplate(planId, feature);
+      writeFileSync(planFile, template);
     }
 
     printSuccess(`Flight plan created: ${planFile}`);

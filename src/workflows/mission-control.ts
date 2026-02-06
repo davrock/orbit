@@ -31,7 +31,7 @@ import {
   colors
 } from '../utils/output.js';
 import { getCurrentCommit, hasChanges, getChangedFiles } from '../utils/git.js';
-import { exec } from '../utils/exec.js';
+import { exec, execCopilot, commandExists } from '../utils/exec.js';
 
 const STATE_DIR = '.copilot/state';
 
@@ -141,28 +141,52 @@ export class MissionControl {
 
     trackFuel(tier);
     
+    // Check if Copilot CLI is available
+    if (!commandExists('copilot')) {
+      printError('Copilot CLI not found. Install from: https://github.com/github/copilot-cli');
+      return {
+        phase,
+        crew,
+        modelTier: tier,
+        success: false,
+        duration: 0,
+        output: 'Copilot CLI not installed'
+      };
+    }
+    
     // Generate the prompt for this phase
     const prompt = this.generatePrompt(phase, crew);
     
-    // Write prompt to file for Copilot CLI
+    // Write prompt to file for reference
     this.writePromptFile(phase, prompt);
     
     console.log(colors.secondary(`📋 Prompt saved to: ${STATE_DIR}/pending_prompt.md`));
-    console.log(colors.warning('Executing task...'));
+    console.log(colors.warning('🚀 Executing with Copilot CLI...'));
+    console.log('');
 
-    // In a real implementation, this would invoke the AI
-    // For now, we'll just mark it as complete
+    // Execute with Copilot CLI
+    const result = await execCopilot(prompt, {
+      timeout: 600, // 10 minute timeout per phase
+      allowAllPaths: true
+    });
+
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
     
-    printSuccess(`${phase} complete`);
-    appendLog(`Phase ${phase} completed (${crew}, ${tier})`);
+    if (result.success) {
+      printSuccess(`${phase} complete (${duration}s)`);
+      appendLog(`Phase ${phase} completed (${crew}, ${tier}, ${duration}s)`);
+    } else {
+      printError(`${phase} failed (exit code: ${result.exitCode})`);
+      appendLog(`Phase ${phase} failed: ${result.output.slice(0, 200)}`);
+    }
 
     return {
       phase,
       crew,
       modelTier: tier,
-      success: true,
-      duration
+      success: result.success,
+      duration,
+      output: result.output
     };
   }
 

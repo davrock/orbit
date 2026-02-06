@@ -88,3 +88,93 @@ export function runWithTimeout(cmd: string, timeoutSecs: number): ExecResult {
 export function commandExists(cmd: string): boolean {
   return !!execQuiet(`which ${cmd}`);
 }
+
+export interface CopilotResult {
+  success: boolean;
+  output: string;
+  exitCode: number;
+}
+
+/**
+ * Execute a prompt using the Copilot CLI in non-interactive mode.
+ * Uses --allow-all-tools for autonomous execution.
+ */
+export async function execCopilot(
+  prompt: string,
+  options: {
+    timeout?: number;
+    allowAllPaths?: boolean;
+    additionalArgs?: string[];
+  } = {}
+): Promise<CopilotResult> {
+  const { timeout = 600, allowAllPaths = false, additionalArgs = [] } = options;
+
+  if (!commandExists('copilot')) {
+    return {
+      success: false,
+      output: 'Copilot CLI not found. Install it from: https://github.com/github/copilot-cli',
+      exitCode: 1
+    };
+  }
+
+  const args = [
+    '-p', prompt,
+    '--allow-all-tools'
+  ];
+
+  if (allowAllPaths) {
+    args.push('--allow-all-paths');
+  }
+
+  args.push(...additionalArgs);
+
+  return new Promise((resolve) => {
+    const proc = spawn('copilot', args, {
+      shell: false,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout?.on('data', (data) => {
+      const text = data.toString();
+      stdout += text;
+      // Stream output to console
+      process.stdout.write(text);
+    });
+
+    proc.stderr?.on('data', (data) => {
+      const text = data.toString();
+      stderr += text;
+      process.stderr.write(text);
+    });
+
+    const timeoutId = setTimeout(() => {
+      proc.kill('SIGTERM');
+      resolve({
+        success: false,
+        output: stdout + '\n[TIMEOUT] Copilot CLI exceeded time limit',
+        exitCode: 124
+      });
+    }, timeout * 1000);
+
+    proc.on('close', (code) => {
+      clearTimeout(timeoutId);
+      resolve({
+        success: code === 0,
+        output: stdout + (stderr ? `\n${stderr}` : ''),
+        exitCode: code || 0
+      });
+    });
+
+    proc.on('error', (error) => {
+      clearTimeout(timeoutId);
+      resolve({
+        success: false,
+        output: `Failed to start Copilot CLI: ${error.message}`,
+        exitCode: 1
+      });
+    });
+  });
+}
