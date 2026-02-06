@@ -60,7 +60,7 @@ export interface UltraworkOptions {
   task: string;
   maxConcurrency?: number;
   dryRun?: boolean;
-  modelTier?: 'auto' | 'premium' | 'standard' | 'fast';
+  modelTier?: 'auto' | 'premium' | 'standard' | 'fast' | 'ecomode';
 }
 
 export interface UltraworkResult {

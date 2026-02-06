@@ -8,6 +8,8 @@ interface ModelConfig {
   fastKeywords: string[];
   phaseTiers: Record<Phase, ModelTier>;
   crewTiers: Record<CrewMember, ModelTier>;
+  ecomodeTiers: Record<Phase, ModelTier>;
+  ecamodeCrewTiers: Record<CrewMember, ModelTier>;
   costMultipliers: Record<ModelTier, number>;
 }
 
@@ -58,10 +60,48 @@ const config: ModelConfig = {
     comms: 'fast',
     'tech-writer': 'fast'
   },
+  ecomodeTiers: {
+    plan: 'fast',
+    implement: 'standard',
+    test: 'fast',
+    review: 'fast',
+    debug: 'standard',
+    security: 'standard',
+    document: 'fast',
+    commit: 'fast',
+    research: 'fast'
+  },
+  ecamodeCrewTiers: {
+    commander: 'standard',
+    'security-officer': 'standard',
+    'database-architect': 'standard',
+    'cloud-architect': 'standard',
+    pilot: 'standard',
+    engineer: 'standard',
+    navigator: 'fast',
+    specialist: 'fast',
+    'mission-planner': 'fast',
+    scout: 'fast',
+    'ground-control': 'fast',
+    hal: 'standard',
+    'data-scientist': 'standard',
+    'ml-engineer': 'standard',
+    devops: 'fast',
+    'frontend-specialist': 'standard',
+    'backend-specialist': 'standard',
+    'api-designer': 'fast',
+    'ux-researcher': 'fast',
+    'qa-lead': 'fast',
+    'performance-engineer': 'standard',
+    propulsion: 'standard',
+    comms: 'fast',
+    'tech-writer': 'fast'
+  },
   costMultipliers: {
     premium: 3.0,
     standard: 1.0,
-    fast: 0.5
+    fast: 0.5,
+    ecomode: 0.6
   }
 };
 
@@ -73,6 +113,10 @@ export function selectModelTier(
 ): ModelTier {
   // Explicit override takes precedence
   if (override && override !== 'standard') {
+    // Ecomode is a special mode that uses its own tier mapping
+    if (override === 'ecomode') {
+      return selectEcomodeTier(task, phase, crew);
+    }
     return override;
   }
 
@@ -99,10 +143,42 @@ export function selectModelTier(
   return 'standard';
 }
 
+function selectEcomodeTier(
+  task: string,
+  phase?: Phase,
+  crew?: CrewMember
+): ModelTier {
+  const taskLower = task.toLowerCase();
+
+  // In ecomode, only use premium for truly critical security keywords
+  const criticalSecurityKeywords = ['vulnerability', 'exploit', 'breach', 'penetration'];
+  if (criticalSecurityKeywords.some(kw => taskLower.includes(kw))) {
+    return 'premium';
+  }
+
+  // Otherwise use fast for most operations
+  if (config.fastKeywords.some(kw => taskLower.includes(kw))) {
+    return 'fast';
+  }
+
+  // Crew-based selection in ecomode
+  if (crew && config.ecamodeCrewTiers[crew]) {
+    return config.ecamodeCrewTiers[crew];
+  }
+
+  // Phase-based selection in ecomode
+  if (phase && config.ecomodeTiers[phase]) {
+    return config.ecomodeTiers[phase];
+  }
+
+  return 'fast';
+}
+
 export function getModelIcon(tier: ModelTier): string {
   switch (tier) {
     case 'premium': return '🔥';
     case 'fast': return '💨';
+    case 'ecomode': return '🌱';
     default: return '⚡';
   }
 }
@@ -114,6 +190,7 @@ export function getCostMultiplier(tier: ModelTier): number {
 export function escalateTier(current: ModelTier): ModelTier {
   switch (current) {
     case 'fast': return 'standard';
+    case 'ecomode': return 'standard';
     case 'standard': return 'premium';
     case 'premium': return 'premium'; // Can't escalate further
   }

@@ -46,14 +46,20 @@ program
   .option('-i, --interactive', 'Confirm each phase')
   .option('--premium', 'Use premium models (3x fuel)')
   .option('--economy', 'Use fast models (0.5x fuel)')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--crew <name>', 'Override crew member')
   .action(async (task, options) => {
+    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
+    if (options.premium) modelTier = 'premium';
+    else if (options.economy) modelTier = 'fast';
+    else if (options.ecomode) modelTier = 'ecomode';
+    
     await runMission({
       mission: 'launch',
       task,
       dryRun: options.dryRun,
       interactive: options.interactive,
-      modelTier: options.premium ? 'premium' : options.economy ? 'fast' : 'auto',
+      modelTier,
       customCrew: options.crew
     });
   });
@@ -62,16 +68,28 @@ program
   .command('repair <task>')
   .description('Bug fix mission (debug → implement → test → commit)')
   .option('--dry-run', 'Show what would happen')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
-    await runMission({ mission: 'repair', task, dryRun: options.dryRun });
+    await runMission({ 
+      mission: 'repair', 
+      task, 
+      dryRun: options.dryRun,
+      modelTier: options.ecomode ? 'ecomode' : 'auto'
+    });
   });
 
 program
   .command('warp <task>')
   .description('Minimal mission (implement → commit)')
   .option('--dry-run', 'Show what would happen')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
-    await runMission({ mission: 'warp', task, dryRun: options.dryRun });
+    await runMission({ 
+      mission: 'warp', 
+      task, 
+      dryRun: options.dryRun,
+      modelTier: options.ecomode ? 'ecomode' : 'auto'
+    });
   });
 
 program
@@ -138,12 +156,18 @@ program
   .option('--concurrency <n>', 'Max concurrent sessions', '4')
   .option('--premium', 'Use premium models (3x fuel)')
   .option('--economy', 'Use fast models (0.5x fuel)')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
+    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
+    if (options.premium) modelTier = 'premium';
+    else if (options.economy) modelTier = 'fast';
+    else if (options.ecomode) modelTier = 'ecomode';
+    
     await runUltrawork({
       task,
       dryRun: options.dryRun,
       maxConcurrency: parseInt(options.concurrency) || 4,
-      modelTier: options.premium ? 'premium' : options.economy ? 'fast' : 'auto'
+      modelTier
     });
   });
 

@@ -1,7 +1,7 @@
 // 🛸 ORBIT Core Types
 // Orchestrated Robotic Build & Integration Toolkit
 
-export type ModelTier = 'premium' | 'standard' | 'fast';
+export type ModelTier = 'premium' | 'standard' | 'fast' | 'ecomode';
 
 export type MissionType = 
   | 'launch' | 'repair' | 'warp' | 'mayday' | 'preflight'

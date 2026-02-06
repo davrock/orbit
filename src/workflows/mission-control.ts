@@ -54,7 +54,7 @@ export interface MissionControlOptions {
   dryRun?: boolean;
   interactive?: boolean;
   customCrew?: CrewMember;
-  modelTier?: 'auto' | 'premium' | 'standard' | 'fast';
+  modelTier?: 'auto' | 'premium' | 'standard' | 'fast' | 'ecomode';
   resumeFrom?: Phase[];  // Phases to run when resuming
 }
 

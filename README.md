@@ -88,12 +88,16 @@ Auto-selects optimal LLM model per task to save tokens:
 | `premium` | 🔥 | 3x | Architecture, security, complex debugging |
 | `standard` | ⚡ | 1x | General development, tests, reviews |
 | `fast` | 💨 | 0.5x | Docs, formatting, simple fixes |
+| `ecomode` | 🌱 | 0.6x | **Budget-conscious** (30-50% savings, uses fast/standard mix) |
 
 ```bash
 orbit launch --premium "security audit"  # Force premium
 orbit transmit --economy "update README" # Force fast
+orbit launch --ecomode "add feature"     # Budget-conscious mode
 orbit fuel                               # View token usage
 ```
+
+**Ecomode:** Aggressively uses fast models for reviews, tests, planning, and docs, while keeping standard for implementation and critical security tasks. Perfect for cost-conscious development.
 
 Auto-escalation: If a task fails with standard model, retries with premium.
 

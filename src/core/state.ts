@@ -88,13 +88,14 @@ export function loadFuelUsage(): FuelUsage {
     try {
       const data = JSON.parse(readFileSync(FUEL_FILE, 'utf-8'));
       // Handle legacy snake_case format
-      const byTier = data.byTier || data.by_tier || { premium: 0, standard: 0, fast: 0 };
+      const byTier = data.byTier || data.by_tier || { premium: 0, standard: 0, fast: 0, ecomode: 0 };
       return {
         total: data.total || 0,
         byTier: {
           premium: byTier.premium || 0,
           standard: byTier.standard || 0,
-          fast: byTier.fast || 0
+          fast: byTier.fast || 0,
+          ecomode: byTier.ecomode || 0
         },
         sessions: data.sessions || 0
       };
@@ -108,7 +109,7 @@ export function loadFuelUsage(): FuelUsage {
 function createInitialFuelUsage(): FuelUsage {
   return {
     total: 0,
-    byTier: { premium: 0, standard: 0, fast: 0 },
+    byTier: { premium: 0, standard: 0, fast: 0, ecomode: 0 },
     sessions: 0
   };
 }
@@ -120,7 +121,7 @@ export function saveFuelUsage(usage: FuelUsage): void {
 
 export function trackFuel(tier: ModelTier): void {
   const usage = loadFuelUsage();
-  const multipliers: Record<ModelTier, number> = { premium: 3.0, standard: 1.0, fast: 0.5 };
+  const multipliers: Record<ModelTier, number> = { premium: 3.0, standard: 1.0, fast: 0.5, ecomode: 0.6 };
   usage.total += multipliers[tier];
   usage.byTier[tier]++;
   usage.sessions++;
