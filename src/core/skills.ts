@@ -25,7 +25,14 @@ function loadIndex(): SkillsIndex {
   ensureSkillsDir();
   if (existsSync(INDEX_FILE)) {
     try {
-      return JSON.parse(readFileSync(INDEX_FILE, 'utf-8'));
+      const data = JSON.parse(readFileSync(INDEX_FILE, 'utf-8'));
+      // Ensure all required fields exist
+      return {
+        skills: data.skills || [],
+        categories: data.categories || {},
+        successRates: data.successRates || {},
+        lastUpdated: data.lastUpdated || ''
+      };
     } catch {
       // Fall through
     }
@@ -74,17 +81,21 @@ export function detectCategory(task: string): SkillCategory {
 export function extractSkill(
   task: string,
   outcome: 'success' | 'failure',
-  context?: string
+  context?: string,
+  solution?: string
 ): Skill {
   ensureSkillsDir();
   
   const id = `skill-${Date.now()}`;
   const category = detectCategory(task);
   
+  // Extract a concise solution summary from the full output
+  const solutionSummary = solution ? extractSolutionSummary(solution, task) : '';
+  
   const skill: Skill = {
     id,
     pattern: task,
-    solution: '', // Will be filled by AI analysis
+    solution: solutionSummary,
     context: context || category,
     successCount: outcome === 'success' ? 1 : 0,
     lastUsed: new Date()
@@ -110,6 +121,67 @@ export function extractSkill(
   saveIndex(index);
   
   return skill;
+}
+
+/**
+ * Extract a concise solution summary from AI output
+ */
+function extractSolutionSummary(output: string, task: string): string {
+  // Look for common patterns in AI output that indicate what was done
+  const lines = output.split('\n');
+  const summaryParts: string[] = [];
+  
+  // Look for file modifications
+  const filePatterns = /(?:created|modified|updated|edited|wrote|deleted)\s+[`']?([^\s`']+)[`']?/gi;
+  const files = new Set<string>();
+  let match;
+  while ((match = filePatterns.exec(output)) !== null) {
+    files.add(match[1]);
+  }
+  if (files.size > 0) {
+    summaryParts.push(`Files: ${Array.from(files).slice(0, 5).join(', ')}`);
+  }
+  
+  // Look for "COMPLETE" markers which often have context
+  for (const line of lines) {
+    if (line.includes('COMPLETE') && line.length < 200) {
+      const cleanLine = line.replace(/[#*`]/g, '').trim();
+      if (cleanLine.length > 10) {
+        summaryParts.push(cleanLine);
+        break;
+      }
+    }
+  }
+  
+  // Look for summary-like lines
+  const summaryKeywords = ['implemented', 'added', 'fixed', 'created', 'refactored', 'updated'];
+  for (const line of lines) {
+    const lineLower = line.toLowerCase();
+    if (summaryKeywords.some(kw => lineLower.includes(kw)) && 
+        line.length > 20 && line.length < 200 &&
+        !line.startsWith('//') && !line.startsWith('#')) {
+      const cleanLine = line.replace(/[#*`]/g, '').trim();
+      if (cleanLine.length > 20 && !summaryParts.includes(cleanLine)) {
+        summaryParts.push(cleanLine);
+        if (summaryParts.length >= 3) break;
+      }
+    }
+  }
+  
+  // Fallback: use first meaningful line
+  if (summaryParts.length === 0) {
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.length > 30 && trimmed.length < 200 && 
+          !trimmed.startsWith('//') && !trimmed.startsWith('#') &&
+          !trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+        summaryParts.push(trimmed.slice(0, 150));
+        break;
+      }
+    }
+  }
+  
+  return summaryParts.join(' | ').slice(0, 500);
 }
 
 export function findMatchingSkills(task: string, limit = 5): Skill[] {

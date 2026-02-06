@@ -13,13 +13,14 @@ import {
   type ProjectConfig,
   getPhasesForMission,
   getCrewForPhase,
-  getCrewPrompt,
   selectModelTier,
   getModelIcon,
   trackFuel,
   appendLog,
-  detectProjectConfig
+  detectProjectConfig,
+  extractSkill
 } from '../core/index.js';
+import { getAgentSystemPrompt } from '../agents/index.js';
 import {
   printBanner,
   printPhase,
@@ -126,6 +127,15 @@ export class MissionControl {
     // Clear checkpoint on successful completion
     clearCheckpoint();
 
+    // Extract skill from successful mission
+    const allOutput = this.phaseResults.map(r => r.output || '').join('\n');
+    extractSkill(
+      this.missionConfig.task,
+      'success',
+      this.missionConfig.type,
+      allOutput
+    );
+
     const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
     printMissionComplete(this.phaseResults.length, duration);
     
@@ -219,7 +229,7 @@ export class MissionControl {
   }
 
   private generatePrompt(phase: Phase, crew: CrewMember): string {
-    const crewPrompt = getCrewPrompt(crew);
+    const crewPrompt = getAgentSystemPrompt(crew);
     
     return `${crewPrompt}
 

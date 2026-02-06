@@ -1,16 +1,16 @@
 {
   "skills": [
-    "skill-20260206-025200"
+    "skill-20260206-025200",
+    "skill-1770409032246"
   ],
-  "patterns": {
-    "security": 1,
-    "audit": 1
+  "categories": {
+    "testing": 1
   },
-  "success_rate": {
-    "security": {
+  "successRates": {
+    "testing": {
       "success": 1,
       "total": 1
     }
   },
-  "last_updated": "2026-02-06T02:52:00.808596"
+  "lastUpdated": "2026-02-06T20:17:12.247Z"
 }
