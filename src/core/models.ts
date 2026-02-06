@@ -58,7 +58,8 @@ const config: ModelConfig = {
     'performance-engineer': 'standard',
     propulsion: 'standard',
     comms: 'fast',
-    'tech-writer': 'fast'
+    'tech-writer': 'fast',
+    'design-reviewer': 'standard'
   },
   ecomodeTiers: {
     plan: 'fast',
@@ -95,7 +96,8 @@ const config: ModelConfig = {
     'performance-engineer': 'standard',
     propulsion: 'standard',
     comms: 'fast',
-    'tech-writer': 'fast'
+    'tech-writer': 'fast',
+    'design-reviewer': 'fast'
   },
   costMultipliers: {
     premium: 3.0,

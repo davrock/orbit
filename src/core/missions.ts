@@ -16,7 +16,8 @@ export const MISSION_PHASES: Record<MissionType, Phase[]> = {
   ralph: ['implement', 'test', 'review', 'commit'],
   ultrawork: ['plan', 'implement', 'review', 'commit'],
   swarm: ['plan', 'implement', 'review', 'commit'],
-  pipeline: ['plan', 'implement', 'test', 'review', 'commit']
+  pipeline: ['plan', 'implement', 'test', 'review', 'commit'],
+  'design-review': ['review']
 };
 
 export const PHASE_CREWS: Record<Phase, CrewMember> = {
@@ -55,7 +56,8 @@ export const CREW_PROMPTS: Record<CrewMember, string> = {
   'tech-writer': 'You are TECH WRITER. Clear, concise documentation.',
   'qa-lead': 'You are QA LEAD. Ensure quality standards.',
   'performance-engineer': 'You are PERFORMANCE ENGINEER. Optimize for speed.',
-  'cloud-architect': 'You are CLOUD ARCHITECT. Design for scale and reliability.'
+  'cloud-architect': 'You are CLOUD ARCHITECT. Design for scale and reliability.',
+  'design-reviewer': 'You are DESIGN REVIEWER. Ensure UI/UX consistency and accessibility.'
 };
 
 export function getPhasesForMission(mission: MissionType): Phase[] {
@@ -83,7 +85,8 @@ export const MISSION_DESCRIPTIONS: Record<MissionType, string> = {
   ralph: 'Persistent mode (never gives up, retry with escalation)',
   ultrawork: 'Parallel execution (distributes subtasks across concurrent sessions)',
   swarm: 'Coordinated parallel execution (intelligent task distribution with awareness)',
-  pipeline: 'Sequential multi-stage processing with handoffs between stages'
+  pipeline: 'Sequential multi-stage processing with handoffs between stages',
+  'design-review': 'UI/UX consistency and accessibility review'
 };
 
 // Legacy quotes - kept for backwards compatibility, full quotes in quotes.ts

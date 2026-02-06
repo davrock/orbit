@@ -11,3 +11,4 @@ export * from './swarm.js';
 export * from './pipeline.js';
 export * from './doctor.js';
 export * from './plan-mode.js';
+export * from './design-review.js';

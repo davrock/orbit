@@ -5,7 +5,8 @@ export type ModelTier = 'premium' | 'standard' | 'fast' | 'ecomode';
 
 export type MissionType = 
   | 'launch' | 'repair' | 'warp' | 'mayday' | 'preflight'
-  | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph' | 'ultrawork' | 'swarm' | 'pipeline';
+  | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph' | 'ultrawork' | 'swarm' | 'pipeline'
+  | 'design-review';
 
 export type Phase = 
   | 'plan' | 'implement' | 'test' | 'review' | 'debug' 
@@ -18,7 +19,7 @@ export type CrewMember =
   | 'data-scientist' | 'ml-engineer' | 'devops' | 'frontend-specialist'
   | 'backend-specialist' | 'database-architect' | 'api-designer'
   | 'ux-researcher' | 'tech-writer' | 'qa-lead' | 'performance-engineer'
-  | 'cloud-architect';
+  | 'cloud-architect' | 'design-reviewer';
 
 export type TechStack = 
   | 'node' | 'typescript' | 'react' | 'nextjs' | 'vue' | 'nuxt' | 'svelte' | 'angular'

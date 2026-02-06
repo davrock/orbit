@@ -22,7 +22,11 @@ import {
   runSwarm,
   runPipeline,
   runDoctor,
-  runPlanMode
+  runPlanMode,
+  runDesignReview,
+  runDesignReviewPreCommit,
+  runDesignReviewCI,
+  generateDesignReport
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -608,6 +612,46 @@ program
       dryRun: options.dryRun
     });
   });
+
+// Design Review
+program
+  .command('design-review')
+  .description('Review UI/UX changes for consistency and accessibility')
+  .option('--files <files...>', 'Specific files to review')
+  .option('--external-ai', 'Use external AI providers for consistency checking')
+  .option('--no-ui', 'Skip UI pattern checks')
+  .option('--no-ux', 'Skip UX pattern checks')
+  .option('--no-accessibility', 'Skip accessibility checks')
+  .option('--no-responsiveness', 'Skip responsiveness checks')
+  .option('--patterns <path>', 'Path to existing patterns directory')
+  .option('--pre-commit', 'Run as pre-commit hook (blocks on critical issues)')
+  .option('--ci', 'Run in CI/CD mode')
+  .option('--fail-on-warnings', 'Fail on warnings (CI mode only)')
+  .option('--report <format>', 'Generate report (console|json|markdown)', 'console')
+  .action(async (options) => {
+    if (options.preCommit) {
+      await runDesignReviewPreCommit();
+    } else if (options.ci) {
+      await runDesignReviewCI({
+        useExternalAI: options.externalAi,
+        failOnWarnings: options.failOnWarnings
+      });
+    } else if (options.files) {
+      await generateDesignReport(options.files, options.report);
+    } else {
+      await runDesignReview({
+        files: options.files,
+        useExternalAI: options.externalAi,
+        checkUI: options.ui !== false,
+        checkUX: options.ux !== false,
+        checkAccessibility: options.accessibility !== false,
+        checkResponsiveness: options.responsiveness !== false,
+        existingPatternsPath: options.patterns,
+        exitOnFailure: false
+      });
+    }
+  });
+
 
 // Launch Sequence (self-improvement loop)
 program

@@ -450,6 +450,25 @@ Build for scale, pay for what you use.`,
     capabilities: ['cloud-architecture', 'scalability', 'high-availability', 'cost-optimization'],
     preferredPhases: ['plan', 'implement'],
     modelPreference: 'premium'
+  },
+
+  'design-reviewer': {
+    id: 'design-reviewer',
+    name: 'Design Reviewer',
+    role: 'UI/UX Consistency Expert',
+    systemPrompt: `You are DESIGN REVIEWER, the UI/UX consistency expert.
+Your responsibilities:
+- Review designs for consistency with existing patterns
+- Check accessibility compliance (WCAG)
+- Validate responsive design implementation
+- Ensure proper loading and error states
+- Verify theme and design system usage
+- Optionally use external AI for cross-validation
+
+Users experience design first - make it consistent and delightful.`,
+    capabilities: ['design-review', 'ui-consistency', 'ux-patterns', 'accessibility', 'design-systems'],
+    preferredPhases: ['review', 'implement'],
+    modelPreference: 'standard'
   }
 };
 
@@ -492,3 +511,12 @@ export function getAgentsWithCapability(capability: string): Agent[] {
 export function listAgents(): Agent[] {
   return Object.values(AGENTS);
 }
+
+// Export design review functionality
+export { 
+  reviewDesign, 
+  printDesignReview,
+  type DesignReviewOptions,
+  type DesignReviewResult,
+  type DesignCheck
+} from './design-review.js';
