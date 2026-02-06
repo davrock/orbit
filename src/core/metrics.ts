@@ -5,8 +5,25 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { MissionType, Phase, ModelTier } from './types.js';
 
-const METRICS_FILE = '.copilot/metrics.json';
-const STATE_DIR = '.copilot/state';
+interface MetricsConfig {
+  metricsFile: string;
+}
+
+let config: MetricsConfig = {
+  metricsFile: '.copilot/metrics.json'
+};
+
+export function setMetricsConfig(newConfig: Partial<MetricsConfig>): void {
+  config = { ...config, ...newConfig };
+}
+
+export function resetMetricsConfig(): void {
+  config = {
+    metricsFile: '.copilot/metrics.json'
+  };
+  runCounter = 0;
+  currentRun = null;
+}
 
 interface PhaseMetric {
   name: Phase;
@@ -49,9 +66,10 @@ interface MetricsStore {
 }
 
 let currentRun: RunMetric | null = null;
+let runCounter = 0;
 
 function ensureDir(): void {
-  const dir = METRICS_FILE.split('/').slice(0, -1).join('/');
+  const dir = config.metricsFile.split('/').slice(0, -1).join('/');
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
@@ -59,9 +77,9 @@ function ensureDir(): void {
 
 function loadMetrics(): MetricsStore {
   ensureDir();
-  if (existsSync(METRICS_FILE)) {
+  if (existsSync(config.metricsFile)) {
     try {
-      return JSON.parse(readFileSync(METRICS_FILE, 'utf-8'));
+      return JSON.parse(readFileSync(config.metricsFile, 'utf-8'));
     } catch {
       // Fall through
     }
@@ -80,11 +98,12 @@ function loadMetrics(): MetricsStore {
 }
 
 function saveMetrics(store: MetricsStore): void {
-  writeFileSync(METRICS_FILE, JSON.stringify(store, null, 2));
+  ensureDir();
+  writeFileSync(config.metricsFile, JSON.stringify(store, null, 2));
 }
 
 export function metricsStart(task: string, mission: MissionType): string {
-  const id = `run-${Date.now()}`;
+  const id = `run-${Date.now()}-${runCounter++}`;
   currentRun = {
     id,
     task,

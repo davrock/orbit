@@ -14,14 +14,19 @@ import {
   metricsEnd,
   getMetricsSummary,
   getRecentRuns,
-  exportMetricsForDashboard
+  exportMetricsForDashboard,
+  setMetricsConfig,
+  resetMetricsConfig
 } from './metrics.js';
 
-const TEST_METRICS_DIR = '.copilot';
-const TEST_METRICS_FILE = '.copilot/metrics.json';
+const TEST_METRICS_DIR = '.copilot-test';
+const TEST_METRICS_FILE = '.copilot-test/metrics.json';
 
 describe('metrics', () => {
   beforeEach(() => {
+    // Configure to use test directory
+    setMetricsConfig({ metricsFile: TEST_METRICS_FILE });
+    
     // Clean up before each test
     if (existsSync(TEST_METRICS_DIR)) {
       rmSync(TEST_METRICS_DIR, { recursive: true, force: true });
@@ -29,6 +34,9 @@ describe('metrics', () => {
   });
 
   afterEach(() => {
+    // Reset to default configuration
+    resetMetricsConfig();
+    
     // Clean up after each test
     if (existsSync(TEST_METRICS_DIR)) {
       rmSync(TEST_METRICS_DIR, { recursive: true, force: true });
@@ -38,7 +46,7 @@ describe('metrics', () => {
   describe('metricsStart', () => {
     it('should start a new metrics run', () => {
       const id = metricsStart('test task', 'launch');
-      expect(id).toMatch(/^run-\d+$/);
+      expect(id).toMatch(/^run-\d+-\d+$/);
     });
 
     it('should create unique IDs for different runs', async () => {
