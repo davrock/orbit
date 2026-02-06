@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "mission": "warp",
+  "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+  "currentPhase": "commit",
+  "phasesCompleted": [
+    "implement"
+  ],
+  "modelTier": "standard",
+  "timestamp": "2026-02-06T23:56:25.683Z",
+  "dryRun": false
+}

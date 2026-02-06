@@ -1,0 +1,9 @@
+{
+  "fails": 0,
+  "noProgress": 0,
+  "types": [
+    "self"
+  ],
+  "cycles": 1,
+  "successes": 1
+}
