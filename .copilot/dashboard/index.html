@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copilot Orchestrator Dashboard</title>
+    <title>🛸 ORBIT Analytics Dashboard</title>
     <style>
         :root {
-            --bg-primary: #1a1a2e;
-            --bg-secondary: #16213e;
-            --bg-card: #0f3460;
-            --text-primary: #eaeaea;
-            --text-secondary: #a0a0a0;
-            --accent: #e94560;
-            --success: #00d26a;
-            --warning: #f39c12;
-            --error: #e74c3c;
-            --info: #3498db;
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            --info: #58a6ff;
+            --purple: #a371f7;
+            --orange: #f0883e;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,24 +42,26 @@
         }
         
         h1 { font-size: 1.8rem; display: flex; align-items: center; gap: 10px; }
-        h1::before { content: "🤖"; }
+        h1::before { content: "🛸"; }
+        
+        .subtitle { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
         
         .btn {
             background: var(--bg-card);
             color: var(--text-primary);
-            border: none;
+            border: 1px solid var(--accent);
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            transition: background 0.2s;
+            transition: all 0.2s;
         }
-        .btn:hover { background: var(--accent); }
+        .btn:hover { background: var(--accent); color: var(--bg-primary); }
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
             margin-bottom: 30px;
         }
         
@@ -66,21 +70,24 @@
             padding: 20px;
             border-radius: 12px;
             text-align: center;
+            border: 1px solid #30363d;
         }
         
         .stat-value {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: bold;
             color: var(--accent);
         }
         .stat-value.success { color: var(--success); }
         .stat-value.warning { color: var(--warning); }
         .stat-value.error { color: var(--error); }
+        .stat-value.purple { color: var(--purple); }
+        .stat-value.orange { color: var(--orange); }
         
         .stat-label {
             color: var(--text-secondary);
             margin-top: 5px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
         
         .section {
@@ -88,16 +95,18 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
+            border: 1px solid #30363d;
         }
         
         .section-title {
             font-size: 1.1rem;
             margin-bottom: 15px;
+            color: var(--text-primary);
         }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--bg-card); }
-        th { color: var(--text-secondary); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; }
+        th { color: var(--text-secondary); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
         
         .status-badge {
             padding: 4px 12px;
@@ -105,9 +114,19 @@
             font-size: 0.75rem;
             font-weight: 500;
         }
-        .status-success { background: rgba(0, 210, 106, 0.2); color: var(--success); }
-        .status-failed { background: rgba(231, 76, 60, 0.2); color: var(--error); }
-        .status-skipped { background: rgba(243, 156, 18, 0.2); color: var(--warning); }
+        .status-success { background: rgba(63, 185, 80, 0.2); color: var(--success); }
+        .status-failed { background: rgba(248, 81, 73, 0.2); color: var(--error); }
+        .status-skipped { background: rgba(210, 153, 34, 0.2); color: var(--warning); }
+        
+        .tier-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .tier-premium { background: rgba(248, 81, 73, 0.2); color: var(--error); }
+        .tier-standard { background: rgba(88, 166, 255, 0.2); color: var(--accent); }
+        .tier-fast { background: rgba(63, 185, 80, 0.2); color: var(--success); }
         
         .chart-container {
             height: 180px;
@@ -125,32 +144,43 @@
             position: relative;
             transition: all 0.3s;
         }
-        .chart-bar:hover { background: var(--accent); }
+        .chart-bar:hover { opacity: 0.8; transform: scaleY(1.02); }
         .chart-bar::after {
             content: attr(data-value);
             position: absolute;
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: var(--text-secondary);
+            padding: 2px;
         }
         
         .no-data { text-align: center; color: var(--text-secondary); padding: 40px; }
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
         
         .phase-chip {
             display: inline-block;
             padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             background: var(--bg-card);
             margin: 1px;
         }
         
-        .file-input { margin-bottom: 20px; }
+        .crew-chip {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            background: rgba(163, 113, 247, 0.2);
+            color: var(--purple);
+        }
+        
+        .file-input { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
         .file-input input { display: none; }
         .file-input label {
             display: inline-block;
@@ -159,28 +189,36 @@
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
+            border: 1px solid #30363d;
         }
-        .file-input label:hover { background: var(--accent); }
-        #file-name { margin-left: 15px; color: var(--text-secondary); }
+        .file-input label:hover { border-color: var(--accent); }
+        #file-name { color: var(--text-secondary); font-size: 0.9rem; }
+        
+        .legend { display: flex; gap: 20px; justify-content: center; margin-top: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-secondary); }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Orchestrator Dashboard</h1>
+            <div>
+                <h1>ORBIT Analytics</h1>
+                <div class="subtitle">Orchestrated Robotic Build & Integration Toolkit</div>
+            </div>
             <button class="btn" onclick="loadData()">🔄 Refresh</button>
         </header>
         
         <div class="file-input">
             <input type="file" id="metrics-file" accept=".json" onchange="loadFile(this)">
             <label for="metrics-file">📂 Load metrics.json</label>
-            <span id="file-name">No file loaded</span>
+            <span id="file-name">Auto-loading from .copilot/metrics.json...</span>
         </div>
         
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-value" id="total-runs">-</div>
-                <div class="stat-label">Total Runs</div>
+                <div class="stat-label">Total Missions</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value success" id="success-rate">-</div>
@@ -191,50 +229,69 @@
                 <div class="stat-label">Avg Duration</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="total-files">-</div>
-                <div class="stat-label">Files Changed</div>
+                <div class="stat-value purple" id="total-fuel">-</div>
+                <div class="stat-label">⛽ Fuel Used</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="total-tests">-</div>
-                <div class="stat-label">Tests Added</div>
+                <div class="stat-value orange" id="premium-calls">-</div>
+                <div class="stat-label">🔥 Premium Calls</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value warning" id="total-retries">-</div>
-                <div class="stat-label">Total Retries</div>
+                <div class="stat-value success" id="fast-calls">-</div>
+                <div class="stat-label">💨 Fast Calls</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-skills">-</div>
+                <div class="stat-label">🧠 Skills Learned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value warning" id="savings">-</div>
+                <div class="stat-label">💰 Token Savings</div>
             </div>
         </div>
         
-        <div class="grid-2">
+        <div class="grid-3">
             <div class="section">
-                <h2 class="section-title">📊 Duration by Run</h2>
-                <div class="chart-container" id="duration-chart">
-                    <div class="no-data">Load metrics.json to see chart</div>
+                <h2 class="section-title">📊 Model Tier Distribution</h2>
+                <div class="chart-container" id="tier-chart">
+                    <div class="no-data">Load data to see chart</div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--error)"></span> Premium (3x)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span> Standard (1x)</div>
+                    <div class="legend-item"><span class="legend-dot" style="background:var(--success)"></span> Fast (0.5x)</div>
                 </div>
             </div>
             <div class="section">
-                <h2 class="section-title">📈 Success vs Failure</h2>
+                <h2 class="section-title">📈 Mission Success</h2>
                 <div class="chart-container" id="success-chart">
-                    <div class="no-data">Load metrics.json to see chart</div>
+                    <div class="no-data">Load data to see chart</div>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">⏱️ Duration Trend</h2>
+                <div class="chart-container" id="duration-chart">
+                    <div class="no-data">Load data to see chart</div>
                 </div>
             </div>
         </div>
         
         <div class="section">
-            <h2 class="section-title">📋 Recent Runs</h2>
+            <h2 class="section-title">📋 Recent Missions</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Workflow</th>
+                        <th>Mission</th>
                         <th>Task</th>
                         <th>Status</th>
+                        <th>Model</th>
                         <th>Duration</th>
-                        <th>Files</th>
                         <th>Phases</th>
                     </tr>
                 </thead>
                 <tbody id="runs-body">
-                    <tr><td colspan="7" class="no-data">Load metrics.json to see runs</td></tr>
+                    <tr><td colspan="7" class="no-data">Load metrics.json to see missions</td></tr>
                 </tbody>
             </table>
         </div>
@@ -242,6 +299,7 @@
     
     <script>
         let data = null;
+        let fuelData = null;
         
         function loadFile(input) {
             const file = input.files[0];
@@ -257,40 +315,63 @@
             reader.readAsText(file);
         }
         
-        function loadData() {
-            fetch('../metrics.json')
-                .then(r => r.json())
-                .then(d => { data = d; render(); })
-                .catch(() => {});
+        async function loadData() {
+            try {
+                const r1 = await fetch('../metrics.json').then(r => r.json()).catch(() => ({}));
+                const r2 = await fetch('../state/fuel_tracking.json').then(r => r.json()).catch(() => ({}));
+                data = r1;
+                fuelData = r2;
+                render();
+                document.getElementById('file-name').textContent = 'Loaded from .copilot/';
+            } catch(e) {
+                document.getElementById('file-name').textContent = 'Click to load metrics.json';
+            }
         }
         
         function render() {
-            if (!data?.runs) return;
-            const runs = data.runs;
+            const runs = data?.runs || [];
+            const modelUsage = fuelData?.model_usage || data?.model_usage || {};
+            const totalFuel = fuelData?.total_cost || fuelData?.total || 0;
+            
             const success = runs.filter(r => r.status === 'success');
             const failed = runs.filter(r => r.status === 'failed');
             
-            document.getElementById('total-runs').textContent = runs.length;
+            document.getElementById('total-runs').textContent = runs.length || '-';
             document.getElementById('success-rate').textContent = 
-                runs.length ? Math.round((success.length / runs.length) * 100) + '%' : '0%';
+                runs.length ? Math.round((success.length / runs.length) * 100) + '%' : '-';
             
             const avg = success.length 
                 ? Math.round(success.reduce((a, r) => a + (r.total_duration || 0), 0) / success.length) 
                 : 0;
-            document.getElementById('avg-duration').textContent = `${Math.floor(avg/60)}m ${avg%60}s`;
-            document.getElementById('total-files').textContent = runs.reduce((a, r) => a + (r.files_changed || 0), 0);
-            document.getElementById('total-tests').textContent = runs.reduce((a, r) => a + (r.tests_added || 0), 0);
-            document.getElementById('total-retries').textContent = runs.reduce((a, r) => a + (r.retries || 0), 0);
+            document.getElementById('avg-duration').textContent = avg ? `${Math.floor(avg/60)}m ${avg%60}s` : '-';
             
-            // Duration chart
-            const dc = document.getElementById('duration-chart');
-            const last20 = runs.slice(-20);
-            if (last20.length) {
-                const max = Math.max(...last20.map(r => r.total_duration || 0));
-                dc.innerHTML = last20.map(r => {
-                    const h = max ? Math.max(8, ((r.total_duration || 0) / max) * 160) : 8;
-                    return `<div class="chart-bar" style="height:${h}px" data-value="${Math.floor((r.total_duration||0)/60)}m"></div>`;
-                }).join('');
+            // Fuel stats
+            document.getElementById('total-fuel').textContent = totalFuel ? totalFuel.toFixed(1) : '-';
+            document.getElementById('premium-calls').textContent = modelUsage.premium || '-';
+            document.getElementById('fast-calls').textContent = modelUsage.fast || '-';
+            
+            // Skills count (placeholder)
+            document.getElementById('total-skills').textContent = data?.skills_count || '-';
+            
+            // Calculate savings (if all calls were premium vs actual)
+            const premiumCalls = modelUsage.premium || 0;
+            const standardCalls = modelUsage.standard || 0;
+            const fastCalls = modelUsage.fast || 0;
+            const totalCalls = premiumCalls + standardCalls + fastCalls;
+            const actualCost = (premiumCalls * 3) + (standardCalls * 1) + (fastCalls * 0.5);
+            const maxCost = totalCalls * 3;
+            const savings = maxCost > 0 ? Math.round((1 - actualCost/maxCost) * 100) : 0;
+            document.getElementById('savings').textContent = totalCalls ? savings + '%' : '-';
+            
+            // Model tier chart
+            const tc = document.getElementById('tier-chart');
+            if (premiumCalls || standardCalls || fastCalls) {
+                const max = Math.max(premiumCalls, standardCalls, fastCalls);
+                tc.innerHTML = `
+                    <div class="chart-bar" style="height:${Math.max(8,(premiumCalls/max)*150)}px;background:var(--error);flex:1" data-value="${premiumCalls}"></div>
+                    <div class="chart-bar" style="height:${Math.max(8,(standardCalls/max)*150)}px;background:var(--accent);flex:1" data-value="${standardCalls}"></div>
+                    <div class="chart-bar" style="height:${Math.max(8,(fastCalls/max)*150)}px;background:var(--success);flex:1" data-value="${fastCalls}"></div>
+                `;
             }
             
             // Success chart
@@ -298,10 +379,22 @@
             const total = success.length + failed.length;
             if (total) {
                 sc.innerHTML = `
-                    <div class="chart-bar" style="height:${(success.length/total)*160}px;background:var(--success);flex:0 0 45%" data-value="${success.length}"></div>
-                    <div style="flex:0 0 10%;text-align:center;align-self:center;color:var(--text-secondary)">vs</div>
-                    <div class="chart-bar" style="height:${(failed.length/total)*160}px;background:var(--error);flex:0 0 45%" data-value="${failed.length}"></div>
+                    <div class="chart-bar" style="height:${(success.length/total)*150}px;background:var(--success);flex:0 0 45%" data-value="${success.length} ✓"></div>
+                    <div style="flex:0 0 10%;text-align:center;align-self:center;color:var(--text-secondary);font-size:0.8rem">vs</div>
+                    <div class="chart-bar" style="height:${(failed.length/total)*150}px;background:var(--error);flex:0 0 45%" data-value="${failed.length} ✗"></div>
                 `;
+            }
+            
+            // Duration chart
+            const dc = document.getElementById('duration-chart');
+            const last15 = runs.slice(-15);
+            if (last15.length) {
+                const max = Math.max(...last15.map(r => r.total_duration || 0), 1);
+                dc.innerHTML = last15.map(r => {
+                    const h = Math.max(8, ((r.total_duration || 0) / max) * 150);
+                    const color = r.status === 'success' ? 'var(--accent)' : 'var(--error)';
+                    return `<div class="chart-bar" style="height:${h}px;background:${color}" data-value="${Math.floor((r.total_duration||0)/60)}m"></div>`;
+                }).join('');
             }
             
             // Table
@@ -310,14 +403,14 @@
             tbody.innerHTML = recent.length ? recent.map(r => `
                 <tr>
                     <td>${r.started ? new Date(r.started).toLocaleDateString() : '-'}</td>
-                    <td>${r.workflow || '-'}</td>
-                    <td>${(r.task || '').substring(0, 35)}${(r.task || '').length > 35 ? '...' : ''}</td>
+                    <td>${r.workflow || r.mission || '-'}</td>
+                    <td title="${r.task || ''}">${(r.task || '').substring(0, 30)}${(r.task || '').length > 30 ? '...' : ''}</td>
                     <td><span class="status-badge status-${r.status || 'skipped'}">${r.status || '-'}</span></td>
+                    <td><span class="tier-badge tier-${r.model_tier || 'standard'}">${r.model_tier || 'std'}</span></td>
                     <td>${r.total_duration ? `${Math.floor(r.total_duration/60)}m ${r.total_duration%60}s` : '-'}</td>
-                    <td>${r.files_changed || 0}</td>
-                    <td>${(r.phases || []).map(p => `<span class="phase-chip">${p.name}</span>`).join('') || '-'}</td>
+                    <td>${(r.phases || []).map(p => `<span class="phase-chip">${typeof p === 'string' ? p : p.name}</span>`).join('') || '-'}</td>
                 </tr>
-            `).join('') : '<tr><td colspan="7" class="no-data">No runs</td></tr>';
+            `).join('') : '<tr><td colspan="7" class="no-data">No missions yet</td></tr>';
         }
         
         loadData();

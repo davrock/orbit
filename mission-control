@@ -346,6 +346,9 @@ EOF
     # End HUD with complete status
     [ -x ".copilot/hud.sh" ] && .copilot/hud.sh end complete 2>/dev/null
     
+    # Extract skill from completed mission
+    [ -x ".copilot/skills.sh" ] && .copilot/skills.sh extract "$TASK" success "Mission: $MISSION, Phases: $completed" 2>/dev/null
+    
     local duration=$(($(date +%s) - start_time))
     echo ""
     echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
