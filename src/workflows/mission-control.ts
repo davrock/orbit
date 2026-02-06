@@ -18,7 +18,16 @@ import {
   trackFuel,
   appendLog,
   detectProjectConfig,
-  extractSkill
+  extractSkill,
+  metricsStart,
+  metricsPhaseStart,
+  metricsPhaseEnd,
+  metricsEnd,
+  metricsFilesChanged,
+  initHUD,
+  setPhase,
+  completePhase,
+  endHUD
 } from '../core/index.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
 import {
@@ -101,6 +110,10 @@ export class MissionControl {
     this.initFlightLog();
     appendLog(`${isResuming ? 'Resuming' : 'Starting'} mission: ${this.missionConfig.task} (${this.missionConfig.type})`);
 
+    // Initialize metrics and HUD
+    metricsStart(this.missionConfig.task, this.missionConfig.type);
+    initHUD(this.missionConfig.task, this.missionConfig.phases);
+
     const beforeCommit = getCurrentCommit();
 
     for (const phase of this.phasesToRun) {
@@ -117,7 +130,17 @@ export class MissionControl {
       const result = await this.runPhase(phase);
       this.phaseResults.push(result);
 
+      // Update HUD with completed phase
+      if (result.success) {
+        completePhase(phase);
+      }
+
       if (!result.success) {
+        // End metrics and HUD with failure
+        metricsFilesChanged(getChangedFiles().length);
+        metricsEnd(false);
+        endHUD(false);
+
         printError(`Mission failed at phase: ${phase}`);
         printWarning('Run "orbit resume" to retry from this phase');
         return this.buildResult(false, beforeCommit);
@@ -136,6 +159,11 @@ export class MissionControl {
       allOutput
     );
 
+    // End metrics and HUD with success
+    metricsFilesChanged(getChangedFiles().length);
+    metricsEnd(true);
+    endHUD(true);
+
     const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
     printMissionComplete(this.phaseResults.length, duration);
     
@@ -152,8 +180,15 @@ export class MissionControl {
 
     printPhase(phase, crew, tier, icon);
 
+    // Update HUD with current phase
+    setPhase(phase, crew, tier);
+
+    // Start metrics for this phase
+    metricsPhaseStart(phase, tier);
+
     if (this.missionConfig.dryRun) {
       console.log(colors.warning(`[DRY RUN] Would execute phase: ${phase}`));
+      metricsPhaseEnd(phase, 'skipped', 0);
       return {
         phase,
         crew,
@@ -166,6 +201,7 @@ export class MissionControl {
     if (this.missionConfig.interactive) {
       const proceed = await this.confirmPhase(phase);
       if (!proceed) {
+        metricsPhaseEnd(phase, 'skipped', 0);
         return {
           phase,
           crew,
@@ -182,6 +218,7 @@ export class MissionControl {
     // Check if Copilot CLI is available
     if (!commandExists('copilot')) {
       printError('Copilot CLI not found. Install from: https://github.com/github/copilot-cli');
+      metricsPhaseEnd(phase, 'failed', 0);
       return {
         phase,
         crew,
@@ -209,6 +246,9 @@ export class MissionControl {
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
+    
+    // Record phase metrics
+    metricsPhaseEnd(phase, result.success ? 'success' : 'failed', duration);
     
     if (result.success) {
       printSuccess(`${phase} complete (${duration}s)`);

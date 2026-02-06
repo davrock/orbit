@@ -32,6 +32,62 @@
       "ended": "2026-02-06T00:45:37+00:00",
       "total_duration": 4,
       "status": "success"
+    },
+    {
+      "id": "run-1770409325725",
+      "task": "test metrics and hud",
+      "mission": "warp",
+      "started": "2026-02-06T20:22:05.725Z",
+      "totalDuration": 0,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:22:05.730Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:22:05.731Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 4,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:22:05.736Z"
     }
-  ]
+  ],
+  "aggregates": {
+    "totalRuns": 3,
+    "successRate": 33,
+    "avgDuration": null,
+    "byMission": {
+      "undefined": {
+        "count": 2,
+        "successRate": 0
+      },
+      "warp": {
+        "count": 1,
+        "successRate": 100
+      }
+    },
+    "byPhase": {
+      "implement": {
+        "avgDuration": 0,
+        "successRate": 0
+      },
+      "commit": {
+        "avgDuration": 0,
+        "successRate": 0
+      }
+    }
+  }
 }

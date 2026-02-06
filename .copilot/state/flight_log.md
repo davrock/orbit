@@ -1,7 +1,7 @@
 # 🛸 Flight Log
-Task: test skill extraction
+Task: test metrics and hud
 Mission: warp
-Launched: 2026-02-06T20:17:12.238Z
+Launched: 2026-02-06T20:22:05.723Z
 
 ## Status
 Phase: launching

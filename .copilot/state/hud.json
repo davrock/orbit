@@ -1,10 +1,16 @@
 {
-  "phase": "implement",
-  "crew": "pilot",
-  "model_tier": "standard",
-  "task": "Test task",
-  "start_time": 1770346240,
-  "phases_complete": 0,
-  "phases_total": 4,
-  "status": "running"
+  "task": "test metrics and hud",
+  "phases": [
+    "implement",
+    "commit"
+  ],
+  "currentPhase": "commit",
+  "currentCrew": "pilot",
+  "modelTier": "standard",
+  "startTime": "2026-02-06T20:22:05.726Z",
+  "completedPhases": [
+    "implement",
+    "commit"
+  ],
+  "status": "complete"
 }
