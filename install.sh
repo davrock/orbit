@@ -31,6 +31,9 @@ npm install
 echo "🔨 Building..."
 npm run build
 
+# Make CLI executable (TypeScript doesn't preserve permissions)
+chmod +x dist/cli/index.js
+
 # Configure npm to use local prefix (no sudo needed)
 NPM_PREFIX="${HOME}/.npm-global"
 mkdir -p "$NPM_PREFIX"
