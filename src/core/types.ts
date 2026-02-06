@@ -5,7 +5,7 @@ export type ModelTier = 'premium' | 'standard' | 'fast' | 'ecomode';
 
 export type MissionType = 
   | 'launch' | 'repair' | 'warp' | 'mayday' | 'preflight'
-  | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph' | 'ultrawork';
+  | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph' | 'ultrawork' | 'swarm';
 
 export type Phase = 
   | 'plan' | 'implement' | 'test' | 'review' | 'debug' 

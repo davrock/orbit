@@ -18,7 +18,8 @@ import {
   runDeploy,
   generateDashboard,
   openDashboard,
-  runUltrawork
+  runUltrawork,
+  runSwarm
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
@@ -168,6 +169,30 @@ program
       dryRun: options.dryRun,
       maxConcurrency: parseInt(options.concurrency) || 4,
       modelTier
+    });
+  });
+
+program
+  .command('swarm <task>')
+  .description('Coordinated parallel execution - intelligent task distribution with dependencies')
+  .option('--dry-run', 'Show what would happen')
+  .option('--concurrency <n>', 'Max concurrent sessions', '4')
+  .option('--premium', 'Use premium models (3x fuel)')
+  .option('--economy', 'Use fast models (0.5x fuel)')
+  .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
+  .option('--no-coordination', 'Disable inter-agent coordination')
+  .action(async (task, options) => {
+    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
+    if (options.premium) modelTier = 'premium';
+    else if (options.economy) modelTier = 'fast';
+    else if (options.ecomode) modelTier = 'ecomode';
+    
+    await runSwarm({
+      task,
+      dryRun: options.dryRun,
+      maxConcurrency: parseInt(options.concurrency) || 4,
+      modelTier,
+      enableCoordination: options.coordination
     });
   });
 
@@ -384,6 +409,7 @@ program
     console.log('  apollo      All phases');
     console.log('  ralph       Persistent mode (retry with escalation until verified)');
     console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
+    console.log('  swarm       Coordinated parallel (intelligent task distribution with dependencies)');
   });
 
 program

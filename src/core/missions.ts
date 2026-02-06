@@ -14,7 +14,8 @@ export const MISSION_PHASES: Record<MissionType, Phase[]> = {
   transmit: ['implement', 'review', 'commit'],
   apollo: ['research', 'plan', 'implement', 'test', 'security', 'review', 'document', 'commit'],
   ralph: ['implement', 'test', 'review', 'commit'],
-  ultrawork: ['plan', 'implement', 'review', 'commit']
+  ultrawork: ['plan', 'implement', 'review', 'commit'],
+  swarm: ['plan', 'implement', 'review', 'commit']
 };
 
 export const PHASE_CREWS: Record<Phase, CrewMember> = {
@@ -79,7 +80,8 @@ export const MISSION_DESCRIPTIONS: Record<MissionType, string> = {
   transmit: 'Documentation only',
   apollo: 'All phases',
   ralph: 'Persistent mode (never gives up, retry with escalation)',
-  ultrawork: 'Parallel execution (distributes subtasks across concurrent sessions)'
+  ultrawork: 'Parallel execution (distributes subtasks across concurrent sessions)',
+  swarm: 'Coordinated parallel execution (intelligent task distribution with awareness)'
 };
 
 // Legacy quotes - kept for backwards compatibility, full quotes in quotes.ts

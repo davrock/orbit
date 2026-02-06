@@ -51,6 +51,8 @@ orbit config
 | `transmit` | implement → review → commit | Documentation |
 | `apollo` | all phases | Comprehensive |
 | `ralph` | implement → test → review → commit | **Persistent mode** (never gives up) |
+| `ultrawork` | plan → implement → review → commit | **Parallel execution** (independent subtasks) |
+| `swarm` | plan → implement → review → commit | **Coordinated parallel** (with dependencies) |
 
 ```bash
 orbit missions  # List all
@@ -78,6 +80,53 @@ orbit ralph --max-attempts 15 "difficult refactor"
 - Difficult bugs that require persistence
 - Tasks where you want guaranteed completion
 - Learning from different implementation strategies
+
+### ⚡ Parallel Execution Modes
+
+ORBIT offers two modes for parallel task execution:
+
+#### 🚀 Ultrawork Mode - Independent Parallel Tasks
+
+Distributes independent subtasks across concurrent sessions:
+
+```bash
+orbit ultrawork "refactor codebase with multiple independent modules"
+orbit ultrawork --concurrency 6 "optimize performance across components"
+```
+
+**How it works:**
+- Breaks task into 3-8 independent subtasks
+- Executes subtasks in parallel batches (respects max concurrency)
+- Each subtask runs completely independently
+- Best for tasks where subtasks don't depend on each other
+
+#### 🐝 Swarm Mode - Coordinated Parallel Execution
+
+Intelligent task distribution with dependency awareness:
+
+```bash
+orbit swarm "implement user authentication system"
+orbit swarm --concurrency 4 "build API with database and tests"
+orbit swarm --no-coordination "simple parallel tasks"
+```
+
+**How it works:**
+- Analyzes task and creates dependency graph
+- Executes tasks in waves based on dependencies
+- Tasks within a wave run in parallel
+- Dependent tasks wait for prerequisites to complete
+- Shares context between dependent tasks (coordination)
+- Detects and prevents dependency deadlocks
+
+**Perfect for:**
+- Complex features with natural task dependencies
+- Multi-component systems (backend + frontend + tests)
+- When task order matters but some work can parallelize
+- Maximum efficiency with intelligent coordination
+
+**Ultrawork vs Swarm:**
+- **Ultrawork**: Simple parallelization, all tasks independent, faster planning
+- **Swarm**: Smart coordination, respects dependencies, better for complex work
 
 ## 🧠 Smart Model Selection
 
