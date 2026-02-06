@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770409716357",
+  "pattern": "Implement rate limit detection and auto-resume (wait and retry when hitting API limits with exponential backoff)",
+  "solution": "Files: files:, src/utils/rate-limit.ts, src/utils/exec.ts | IMPLEMENT COMPLETE | Build succeeded. Now let me verify the implementation by viewing the updated files:",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T20:28:36.358Z"
+}

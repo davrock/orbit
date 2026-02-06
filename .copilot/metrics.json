@@ -336,11 +336,42 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T21:01:14.857Z"
+    },
+    {
+      "id": "run-1770411794939",
+      "task": "Add 'pipeline' mode for sequential multi-stage processing with handoffs between stages",
+      "mission": "warp",
+      "started": "2026-02-06T21:03:14.939Z",
+      "totalDuration": 370,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:03:14.943Z",
+          "duration": 298,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:08:13.171Z",
+          "duration": 72,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 2,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:09:25.324Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 10,
-    "successRate": 80,
+    "totalRuns": 11,
+    "successRate": 82,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -348,7 +379,7 @@
         "successRate": 0
       },
       "warp": {
-        "count": 6,
+        "count": 7,
         "successRate": 100
       },
       "ultrawork": {
@@ -362,12 +393,12 @@
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 129,
-        "successRate": 73
+        "avgDuration": 143,
+        "successRate": 75
       },
       "commit": {
-        "avgDuration": 37,
-        "successRate": 63
+        "avgDuration": 41,
+        "successRate": 67
       },
       "plan": {
         "avgDuration": 0,

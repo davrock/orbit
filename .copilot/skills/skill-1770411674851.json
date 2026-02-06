@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770411674851",
+  "pattern": "Add 'swarm' mode for coordinated parallel execution of independent tasks",
+  "solution": "Files: mission, missions, with, commit | │ 41  +  IMPLEMENT COMPLETE                                                                    │ | │ 10  +  - Added 'swarm' mission type to core types (src/core/types.ts)                        │",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T21:01:14.851Z"
+}

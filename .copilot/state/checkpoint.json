@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "mission": "warp",
+  "task": "Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect",
+  "currentPhase": "commit",
+  "phasesCompleted": [
+    "implement"
+  ],
+  "modelTier": "standard",
+  "timestamp": "2026-02-06T21:12:22.261Z",
+  "dryRun": false
+}

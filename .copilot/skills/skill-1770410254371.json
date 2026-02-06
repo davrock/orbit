@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770410254371",
+  "pattern": "Add 'ralph' persistence mode that won't give up until task is verified complete (retry with escalation, different approaches)",
+  "solution": "Files: crew, persistence.ts, missions, persistence, │ | │ 45  +  IMPLEMENT COMPLETE                                                                    │ | │ 13  +  Successfully implemented 'ralph' persistence mode with the following features:        │",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T20:37:34.373Z"
+}

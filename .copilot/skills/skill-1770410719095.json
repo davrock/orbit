@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770410719095",
+  "pattern": "Add 'ultrawork' parallel execution mode that distributes subtasks across multiple concurrent agent sessions",
+  "solution": "Files: comprehensive, mission, UltraworkExecutor | ║                   IMPLEMENTATION COMPLETE                    ║ | │ 10  +  ✅ Added 'ultrawork' to MissionType in core/types.ts                                  │",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T20:45:19.096Z"
+}
