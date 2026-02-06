@@ -2,6 +2,7 @@
 // Cross-platform notification support
 
 import { execSync } from 'child_process';
+import { escapeShellArg } from '../utils/shell-escape.js';
 
 export type NotifyUrgency = 'low' | 'normal' | 'critical';
 export type NotifyMethod = 'auto' | 'desktop' | 'macos' | 'terminal' | 'none';
@@ -34,7 +35,7 @@ function notifyDesktop(title: string, message: string, urgency: NotifyUrgency): 
   if (!commandExists('notify-send')) return false;
   
   try {
-    execSync(`notify-send -u ${urgency} "${title}" "${message}"`, { stdio: 'ignore' });
+    execSync(`notify-send -u ${urgency} ${escapeShellArg(title)} ${escapeShellArg(message)}`, { stdio: 'ignore' });
     return true;
   } catch {
     return false;
@@ -45,8 +46,12 @@ function notifyMacOS(title: string, message: string): boolean {
   if (!commandExists('osascript')) return false;
   
   try {
-    const script = `display notification "${message}" with title "${title}"`;
-    execSync(`osascript -e '${script}'`, { stdio: 'ignore' });
+    // Escape for AppleScript string literal (replace " with \" and \ with \\)
+    const escapeAppleScript = (str: string): string => 
+      str.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    
+    const script = `display notification "${escapeAppleScript(message)}" with title "${escapeAppleScript(title)}"`;
+    execSync(`osascript -e ${escapeShellArg(script)}`, { stdio: 'ignore' });
     return true;
   } catch {
     return false;
@@ -72,7 +77,11 @@ async function notifySlack(title: string, message: string, urgency: NotifyUrgenc
       }]
     };
     
-    execSync(`curl -s -X POST -H 'Content-type: application/json' --data '${JSON.stringify(payload)}' ${config.slackWebhook}`, {
+    // Use Node's native fetch or write to temp file instead of inline JSON in shell
+    // For now, properly escape the JSON string for shell
+    const jsonPayload = JSON.stringify(payload).replace(/'/g, "'\\''");
+    
+    execSync(`curl -s -X POST -H 'Content-type: application/json' --data '${jsonPayload}' ${escapeShellArg(config.slackWebhook)}`, {
       stdio: 'ignore'
     });
     return true;

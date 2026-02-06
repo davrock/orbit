@@ -1,6 +1,7 @@
 // 🛸 ORBIT Git Utilities
 
 import { execSync } from 'child_process';
+import { escapeShellArg } from './shell-escape.js';
 
 export function execGit(cmd: string): string | undefined {
   try {
@@ -49,7 +50,7 @@ export function stageAll(): boolean {
 
 export function commit(message: string): boolean {
   try {
-    execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { stdio: 'pipe' });
+    execSync(`git commit -m ${escapeShellArg(message)}`, { stdio: 'pipe' });
     return true;
   } catch {
     return false;
@@ -58,7 +59,7 @@ export function commit(message: string): boolean {
 
 export function push(branch?: string): boolean {
   try {
-    const cmd = branch ? `git push origin ${branch}` : 'git push';
+    const cmd = branch ? `git push origin ${escapeShellArg(branch)}` : 'git push';
     execSync(cmd, { stdio: 'pipe' });
     return true;
   } catch {
@@ -68,7 +69,7 @@ export function push(branch?: string): boolean {
 
 export function createBranch(name: string): boolean {
   try {
-    execSync(`git checkout -b ${name}`, { stdio: 'pipe' });
+    execSync(`git checkout -b ${escapeShellArg(name)}`, { stdio: 'pipe' });
     return true;
   } catch {
     return false;
@@ -77,7 +78,7 @@ export function createBranch(name: string): boolean {
 
 export function checkoutBranch(name: string): boolean {
   try {
-    execSync(`git checkout ${name}`, { stdio: 'pipe' });
+    execSync(`git checkout ${escapeShellArg(name)}`, { stdio: 'pipe' });
     return true;
   } catch {
     return false;
