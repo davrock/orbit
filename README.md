@@ -8,10 +8,22 @@ AI-powered autonomous software development with self-improvement, smart model se
 
 ## Quick Start
 
-```bash
-# Install
-cd orbit && npm install && npm run build && npm link
+### Install
 
+```bash
+# Option 1: npm (any platform)
+npm install -g @davrock/orbit
+
+# Option 2: From source (Unix/macOS)
+git clone https://github.com/davrock/orbit.git && cd orbit && ./install.sh
+
+# Option 3: From source (Windows PowerShell)
+git clone https://github.com/davrock/orbit.git; cd orbit; .\install.ps1
+```
+
+### Use
+
+```bash
 # Full feature workflow
 orbit launch "add user authentication"
 

@@ -23,28 +23,48 @@
 
 ## 📦 Installation
 
-### Install Globally (Recommended)
+### Option 1: npm (Recommended)
+
+Install globally from npm (works on Windows, macOS, Linux):
 
 ```bash
+npm install -g @davrock/orbit
+```
+
+Then run from any project:
+```bash
+orbit --help
+```
+
+### Option 2: From Source
+
+Clone and install locally:
+
+```bash
+git clone https://github.com/davrock/orbit.git
 cd orbit
-npm install
-npm run build
-npm link
+
+# Unix/macOS/Linux
+./install.sh
+
+# Windows (PowerShell)
+.\install.ps1
 ```
 
-Now use `orbit` from any project directory:
-```bash
-orbit config      # Show auto-detected project config
-orbit missions    # List available missions
-orbit --help      # Show all commands
-```
+### Option 3: Development Mode
 
-### Development Mode
-
-Run directly without building:
+Run without installing:
 ```bash
-npm run dev -- config
+npm install && npm run build
+npm run dev -- --help
 npm run dev -- launch "your task"
+```
+
+### Verify Installation
+
+```bash
+orbit --version   # Check version
+orbit config      # Verify project detection
 ```
 
 ### Zero Configuration

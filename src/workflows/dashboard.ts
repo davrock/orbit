@@ -3,6 +3,7 @@
 
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 import { exportMetricsForDashboard, getMetricsSummary, getRecentRuns } from '../core/metrics.js';
 import { getSkillStats } from '../core/skills.js';
 import { loadFuelUsage } from '../core/state.js';
@@ -288,8 +289,6 @@ export function generateDashboard(): void {
 }
 
 export function openDashboard(): void {
-  const { execSync } = require('child_process');
-  
   if (!existsSync(DASHBOARD_FILE)) {
     generateDashboard();
   }

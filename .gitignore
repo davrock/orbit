@@ -17,9 +17,11 @@ Thumbs.db
 *.swo
 *~
 
-# Node (if testing in Node projects)
+# Node
 node_modules/
 npm-debug.log*
+.node-version
+.nvmrc
 
 # Python (if testing in Python projects)
 __pycache__/
