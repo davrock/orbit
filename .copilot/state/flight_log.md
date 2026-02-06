@@ -1,59 +1,62 @@
 # 🛸 ORBIT Flight Log
-## Mission History and Status
 
-### 2026-02-06 23:17 UTC
-**Mission:** Code Quality Improvement  
-**Crew:** PILOT  
-**Phase:** commit  
-**Status:** ✅ COMPLETE
-
-#### Objectives
-- Analyze project for improvement opportunities
-- Implement one focused quality improvement
-- Ensure all tests pass
-- Commit changes
-
-#### Actions Taken
-1. **Analyzed Project State**
-   - Reviewed test coverage and identified gaps
-   - Found untested functions in `src/core/state.ts`
-   - Identified potential null reference bug in `findMatchingSkill()`
-
-2. **Implemented Improvements**
-   - **Bug Fix:** Added null safety check in `findMatchingSkill()` to prevent crashes when skill.pattern is undefined
-   - **Test Coverage:** Added comprehensive test suite for previously untested functions:
-     - `loadSkills()` - 8 new tests
-     - `saveSkill()` - covered in 8 tests
-     - `findMatchingSkill()` - 5 new tests including edge cases
-     - `loadCargo()` - 10 new tests
-     - `getNextCargoItem()` - 2 new tests
-     - `markCargoDelivered()` - 1 new test
-     - `addCargoItem()` - 4 new tests  
-     - `appendLog()` - 3 new tests
-   - Total: **33 new test cases added**
-
-3. **Verification**
-   - All 525 tests passing (increased from 492)
-   - TypeScript compilation successful
-   - Build successful
-   - No breaking changes
-
-#### Metrics
-- Tests: 492 → 525 (+33 tests, +6.7%)
-- Test Files: 16 passing
-- Build Time: ~1.8s
-- All type checks passing
-
-#### Impact
-- **Correctness:** Fixed potential runtime crash in skill matching
-- **Reliability:** Significantly improved test coverage for state management
-- **Maintainability:** Tests document expected behavior for all public APIs
-- **Quality:** Following best practices for test isolation and AAA pattern
-
-#### Files Modified
-- `src/core/state.ts` - Added null safety check (1 line)
-- `src/core/state.test.ts` - Added 33 comprehensive tests (~220 lines)
+## Mission: Code Quality Improvement
+**Date**: 2026-02-06  
+**Crew**: PILOT (Core Implementation Specialist)  
+**Phase**: COMMIT
 
 ---
 
-*Flight log maintained by ORBIT crew. Reference `.copilot/best-practices.yaml` for standards.*
+## ✅ Mission Complete
+
+### Objective
+Analyze the project and implement ONE code quality improvement focused on maintainability and reducing duplication.
+
+### Implementation
+
+**Created**: Generic JSON File Utilities (`src/utils/json-file.ts`)
+- Introduced reusable `readJsonFile()`, `writeJsonFile()`, and `updateJsonFile()` functions
+- Provides consistent error handling for all JSON file operations
+- Automatic directory creation for write operations
+- Safe parsing with fallback to default values
+- Support for custom validation functions
+
+**Refactored**: State Management (`src/core/state.ts`)
+- Replaced repetitive JSON parsing logic with generic utilities
+- Reduced code duplication in `loadGroundControl()`, `loadFuelUsage()`, and related functions
+- Improved consistency in error handling across all state operations
+- Used `updateJsonFile()` for atomic read-transform-write operations in `recordSuccess()`, `recordFailure()`, and `trackFuel()`
+- Result: ~50 lines of code eliminated while improving maintainability
+
+**Testing**: Comprehensive test coverage
+- Added 14 test cases for new JSON file utilities
+- All existing tests pass (560 tests total)
+- Type checking passes without errors
+
+### Benefits
+1. **DRY Principle**: Eliminated repeated JSON parsing/writing patterns
+2. **Maintainability**: Centralized error handling logic
+3. **Consistency**: Uniform behavior across all JSON file operations
+4. **Type Safety**: Full TypeScript support with generics
+5. **Testability**: Well-isolated utility functions with comprehensive tests
+
+### Files Changed
+- ✨ Created: `src/utils/json-file.ts` (new utility)
+- ✨ Created: `src/utils/json-file.test.ts` (14 tests)
+- ♻️  Refactored: `src/core/state.ts` (reduced duplication)
+- 📦 Updated: `src/utils/index.ts` (export new utility)
+
+### Quality Metrics
+- ✅ All tests passing (560/560)
+- ✅ Type checking passes
+- ✅ Build successful
+- ✅ Follows best practices from `.copilot/best-practices.yaml`
+- ✅ Code coverage improved
+
+---
+
+## Next Steps
+This improvement sets a foundation for refactoring other modules that perform file I/O operations. Consider applying the same pattern to:
+- Configuration file loading in `src/core/detect.ts`
+- Persistence operations in `src/core/persistence.ts`
+- Any future JSON-based storage needs

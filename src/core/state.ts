@@ -3,6 +3,7 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { readJsonFile, writeJsonFile, updateJsonFile } from '../utils/json-file.js';
 import type { GroundControlState, FuelUsage, Skill, ModelTier, CargoItem } from './types.js';
 
 const STATE_DIR = '.copilot/state';
@@ -23,24 +24,18 @@ function ensureStateDir(): void {
 // Ground Control State
 export function loadGroundControl(): GroundControlState {
   ensureStateDir();
-  if (existsSync(GC_FILE)) {
-    try {
-      const data = JSON.parse(readFileSync(GC_FILE, 'utf-8'));
-      // Handle legacy snake_case format
-      return {
-        fails: data.fails || 0,
-        noProgress: data.noProgress ?? data.no_progress ?? 0,
-        types: data.types || [],
-        cycles: data.cycles || 0,
-        successes: data.successes || 0,
-        lastTask: data.lastTask || data.last_task,
-        lastError: data.lastError || data.last_error
-      };
-    } catch {
-      return createInitialGCState();
-    }
-  }
-  return createInitialGCState();
+  return readJsonFile(GC_FILE, {
+    defaultValue: createInitialGCState(),
+    validate: (data: any) => ({
+      fails: data.fails || 0,
+      noProgress: data.noProgress ?? data.no_progress ?? 0,
+      types: data.types || [],
+      cycles: data.cycles || 0,
+      successes: data.successes || 0,
+      lastTask: data.lastTask || data.last_task,
+      lastError: data.lastError || data.last_error
+    })
+  });
 }
 
 function createInitialGCState(): GroundControlState {
@@ -55,26 +50,38 @@ function createInitialGCState(): GroundControlState {
 
 export function saveGroundControl(state: GroundControlState): void {
   ensureStateDir();
-  writeFileSync(GC_FILE, JSON.stringify(state, null, 2));
+  writeJsonFile(GC_FILE, state);
 }
 
 export function recordSuccess(taskType: string): void {
-  const state = loadGroundControl();
-  state.fails = 0;
-  state.noProgress = 0;
-  state.successes++;
-  state.cycles++;
-  state.types = [...state.types.slice(-2), taskType]; // Keep last 3
-  saveGroundControl(state);
+  ensureStateDir();
+  updateJsonFile(
+    GC_FILE,
+    { defaultValue: createInitialGCState() },
+    (state) => ({
+      ...state,
+      fails: 0,
+      noProgress: 0,
+      successes: state.successes + 1,
+      cycles: state.cycles + 1,
+      types: [...state.types.slice(-2), taskType]
+    })
+  );
 }
 
 export function recordFailure(error?: string): void {
-  const state = loadGroundControl();
-  state.fails++;
-  state.noProgress++;
-  state.cycles++;
-  state.lastError = error;
-  saveGroundControl(state);
+  ensureStateDir();
+  updateJsonFile(
+    GC_FILE,
+    { defaultValue: createInitialGCState() },
+    (state) => ({
+      ...state,
+      fails: state.fails + 1,
+      noProgress: state.noProgress + 1,
+      cycles: state.cycles + 1,
+      lastError: error
+    })
+  );
 }
 
 export function resetGroundControl(): void {
@@ -84,10 +91,9 @@ export function resetGroundControl(): void {
 // Fuel Tracking
 export function loadFuelUsage(): FuelUsage {
   ensureStateDir();
-  if (existsSync(FUEL_FILE)) {
-    try {
-      const data = JSON.parse(readFileSync(FUEL_FILE, 'utf-8'));
-      // Handle legacy snake_case format
+  return readJsonFile(FUEL_FILE, {
+    defaultValue: createInitialFuelUsage(),
+    validate: (data: any) => {
       const byTier = data.byTier || data.by_tier || { premium: 0, standard: 0, fast: 0, ecomode: 0 };
       return {
         total: data.total || 0,
@@ -99,11 +105,8 @@ export function loadFuelUsage(): FuelUsage {
         },
         sessions: data.sessions || 0
       };
-    } catch {
-      return createInitialFuelUsage();
     }
-  }
-  return createInitialFuelUsage();
+  });
 }
 
 function createInitialFuelUsage(): FuelUsage {
@@ -116,16 +119,24 @@ function createInitialFuelUsage(): FuelUsage {
 
 export function saveFuelUsage(usage: FuelUsage): void {
   ensureStateDir();
-  writeFileSync(FUEL_FILE, JSON.stringify(usage, null, 2));
+  writeJsonFile(FUEL_FILE, usage);
 }
 
 export function trackFuel(tier: ModelTier): void {
-  const usage = loadFuelUsage();
+  ensureStateDir();
   const multipliers: Record<ModelTier, number> = { premium: 3.0, standard: 1.0, fast: 0.5, ecomode: 0.6 };
-  usage.total += multipliers[tier];
-  usage.byTier[tier]++;
-  usage.sessions++;
-  saveFuelUsage(usage);
+  updateJsonFile(
+    FUEL_FILE,
+    { defaultValue: createInitialFuelUsage() },
+    (usage) => ({
+      total: usage.total + multipliers[tier],
+      byTier: {
+        ...usage.byTier,
+        [tier]: usage.byTier[tier] + 1
+      },
+      sessions: usage.sessions + 1
+    })
+  );
 }
 
 // Skills
@@ -151,7 +162,7 @@ export function loadSkills(): Skill[] {
 export function saveSkill(skill: Skill): void {
   ensureStateDir();
   const file = join(SKILLS_DIR, `${skill.id}.json`);
-  writeFileSync(file, JSON.stringify(skill, null, 2));
+  writeJsonFile(file, skill);
 }
 
 export function findMatchingSkill(task: string): Skill | undefined {
