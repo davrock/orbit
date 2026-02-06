@@ -95,11 +95,39 @@ describe('PersistenceManager', () => {
       expect(tier).toBe('premium');
     });
 
+    it('should escalate from ecomode to fast', () => {
+      manager.recordAttempt(false);
+      manager.recordAttempt(false);
+      
+      const tier = manager.getEscalatedTier('ecomode');
+      expect(tier).toBe('fast');
+    });
+
     it('should maintain tier if escalation not triggered', () => {
       manager.recordAttempt(false);
       
       const tier = manager.getEscalatedTier('fast');
       expect(tier).toBe('fast');
+    });
+
+    it('should handle full escalation path from ecomode to premium', () => {
+      const escalateManager = new PersistenceManager({ escalateTierAfter: 1 });
+      
+      // First escalation: ecomode -> fast
+      escalateManager.recordAttempt(false);
+      expect(escalateManager.getEscalatedTier('ecomode')).toBe('fast');
+      
+      // Second escalation: fast -> standard
+      escalateManager.recordAttempt(false);
+      expect(escalateManager.getEscalatedTier('fast')).toBe('standard');
+      
+      // Third escalation: standard -> premium
+      escalateManager.recordAttempt(false);
+      expect(escalateManager.getEscalatedTier('standard')).toBe('premium');
+      
+      // Fourth attempt: premium stays premium
+      escalateManager.recordAttempt(false);
+      expect(escalateManager.getEscalatedTier('premium')).toBe('premium');
     });
   });
 
@@ -448,7 +476,7 @@ describe('PersistenceManager', () => {
       manager.recordAttempt(false);
       
       const tier = manager.getEscalatedTier('ecomode' as ModelTier);
-      expect(tier).toBe('ecomode'); // Should not escalate
+      expect(tier).toBe('fast'); // Escalates from ecomode to fast
     });
   });
 

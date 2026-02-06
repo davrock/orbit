@@ -69,11 +69,23 @@ export class PersistenceManager {
   }
 
   getEscalatedTier(currentTier: ModelTier): ModelTier {
-    if (this.shouldEscalateTier()) {
-      if (currentTier === 'fast') return 'standard';
-      if (currentTier === 'standard') return 'premium';
+    if (!this.shouldEscalateTier()) {
+      return currentTier;
     }
-    return currentTier;
+
+    // Escalation path: ecomode -> fast -> standard -> premium
+    switch (currentTier) {
+      case 'ecomode':
+        return 'fast';
+      case 'fast':
+        return 'standard';
+      case 'standard':
+        return 'premium';
+      case 'premium':
+        return 'premium'; // Already at max
+      default:
+        return currentTier;
+    }
   }
 
   getAlternativeCrew(phase: Phase, currentCrew: CrewMember): CrewMember {
