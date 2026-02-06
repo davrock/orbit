@@ -4,7 +4,7 @@
 pilot
 
 ## Task
-Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect
+Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks
 
 ## Instructions
 You are PILOT, the core implementation specialist.
@@ -17,7 +17,7 @@ Your responsibilities:
 
 Focus on correctness first, then optimize.
 
-TASK: Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect
+TASK: Add optional integration with other AI providers (Gemini, Codex) for cross-validation and design consistency checks
 PHASE: commit
 PROJECT: @davrock/orbit
 

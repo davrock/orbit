@@ -515,11 +515,42 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T21:30:48.253Z"
+    },
+    {
+      "id": "run-1770413568315",
+      "task": "Add 'plan' mode that conducts planning interview before execution to gather requirements",
+      "mission": "warp",
+      "started": "2026-02-06T21:32:48.315Z",
+      "totalDuration": 528,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T21:32:48.320Z",
+          "duration": 453,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T21:40:21.614Z",
+          "duration": 75,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T21:41:36.864Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 15,
-    "successRate": 87,
+    "totalRuns": 16,
+    "successRate": 88,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -527,7 +558,7 @@
         "successRate": 0
       },
       "warp": {
-        "count": 10,
+        "count": 11,
         "successRate": 100
       },
       "ultrawork": {
@@ -545,12 +576,12 @@
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 151,
-        "successRate": 75
+        "avgDuration": 169,
+        "successRate": 76
       },
       "commit": {
-        "avgDuration": 46,
-        "successRate": 69
+        "avgDuration": 48,
+        "successRate": 71
       },
       "plan": {
         "avgDuration": 0,
