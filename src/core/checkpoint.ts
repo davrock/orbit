@@ -1,12 +1,32 @@
 // 📍 ORBIT Checkpoint - Resume from Failed Phases
 // Saves state before each phase for recovery
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'fs';
+import { existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
+import { readJsonFile, writeJsonFile } from '../utils/json-file.js';
 import type { MissionType, Phase, ModelTier } from './types.js';
 
-const STATE_DIR = '.copilot/state';
-const CHECKPOINT_FILE = join(STATE_DIR, 'checkpoint.json');
+interface CheckpointConfig {
+  stateDir: string;
+}
+
+let config: CheckpointConfig = {
+  stateDir: '.copilot/state'
+};
+
+export function setCheckpointConfig(newConfig: Partial<CheckpointConfig>): void {
+  config = { ...config, ...newConfig };
+}
+
+export function resetCheckpointConfig(): void {
+  config = {
+    stateDir: '.copilot/state'
+  };
+}
+
+function getCheckpointFile(): string {
+  return join(config.stateDir, 'checkpoint.json');
+}
 
 export interface Checkpoint {
   version: string;
@@ -19,12 +39,6 @@ export interface Checkpoint {
   dryRun: boolean;
 }
 
-function ensureStateDir(): void {
-  if (!existsSync(STATE_DIR)) {
-    mkdirSync(STATE_DIR, { recursive: true });
-  }
-}
-
 export function saveCheckpoint(
   mission: MissionType,
   task: string,
@@ -33,8 +47,6 @@ export function saveCheckpoint(
   modelTier: ModelTier,
   dryRun: boolean
 ): void {
-  ensureStateDir();
-  
   const checkpoint: Checkpoint = {
     version: '1.0',
     mission,
@@ -46,26 +58,39 @@ export function saveCheckpoint(
     dryRun
   };
   
-  writeFileSync(CHECKPOINT_FILE, JSON.stringify(checkpoint, null, 2));
+  writeJsonFile(getCheckpointFile(), checkpoint);
 }
 
 export function loadCheckpoint(): Checkpoint | null {
-  if (!existsSync(CHECKPOINT_FILE)) return null;
+  const checkpointFile = getCheckpointFile();
+  if (!existsSync(checkpointFile)) return null;
   
-  try {
-    return JSON.parse(readFileSync(CHECKPOINT_FILE, 'utf-8'));
-  } catch {
-    return null;
-  }
+  return readJsonFile<Checkpoint | null>(checkpointFile, {
+    defaultValue: null,
+    validate: (data: any) => {
+      if (!data || typeof data !== 'object') return null;
+      return {
+        version: data.version || '1.0',
+        mission: data.mission,
+        task: data.task,
+        currentPhase: data.currentPhase,
+        phasesCompleted: Array.isArray(data.phasesCompleted) ? data.phasesCompleted : [],
+        modelTier: data.modelTier,
+        timestamp: data.timestamp,
+        dryRun: data.dryRun ?? false
+      };
+    }
+  });
 }
 
 export function checkpointExists(): boolean {
-  return existsSync(CHECKPOINT_FILE);
+  return existsSync(getCheckpointFile());
 }
 
 export function clearCheckpoint(): void {
-  if (existsSync(CHECKPOINT_FILE)) {
-    unlinkSync(CHECKPOINT_FILE);
+  const checkpointFile = getCheckpointFile();
+  if (existsSync(checkpointFile)) {
+    unlinkSync(checkpointFile);
   }
 }
 
