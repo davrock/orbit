@@ -29,7 +29,7 @@
 
 # LOW PRIORITY - Polish
 # ✓ Add internationalization support (multiple language READMEs like oh-my-claudecode) (2026-02-06)
-Create interactive website/documentation with examples
-Add sponsor/contribution section to README
+# ✓ Create interactive website/documentation with examples (2026-02-06)
+# ✓ Add sponsor/contribution section to README (2026-02-06)
 
 # COMPLETED

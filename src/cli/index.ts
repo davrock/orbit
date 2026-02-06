@@ -39,6 +39,7 @@ import {
   printHUD
 } from '../core/index.js';
 import { printBanner, printKeyValue, colors, printWarning } from '../utils/output.js';
+import { handleMissionCommand } from './command-handler.js';
 
 const program = new Command();
 
@@ -60,68 +61,7 @@ program
   .option('--crew <name>', 'Override crew member')
   .option('--cross-validate', 'Enable AI provider cross-validation')
   .option('--consistency-check', 'Enable design consistency checks')
-  .action(async (task, options) => {
-    // Handle plan mode if requested
-    if (options.plan) {
-      await runPlanMode({ task, dryRun: options.dryRun });
-      console.log('');
-      console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
-      console.log('');
-    }
-    
-    // Detect magic keywords in task description
-    const detected = detectMagicKeywords(task);
-    
-    // Apply detected mission type (if not explicitly set via command)
-    if (detected.mission) {
-      printWarning(`🔮 Magic keyword detected: switching to '${detected.mission}' mode`);
-      if (detected.mission === 'ralph') {
-        await runMission({ 
-          mission: 'ralph', 
-          task: detected.cleanedTask, 
-          dryRun: options.dryRun,
-          modelTier: detected.modelTier || 'auto',
-          enableCrossValidation: options.crossValidate,
-          enableConsistencyCheck: options.consistencyCheck
-        });
-        return;
-      } else if (detected.mission === 'ultrawork') {
-        await runUltrawork({
-          task: detected.cleanedTask,
-          dryRun: options.dryRun,
-          maxConcurrency: 4,
-          modelTier: detected.modelTier || 'auto'
-        });
-        return;
-      }
-    }
-    
-    // Handle flight plan creation if requested
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    // Normal launch execution
-    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
-    if (options.premium) modelTier = 'premium';
-    else if (options.economy) modelTier = 'fast';
-    else if (options.ecomode) modelTier = 'ecomode';
-    else if (detected.modelTier) modelTier = detected.modelTier;
-    
-    await runMission({
-      mission: 'launch',
-      task: detected.cleanedTask,
-      dryRun: options.dryRun,
-      interactive: options.interactive,
-      modelTier,
-      customCrew: options.crew,
-      enableCrossValidation: options.crossValidate,
-      enableConsistencyCheck: options.consistencyCheck
-    });
-  });
+  .action((task, options) => handleMissionCommand('launch', task, options));
 
 program
   .command('repair <task>')
@@ -130,48 +70,7 @@ program
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--cross-validate', 'Enable AI provider cross-validation')
   .option('--consistency-check', 'Enable design consistency checks')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    // Handle mission type override
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
-        enableCrossValidation: options.crossValidate,
-        enableConsistencyCheck: options.consistencyCheck
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'repair', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
-      enableCrossValidation: options.crossValidate,
-      enableConsistencyCheck: options.consistencyCheck
-    });
-  });
+  .action((task, options) => handleMissionCommand('repair', task, options));
 
 program
   .command('warp <task>')
@@ -181,330 +80,50 @@ program
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--cross-validate', 'Enable AI provider cross-validation')
   .option('--consistency-check', 'Enable design consistency checks')
-  .action(async (task, options) => {
-    // Handle plan mode if requested
-    if (options.plan) {
-      await runPlanMode({ task, dryRun: options.dryRun });
-      console.log('');
-      console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
-      console.log('');
-    }
-    
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
-        enableCrossValidation: options.crossValidate,
-        enableConsistencyCheck: options.consistencyCheck
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'warp', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || options.ecomode ? 'ecomode' : 'auto',
-      enableCrossValidation: options.crossValidate,
-      enableConsistencyCheck: options.consistencyCheck
-    });
-  });
+  .action((task, options) => handleMissionCommand('warp', task, options));
 
 program
   .command('mayday <task>')
   .description('Emergency hotfix (debug → implement → commit)')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'mayday', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('mayday', task, options));
 
 program
   .command('preflight <task>')
   .description('TDD mission (test → implement → test → review → commit)')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'preflight', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('preflight', task, options));
 
 program
   .command('shields-up <task>')
   .description('Security-focused development')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'shields-up', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('shields-up', task, options));
 
 program
   .command('dock <task>')
   .description('API development')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'dock', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('dock', task, options));
 
 program
   .command('transmit <task>')
   .description('Documentation only')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'transmit', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('transmit', task, options));
 
 program
   .command('apollo <task>')
   .description('All phases mission')
   .option('--dry-run', 'Show what would happen')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.mission === 'ralph') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-      await runMission({ 
-        mission: 'ralph', 
-        task: detected.cleanedTask, 
-        dryRun: options.dryRun,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    } else if (detected.mission === 'ultrawork') {
-      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-      await runUltrawork({
-        task: detected.cleanedTask,
-        dryRun: options.dryRun,
-        maxConcurrency: 4,
-        modelTier: detected.modelTier || 'auto'
-      });
-      return;
-    }
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'apollo', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('apollo', task, options));
 
 program
   .command('ralph <task>')
   .description('Persistent mode - never gives up (retry with escalation)')
   .option('--dry-run', 'Show what would happen')
   .option('--max-attempts <n>', 'Maximum retry attempts', '10')
-  .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    await runMission({ 
-      mission: 'ralph', 
-      task: detected.cleanedTask, 
-      dryRun: options.dryRun,
-      modelTier: detected.modelTier || 'auto'
-    });
-  });
+  .action((task, options) => handleMissionCommand('ralph', task, options));
 
 program
   .command('ultrawork <task>')

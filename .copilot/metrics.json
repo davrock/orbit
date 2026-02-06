@@ -639,11 +639,73 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T22:18:52.227Z"
+    },
+    {
+      "id": "run-1770416452290",
+      "task": "Create interactive website/documentation with examples",
+      "mission": "warp",
+      "started": "2026-02-06T22:20:52.290Z",
+      "totalDuration": 611,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T22:20:52.294Z",
+          "duration": 533,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T22:29:45.565Z",
+          "duration": 78,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 3,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T22:31:03.863Z"
+    },
+    {
+      "id": "run-1770417183992",
+      "task": "Add sponsor/contribution section to README",
+      "mission": "warp",
+      "started": "2026-02-06T22:33:03.992Z",
+      "totalDuration": 124,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T22:33:03.997Z",
+          "duration": 80,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "fast"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T22:34:24.680Z",
+          "duration": 43,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "fast"
+        }
+      ],
+      "filesChanged": 9,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T22:35:08.415Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 19,
-    "successRate": 89,
+    "totalRuns": 21,
+    "successRate": 90,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -651,7 +713,7 @@
         "successRate": 0
       },
       "warp": {
-        "count": 14,
+        "count": 16,
         "successRate": 100
       },
       "ultrawork": {
@@ -669,12 +731,12 @@
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 225,
-        "successRate": 80
+        "avgDuration": 232,
+        "successRate": 82
       },
       "commit": {
         "avgDuration": 54,
-        "successRate": 76
+        "successRate": 79
       },
       "plan": {
         "avgDuration": 0,
