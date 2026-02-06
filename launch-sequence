@@ -14,7 +14,7 @@ MAX_ITERATIONS="${MAX_ITERATIONS:-0}"
 STATE_DIR=".copilot/state"
 GC_FILE="$STATE_DIR/ground_control.json"
 LOG_FILE="$STATE_DIR/launch.log"
-QUEUE_FILE=".copilot/feature_queue.txt"
+CARGO_FILE=".copilot/cargo_manifest.txt"
 
 MAX_FAILS=3
 MAX_NO_PROGRESS=5
@@ -33,9 +33,9 @@ mkdir -p "$STATE_DIR"
 
 PLANS_DIR=".copilot/plans"
 
-get_queue_item() {
-    [ -f "$QUEUE_FILE" ] || return 1
-    grep -v "^#" "$QUEUE_FILE" | grep -v "^$" | head -1
+get_cargo_item() {
+    [ -f "$CARGO_FILE" ] || return 1
+    grep -v "^#" "$CARGO_FILE" | grep -v "^$" | head -1
 }
 
 get_github_issue() {
@@ -56,13 +56,13 @@ get_pending_plan() {
     return 1
 }
 
-mark_done() {
-    local item="$1" temp="${QUEUE_FILE}.tmp"
-    sed "s|^${item}$|# ✓ ${item} ($(date +%Y-%m-%d))|" "$QUEUE_FILE" > "$temp" && mv "$temp" "$QUEUE_FILE"
+mark_delivered() {
+    local item="$1" temp="${CARGO_FILE}.tmp"
+    sed "s|^${item}$|# ✓ ${item} ($(date +%Y-%m-%d))|" "$CARGO_FILE" > "$temp" && mv "$temp" "$CARGO_FILE"
 }
 
 get_work() {
-    local q=$(get_queue_item) && echo "queue:$q" && return 0
+    local q=$(get_cargo_item) && echo "cargo:$q" && return 0
     local g=$(get_github_issue) && echo "github:$g" && return 0
     local p=$(get_pending_plan) && echo "plan:$p" && return 0
     echo "self:improve"
@@ -164,7 +164,7 @@ run_cycle() {
     local src="${work%%:*}" task="${work#*:}"
     
     case "$src" in
-        queue) echo -e "${CYAN}📋 Queue: $task${NC}" ;;
+        cargo) echo -e "${CYAN}📦 Cargo: $task${NC}" ;;
         github) 
             local num="${task%%:*}" title="${task#*:}"
             echo -e "${CYAN}🐙 GitHub #$num: $title${NC}"
@@ -172,7 +172,6 @@ run_cycle() {
             ;;
         plan)
             echo -e "${CYAN}📐 Flight Plan: $task${NC}"
-            # Execute the plan
             if ./flight-plan execute "$task" 2>&1; then
                 record true "plan"
                 return 0
@@ -195,7 +194,7 @@ run_cycle() {
         if [ "$before" != "$after" ]; then
             local msg=$(git log -1 --pretty=%B 2>/dev/null | head -1)
             echo -e "${GREEN}✓ Success: $msg${NC}"
-            [ "$src" = "queue" ] && mark_done "$task"
+            [ "$src" = "cargo" ] && mark_delivered "$task"
             [ "$src" = "github" ] && gh issue close "${task%%:*}" --comment "Fixed by ORBIT" 2>/dev/null || true
             record true "$src"
             log "Cycle $i [$src]: $msg"

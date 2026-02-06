@@ -97,9 +97,9 @@ Priority order: **Queue → GitHub Issues → Self-Improve**
 MAX_ITERATIONS=50 ./launch-sequence   # Limit cycles
 ```
 
-### Flight Plan (Feature Queue)
+### Cargo Manifest (Task Queue)
 
-Add tasks to `.copilot/feature_queue.txt`:
+Add tasks to `.copilot/cargo_manifest.txt`:
 ```
 # HIGH PRIORITY
 Add user authentication
@@ -148,11 +148,11 @@ Generate detailed plans and GitHub issues (inspired by BMAD, but focused):
 
 ## 🐙 GitHub Issue Management
 
-Convert queue, plans, or text into GitHub issues:
+Convert cargo, plans, or text into GitHub issues:
 
 ```bash
-# Create issues from feature queue
-./transmit-issues from-queue
+# Create issues from cargo manifest
+./transmit-issues from-cargo
 
 # Create issues from a flight plan
 ./transmit-issues from-plan plan-001
@@ -174,7 +174,9 @@ Convert queue, plans, or text into GitHub issues:
 
 ```
 mission-control      Main orchestrator
-launch-sequence      Self-improvement loop
+launch-sequence      Self-improvement loop  
+cargo-bay            Autonomous task processor
+mission-tracker      Real-time monitoring
 flight-plan          Implementation planning
 transmit-issues      GitHub issue generator
 .copilot/
@@ -182,10 +184,13 @@ transmit-issues      GitHub issue generator
   missions.yaml      Mission definitions
   best-practices.yaml Standards reference
   models.yaml        Model selection config
-  feature_queue.txt  Flight plan queue
+  cargo_manifest.txt Task queue
   config.sh          Configuration
   plans/             Generated flight plans
   state/             Runtime state
+    flight_log.md    Current mission log
+    mission.log      Activity log
+    hal.log          Self-improvement log
     fuel_tracking.json Token usage
     issues_created.log Issue history
 ```
@@ -218,9 +223,15 @@ MODEL_TIER=auto  # auto, premium, standard, fast
 # Check fuel usage
 ./mission-control --fuel
 
-# Self-improvement with queue
-echo "Add dark mode" >> .copilot/feature_queue.txt
+# Self-improvement with cargo
+echo "Add dark mode" >> .copilot/cargo_manifest.txt
 ./launch-sequence --once
+
+# Process all cargo autonomously
+./cargo-bay
+
+# Monitor progress
+./mission-tracker watch
 ```
 
 ## License

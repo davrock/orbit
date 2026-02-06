@@ -1,0 +1,193 @@
+#!/bin/bash
+# 🛸 ORBIT - Cargo Bay
+# Processes mission cargo (tasks) autonomously
+# "Loading cargo... prepare for departure!" 🚀
+
+cd "$(dirname "$0")"
+
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+CARGO_FILE=".copilot/cargo_manifest.txt"
+LOG_FILE=".copilot/state/cargo.log"
+
+print_header() {
+    echo ""
+    echo -e "${MAGENTA}╔══════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${MAGENTA}║  📦 ORBIT - Cargo Bay                                         ║${NC}"
+    echo -e "${MAGENTA}║     Autonomous Mission Payload Processor                      ║${NC}"
+    echo -e "${MAGENTA}╚══════════════════════════════════════════════════════════════╝${NC}"
+    echo ""
+}
+
+init_cargo() {
+    mkdir -p .copilot/state
+    
+    if [ ! -f "$CARGO_FILE" ]; then
+        cat > "$CARGO_FILE" << 'EOF'
+# 📦 Cargo Manifest (one item per line)
+# Process with: ./cargo-bay
+
+# Priority Cargo
+Add best practices for each crew member type
+Implement LLM model selection automation
+
+# Standard Cargo
+# Add your tasks here
+EOF
+        echo -e "${YELLOW}Created cargo manifest: $CARGO_FILE${NC}"
+        echo "Edit this file to load your cargo."
+        exit 0
+    fi
+}
+
+get_next_cargo() {
+    grep -v "^#" "$CARGO_FILE" | grep -v "^$" | head -1
+}
+
+mark_cargo_delivered() {
+    local item="$1"
+    local temp_file="${CARGO_FILE}.tmp"
+    local found=0
+    
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" == "$item" ]] && [[ $found -eq 0 ]]; then
+            echo "# ✓ $item (delivered $(date +%Y-%m-%d))"
+            found=1
+        else
+            echo "$line"
+        fi
+    done < "$CARGO_FILE" > "$temp_file"
+    
+    mv "$temp_file" "$CARGO_FILE"
+}
+
+offload_cargo() {
+    local item="$1"
+    local temp_file="${CARGO_FILE}.tmp"
+    
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" != "$item" ]]; then
+            echo "$line"
+        fi
+    done < "$CARGO_FILE" > "$temp_file"
+    
+    mv "$temp_file" "$CARGO_FILE"
+    echo -e "${CYAN}📦 Cargo delivered: $item${NC}"
+}
+
+process_cargo() {
+    local item="$1"
+    
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${CYAN}  📦 Processing: $item${NC}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    
+    # Run mission control
+    ./mission-control launch "$item"
+    
+    local exit_code=$?
+    
+    if [ $exit_code -eq 0 ]; then
+        echo ""
+        echo -e "${GREEN}✓ Cargo delivered: $item${NC}"
+        offload_cargo "$item"
+        return 0
+    elif [ $exit_code -eq 2 ]; then
+        echo ""
+        echo -e "${YELLOW}✓ Cargo already exists: $item${NC}"
+        offload_cargo "$item"
+        return 0
+    else
+        echo ""
+        echo -e "${RED}✗ Cargo delivery failed: $item${NC}"
+        return 1
+    fi
+}
+
+show_manifest() {
+    echo -e "${CYAN}📦 Cargo Manifest:${NC}"
+    echo ""
+    
+    local count=0
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^[^#] ]] && [ -n "$line" ]; then
+            count=$((count + 1))
+            echo "  $count. $line"
+        fi
+    done < "$CARGO_FILE"
+    
+    if [ $count -eq 0 ]; then
+        echo -e "${GREEN}  Cargo bay empty! All deliveries complete.${NC}"
+        return 1
+    fi
+    
+    echo ""
+    return 0
+}
+
+main() {
+    print_header
+    
+    init_cargo
+    
+    if ! show_manifest; then
+        exit 0
+    fi
+    
+    echo -e "${YELLOW}🚀 Processing cargo autonomously...${NC}"
+    echo -e "${CYAN}Log: $LOG_FILE${NC}"
+    echo ""
+    
+    echo "=== Cargo Bay Opened ===" > "$LOG_FILE"
+    echo "Started: $(date)" >> "$LOG_FILE"
+    echo "" >> "$LOG_FILE"
+    
+    local delivered=0
+    local lost=0
+    local start_time=$(date +%s)
+    
+    while true; do
+        local item
+        item=$(get_next_cargo)
+        
+        if [ -z "$item" ]; then
+            local duration=$(($(date +%s) - start_time))
+            echo ""
+            echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo -e "${GREEN}  📦 All cargo delivered!${NC}"
+            echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+            echo ""
+            echo "Delivered: $delivered"
+            echo "Lost: $lost"
+            echo "Time: $((duration/60))m $((duration%60))s"
+            break
+        fi
+        
+        if process_cargo "$item"; then
+            delivered=$((delivered + 1))
+            echo "[$(date '+%H:%M:%S')] ✓ $item" >> "$LOG_FILE"
+        else
+            lost=$((lost + 1))
+            echo "[$(date '+%H:%M:%S')] ✗ $item (lost)" >> "$LOG_FILE"
+            echo -e "${YELLOW}Cargo lost, continuing...${NC}"
+        fi
+        
+        echo ""
+        echo -e "${BLUE}📦 Loading next cargo...${NC}"
+        sleep 3
+    done
+    
+    echo "" >> "$LOG_FILE"
+    echo "=== Cargo Bay Closed ===" >> "$LOG_FILE"
+    echo "Delivered: $delivered, Lost: $lost" >> "$LOG_FILE"
+}
+
+main

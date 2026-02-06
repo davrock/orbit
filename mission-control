@@ -19,7 +19,7 @@ MODEL_TIER="${MODEL_TIER:-auto}"
 TEST_CMD="${TEST_CMD:-npm test}"
 
 STATE_DIR=".copilot/state"
-HANDOFF_FILE="$STATE_DIR/handoff.md"
+FLIGHT_LOG="$STATE_DIR/flight_log.md"
 LOG_FILE="$STATE_DIR/mission.log"
 FUEL_FILE="$STATE_DIR/fuel_tracking.json"
 
@@ -206,7 +206,7 @@ TASK: $TASK
 PHASE: $phase
 PROJECT: $PROJECT_NAME
 
-Read .copilot/state/handoff.md first, update when done.
+Read .copilot/state/flight_log.md first, update when done.
 Reference .copilot/best-practices.yaml for standards.
 Complete the $phase phase then say '${phase^^} COMPLETE' and /exit"
 
@@ -242,16 +242,16 @@ main() {
     [ "$DRY_RUN" = "true" ] && echo -e "Mode: ${YELLOW}DRY RUN${NC}"
     echo ""
     
-    cat > "$HANDOFF_FILE" << EOF
-# Mission Handoff
+    cat > "$FLIGHT_LOG" << EOF
+# 🛸 Flight Log
 Task: $TASK
 Mission: $MISSION
-Started: $(date)
+Launched: $(date)
 
 ## Status
-Phase: starting
+Phase: launching
 
-## Notes
+## Mission Notes
 EOF
     
     log "Starting: $TASK (mission: $MISSION)"
