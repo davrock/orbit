@@ -50,10 +50,34 @@ orbit config
 | `dock` | plan → implement → test → document → commit | API development |
 | `transmit` | implement → review → commit | Documentation |
 | `apollo` | all phases | Comprehensive |
+| `ralph` | implement → test → review → commit | **Persistent mode** (never gives up) |
 
 ```bash
 orbit missions  # List all
 ```
+
+### 🔄 Ralph Mode - Persistence That Never Gives Up
+
+The `ralph` mission is a special persistence mode that won't give up until the task is verified complete:
+
+```bash
+orbit ralph "implement complex feature"
+orbit ralph --max-attempts 15 "difficult refactor"
+```
+
+**How it works:**
+- **Automatic Retry**: Retries failed phases up to 10 times (configurable)
+- **Smart Escalation**: Escalates model tier (fast → standard → premium) after 2 attempts
+- **Crew Rotation**: Switches crew member after 4 attempts for fresh perspective
+- **Approach Variation**: Tries different implementation strategies every 3 attempts
+- **Verification**: Validates each phase completion before moving forward
+- **Progress Tracking**: Shows attempt count, escalation level, and errors
+
+**Perfect for:**
+- Complex features that might need multiple approaches
+- Difficult bugs that require persistence
+- Tasks where you want guaranteed completion
+- Learning from different implementation strategies
 
 ## 🧠 Smart Model Selection
 

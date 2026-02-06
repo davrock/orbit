@@ -11,3 +11,4 @@ export * from './checkpoint.js';
 export * from './notify.js';
 export * from './metrics.js';
 export * from './quotes.js';
+export * from './persistence.js';

@@ -11,6 +11,7 @@ import {
   type MissionResult,
   type PhaseResult,
   type ProjectConfig,
+  type ModelTier,
   getPhasesForMission,
   getCrewForPhase,
   selectModelTier,
@@ -29,6 +30,7 @@ import {
   completePhase,
   endHUD
 } from '../core/index.js';
+import { createPersistenceManager, type PersistenceManager } from '../core/persistence.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
 import {
   printBanner,
@@ -62,6 +64,7 @@ export class MissionControl {
   private startTime: Date;
   private phaseResults: PhaseResult[] = [];
   private phasesToRun: Phase[];
+  private persistenceManager?: PersistenceManager;
 
   constructor(options: MissionControlOptions) {
     this.config = detectProjectConfig();
@@ -72,6 +75,8 @@ export class MissionControl {
       throw new Error(`Unknown mission type: ${options.mission}`);
     }
 
+    const isPersistentMode = options.mission === 'ralph';
+
     this.missionConfig = {
       type: options.mission,
       task: options.task,
@@ -79,11 +84,17 @@ export class MissionControl {
       modelTier: options.modelTier === 'auto' ? 'standard' : (options.modelTier || 'standard'),
       dryRun: options.dryRun || false,
       interactive: options.interactive || false,
-      customCrew: options.customCrew
+      customCrew: options.customCrew,
+      persistenceMode: isPersistentMode
     };
 
     // Use resumeFrom phases if provided, otherwise run all phases
     this.phasesToRun = options.resumeFrom || phases;
+
+    // Initialize persistence manager for ralph mode
+    if (isPersistentMode) {
+      this.persistenceManager = createPersistenceManager();
+    }
   }
 
   async execute(): Promise<MissionResult> {
@@ -127,7 +138,16 @@ export class MissionControl {
         this.missionConfig.dryRun
       );
 
-      const result = await this.runPhase(phase);
+      let result: PhaseResult;
+      
+      if (this.persistenceManager) {
+        // Ralph mode: retry with escalation until verified complete
+        result = await this.runPhaseWithPersistence(phase);
+      } else {
+        // Normal mode: single attempt
+        result = await this.runPhase(phase);
+      }
+      
       this.phaseResults.push(result);
 
       // Update HUD with completed phase
@@ -141,8 +161,12 @@ export class MissionControl {
         metricsEnd(false);
         endHUD(false);
 
-        printError(`Mission failed at phase: ${phase}`);
-        printWarning('Run "orbit resume" to retry from this phase');
+        if (this.persistenceManager) {
+          printError(`Mission failed at phase: ${phase} after ${this.persistenceManager['state'].totalAttempts} attempts`);
+        } else {
+          printError(`Mission failed at phase: ${phase}`);
+          printWarning('Run "orbit resume" to retry from this phase');
+        }
         return this.buildResult(false, beforeCommit);
       }
     }
@@ -172,9 +196,87 @@ export class MissionControl {
     return this.buildResult(true, beforeCommit);
   }
 
-  private async runPhase(phase: Phase): Promise<PhaseResult> {
-    const crew = getCrewForPhase(phase, this.missionConfig.customCrew);
-    const tier = selectModelTier(this.missionConfig.task, phase, crew);
+  private async runPhaseWithPersistence(phase: Phase): Promise<PhaseResult> {
+    if (!this.persistenceManager) {
+      return this.runPhase(phase);
+    }
+
+    this.persistenceManager.reset();
+    let lastResult: PhaseResult | undefined;
+
+    console.log(colors.warning('🔄 Persistence mode enabled - will retry until verified complete'));
+    console.log('');
+
+    while (this.persistenceManager.shouldRetry()) {
+      const state = this.persistenceManager['state'];
+      
+      if (state.attempt > 0) {
+        console.log('');
+        console.log(colors.warning(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`));
+        console.log(this.persistenceManager.getStatus());
+        console.log(colors.warning(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`));
+        console.log('');
+      }
+
+      // Get potentially modified crew and tier
+      let crew = getCrewForPhase(phase, this.missionConfig.customCrew);
+      let tier = selectModelTier(this.missionConfig.task, phase, crew);
+
+      if (state.attempt > 0) {
+        if (this.persistenceManager.shouldChangeCrew()) {
+          crew = this.persistenceManager.getAlternativeCrew(phase, crew);
+          console.log(colors.warning(`🔄 Switching to ${crew} for different perspective`));
+        }
+
+        tier = this.persistenceManager.getEscalatedTier(tier);
+        if (tier !== selectModelTier(this.missionConfig.task, phase, crew)) {
+          console.log(colors.warning(`🚀 Escalating to ${tier} tier for better reasoning`));
+        }
+      }
+
+      // Run the phase with persistence-aware prompt
+      const result = await this.runPhase(phase, crew, tier, lastResult);
+      
+      // Verify completion
+      const verification = await this.persistenceManager.verifyPhaseCompletion(phase, result);
+      
+      if (verification.verified) {
+        console.log(colors.success(`✓ Phase ${phase} verified complete!`));
+        this.persistenceManager.recordAttempt(true);
+        return result;
+      }
+
+      // Not verified, record failure and retry
+      console.log(colors.error(`✗ Verification failed: ${verification.reason}`));
+      this.persistenceManager.recordAttempt(false, verification.reason);
+      lastResult = result;
+
+      if (!this.persistenceManager.shouldRetry()) {
+        console.log(colors.error(`Maximum retry attempts (${this.persistenceManager['config'].maxAttempts}) reached`));
+        return {
+          ...result,
+          success: false,
+          error: `Failed after ${this.persistenceManager['state'].totalAttempts} attempts`
+        };
+      }
+
+      // Brief pause before retry
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    return lastResult || {
+      phase,
+      crew: getCrewForPhase(phase),
+      modelTier: 'standard',
+      success: false,
+      duration: 0,
+      error: 'Persistence retry loop exited unexpectedly'
+    };
+  }
+
+  private async runPhase(phase: Phase, overrideCrew?: CrewMember, overrideTier?: ModelTier, previousResult?: PhaseResult): Promise<PhaseResult> {
+    const crew = overrideCrew || getCrewForPhase(phase, this.missionConfig.customCrew);
+    const tier = overrideTier || selectModelTier(this.missionConfig.task, phase, crew);
     const icon = getModelIcon(tier);
     const phaseStart = Date.now();
 
@@ -230,7 +332,12 @@ export class MissionControl {
     }
     
     // Generate the prompt for this phase
-    const prompt = this.generatePrompt(phase, crew);
+    let prompt = this.generatePrompt(phase, crew);
+    
+    // Enhance prompt with persistence instructions if in ralph mode
+    if (this.persistenceManager && previousResult) {
+      prompt = this.persistenceManager.generatePersistencePrompt(prompt, phase, crew, previousResult);
+    }
     
     // Write prompt to file for reference
     this.writePromptFile(phase, prompt);

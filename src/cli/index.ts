@@ -121,6 +121,15 @@ program
     await runMission({ mission: 'apollo', task, dryRun: options.dryRun });
   });
 
+program
+  .command('ralph <task>')
+  .description('Persistent mode - never gives up (retry with escalation)')
+  .option('--dry-run', 'Show what would happen')
+  .option('--max-attempts <n>', 'Maximum retry attempts', '10')
+  .action(async (task, options) => {
+    await runMission({ mission: 'ralph', task, dryRun: options.dryRun });
+  });
+
 // Launch Sequence (self-improvement loop)
 program
   .command('evolve')
@@ -332,6 +341,7 @@ program
     console.log('  dock        API development');
     console.log('  transmit    Documentation only');
     console.log('  apollo      All phases');
+    console.log('  ralph       Persistent mode (retry with escalation until verified)');
   });
 
 program

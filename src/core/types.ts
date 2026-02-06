@@ -5,7 +5,7 @@ export type ModelTier = 'premium' | 'standard' | 'fast';
 
 export type MissionType = 
   | 'launch' | 'repair' | 'warp' | 'mayday' | 'preflight'
-  | 'shields-up' | 'dock' | 'transmit' | 'apollo';
+  | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph';
 
 export type Phase = 
   | 'plan' | 'implement' | 'test' | 'review' | 'debug' 
@@ -48,6 +48,7 @@ export interface MissionConfig {
   dryRun: boolean;
   interactive: boolean;
   customCrew?: CrewMember;
+  persistenceMode?: boolean;
 }
 
 export interface PhaseResult {
