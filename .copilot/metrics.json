@@ -63,11 +63,159 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T20:22:05.736Z"
+    },
+    {
+      "id": "run-1770409545282",
+      "task": "Implement rate limit detection and auto-resume (wait and retry when hitting API limits with exponential backoff)",
+      "mission": "warp",
+      "started": "2026-02-06T20:25:45.282Z",
+      "totalDuration": 171,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:25:45.287Z",
+          "duration": 132,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:27:57.445Z",
+          "duration": 38,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 5,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:28:36.362Z"
+    },
+    {
+      "id": "run-1770409758916",
+      "task": "Add 'ralph' persistence mode that won't give up until task is verified complete (retry with escalation, different approaches)",
+      "mission": "warp",
+      "started": "2026-02-06T20:29:18.916Z",
+      "totalDuration": 495,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:29:18.921Z",
+          "duration": 416,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:36:15.755Z",
+          "duration": 78,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:37:34.377Z"
+    },
+    {
+      "id": "run-1770410579114",
+      "task": "Test ultrawork mode",
+      "mission": "ultrawork",
+      "started": "2026-02-06T20:42:59.114Z",
+      "totalDuration": 0,
+      "phases": [
+        {
+          "name": "plan",
+          "started": "2026-02-06T20:42:59.118Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:42:59.124Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:42:59.128Z",
+          "duration": 0,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "review",
+          "started": "2026-02-06T20:42:59.133Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:42:59.137Z",
+          "duration": 0,
+          "status": "skipped",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 11,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:42:59.145Z"
+    },
+    {
+      "id": "run-1770410374423",
+      "task": "Add 'ultrawork' parallel execution mode that distributes subtasks across multiple concurrent agent sessions",
+      "mission": "warp",
+      "started": "2026-02-06T20:39:34.423Z",
+      "totalDuration": 344,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T20:39:34.428Z",
+          "duration": 275,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T20:44:09.653Z",
+          "duration": 69,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-06T20:45:19.101Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 3,
-    "successRate": 33,
+    "totalRuns": 7,
+    "successRate": 71,
     "avgDuration": null,
     "byMission": {
       "undefined": {
@@ -75,16 +223,28 @@
         "successRate": 0
       },
       "warp": {
+        "count": 4,
+        "successRate": 100
+      },
+      "ultrawork": {
         "count": 1,
         "successRate": 100
       }
     },
     "byPhase": {
       "implement": {
+        "avgDuration": 137,
+        "successRate": 67
+      },
+      "commit": {
+        "avgDuration": 37,
+        "successRate": 60
+      },
+      "plan": {
         "avgDuration": 0,
         "successRate": 0
       },
-      "commit": {
+      "review": {
         "avgDuration": 0,
         "successRate": 0
       }

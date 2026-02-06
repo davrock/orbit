@@ -1,6 +1,9 @@
 {
-  "total": 3.0,
-  "by_tier": {
-    "premium": 1
-  }
+  "total": 16,
+  "byTier": {
+    "premium": 1,
+    "standard": 13,
+    "fast": 0
+  },
+  "sessions": 13
 }

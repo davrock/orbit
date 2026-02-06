@@ -1,1 +1,11 @@
-{"fails":0,"no_progress":0,"types":[],"cycles":0,"successes":0}
+{
+  "fails": 0,
+  "noProgress": 0,
+  "types": [
+    "cargo",
+    "cargo",
+    "cargo"
+  ],
+  "cycles": 3,
+  "successes": 3
+}
