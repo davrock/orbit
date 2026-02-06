@@ -1,6 +1,14 @@
 // 🛸 ORBIT Shell Execution Utilities
 
 import { spawn, execSync, SpawnOptions } from 'child_process';
+import {
+  detectRateLimit,
+  createRateLimitHandler,
+  sleepWithCountdown,
+  formatDelay,
+  type RateLimitConfig
+} from './rate-limit.js';
+import { colors } from './output.js';
 
 export interface ExecResult {
   stdout: string;
@@ -93,21 +101,34 @@ export interface CopilotResult {
   success: boolean;
   output: string;
   exitCode: number;
+  rateLimited?: boolean;
+  retryCount?: number;
+}
+
+export interface CopilotOptions {
+  timeout?: number;
+  allowAllPaths?: boolean;
+  additionalArgs?: string[];
+  rateLimitConfig?: Partial<RateLimitConfig>;
+  onRateLimit?: (attempt: number, delayMs: number) => void;
 }
 
 /**
  * Execute a prompt using the Copilot CLI in non-interactive mode.
  * Uses --allow-all-tools for autonomous execution.
+ * Automatically handles rate limits with exponential backoff.
  */
 export async function execCopilot(
   prompt: string,
-  options: {
-    timeout?: number;
-    allowAllPaths?: boolean;
-    additionalArgs?: string[];
-  } = {}
+  options: CopilotOptions = {}
 ): Promise<CopilotResult> {
-  const { timeout = 600, allowAllPaths = false, additionalArgs = [] } = options;
+  const {
+    timeout = 600,
+    allowAllPaths = false,
+    additionalArgs = [],
+    rateLimitConfig,
+    onRateLimit
+  } = options;
 
   if (!commandExists('copilot')) {
     return {
@@ -117,6 +138,68 @@ export async function execCopilot(
     };
   }
 
+  const rateLimitHandler = createRateLimitHandler(rateLimitConfig);
+  let attempt = 0;
+  let lastResult: CopilotResult | null = null;
+
+  while (rateLimitHandler.shouldRetry(attempt)) {
+    const result = await executeCopilotOnce(prompt, timeout, allowAllPaths, additionalArgs);
+    lastResult = result;
+
+    // Check for rate limiting
+    const rateLimitCheck = detectRateLimit(result.output);
+    
+    if (!rateLimitCheck.isRateLimited) {
+      return {
+        ...result,
+        retryCount: attempt
+      };
+    }
+
+    // Rate limited - calculate backoff and retry
+    attempt++;
+    
+    if (!rateLimitHandler.shouldRetry(attempt)) {
+      console.log(colors.error(`\n✗ Rate limit exceeded after ${attempt} retries`));
+      return {
+        ...result,
+        rateLimited: true,
+        retryCount: attempt
+      };
+    }
+
+    const delayMs = rateLimitHandler.getDelay(attempt, rateLimitCheck.retryAfterMs);
+    
+    console.log('');
+    console.log(colors.warning(`⚠ Rate limit detected (attempt ${attempt}/${rateLimitHandler.config.maxRetries})`));
+    if (rateLimitCheck.message) {
+      console.log(colors.dim(`  ${rateLimitCheck.message}`));
+    }
+    
+    onRateLimit?.(attempt, delayMs);
+    
+    await sleepWithCountdown(delayMs, `Retry ${attempt}/${rateLimitHandler.config.maxRetries}`);
+  }
+
+  // Should not reach here, but handle edge case
+  return lastResult || {
+    success: false,
+    output: 'Max retries exceeded',
+    exitCode: 1,
+    rateLimited: true,
+    retryCount: attempt
+  };
+}
+
+/**
+ * Single execution of Copilot CLI (internal helper).
+ */
+async function executeCopilotOnce(
+  prompt: string,
+  timeout: number,
+  allowAllPaths: boolean,
+  additionalArgs: string[]
+): Promise<CopilotResult> {
   const args = [
     '-p', prompt,
     '--allow-all-tools'
@@ -140,7 +223,6 @@ export async function execCopilot(
     proc.stdout?.on('data', (data) => {
       const text = data.toString();
       stdout += text;
-      // Stream output to console
       process.stdout.write(text);
     });
 
