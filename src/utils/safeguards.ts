@@ -8,7 +8,9 @@ const CRITICAL_FILES = [
   '.copilot/best-practices.yaml',
   '.copilot/crew.yaml',
   '.copilot/missions.yaml',
-  '.copilot/models.yaml'
+  '.copilot/models.yaml',
+  '.copilot/agents.yaml',
+  '.copilot/cargo_manifest.txt'
 ];
 
 /**
