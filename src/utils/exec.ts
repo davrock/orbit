@@ -94,7 +94,9 @@ export function runWithTimeout(cmd: string, timeoutSecs: number): ExecResult {
 }
 
 export function commandExists(cmd: string): boolean {
-  return !!execQuiet(`which ${cmd}`);
+  // Escape the command to prevent command injection
+  const escapedCmd = cmd.replace(/'/g, "'\\''");
+  return !!execQuiet(`which '${escapedCmd}'`);
 }
 
 export interface CopilotResult {

@@ -145,6 +145,15 @@ describe('exec utilities', () => {
       expect(commandExists('echo')).toBe(true);
     });
 
+    it('should prevent command injection', () => {
+      // Test that command injection is prevented
+      // These should safely return false without executing the injected command
+      expect(commandExists('echo; rm -rf /')).toBe(false);
+      expect(commandExists("echo' && touch /tmp/injected || 'x")).toBe(false);
+      expect(commandExists('$(whoami)')).toBe(false);
+      expect(commandExists('`whoami`')).toBe(false);
+    });
+
     it('should work with shell builtins', () => {
       // which may not find builtins, but common commands should work
       const result = commandExists('sh');
