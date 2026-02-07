@@ -261,6 +261,15 @@ export function validateAdditionalArgs(args: string[]): { valid: boolean; reason
 }
 
 /**
+ * ORBIT context preamble prepended to every Copilot CLI call.
+ * Tells the LLM about ORBIT's config files and protected paths.
+ */
+const ORBIT_CONTEXT = `[ORBIT CONTEXT] You are being orchestrated by ORBIT (Orchestrated Robotic Build & Integration Toolkit).
+Config files are in .copilot/ — read missions.yaml, crew.yaml, models.yaml, best-practices.yaml for project conventions.
+PROTECTED: Never delete or overwrite .copilot/skills/, .copilot/state/, or .copilot/metrics.json.
+`;
+
+/**
  * Single execution of Copilot CLI (internal helper).
  */
 async function executeCopilotOnce(
@@ -279,8 +288,10 @@ async function executeCopilotOnce(
     };
   }
 
+  const fullPrompt = ORBIT_CONTEXT + prompt;
+
   const args = [
-    '-p', prompt,
+    '-p', fullPrompt,
     '--allow-all-tools'
   ];
 

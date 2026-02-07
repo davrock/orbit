@@ -134,7 +134,11 @@ export function deploy(options: DeployOptions): boolean {
   }, null, 2));
   
   printSuccess('State initialized');
-  
+
+  // Deploy copilot-instructions.md
+  console.log(colors.secondary('📝 Setting up Copilot instructions...'));
+  deployOrbitInstructions(targetPath);
+
   // Add npm scripts if package.json exists and not skipped
   if (!skipNode) {
     const pkgPath = join(targetPath, 'package.json');
@@ -183,6 +187,87 @@ export function deploy(options: DeployOptions): boolean {
   console.log('');
   
   return true;
+}
+
+const ORBIT_MARKER = '<!-- ORBIT-INSTRUCTIONS-START -->';
+const ORBIT_MARKER_END = '<!-- ORBIT-INSTRUCTIONS-END -->';
+
+const ORBIT_INSTRUCTIONS = `
+${ORBIT_MARKER}
+
+## 🛸 ORBIT — Autonomous Development Toolkit
+
+This project uses [ORBIT](https://github.com/davrock/orbit) for AI-powered autonomous development.
+ORBIT orchestrates Copilot CLI to plan, implement, test, and commit changes.
+
+### Key Config Files (in \`.copilot/\`)
+- \`missions.yaml\` — Defines mission workflows (launch, repair, warp, etc.)
+- \`crew.yaml\` — Agent roles and system prompts (commander, pilot, engineer, etc.)
+- \`models.yaml\` — LLM model tiers (premium, standard, fast)
+- \`best-practices.yaml\` — Coding standards and conventions
+- \`state/ground_control.json\` — Automation state and health tracking
+- \`skills/\` — Learned patterns from previous runs (DO NOT DELETE)
+- \`plans/\` — Flight plans (implementation plans)
+- \`metrics.json\` — Run history and performance data
+- \`cargo_manifest.txt\` — Feature queue
+
+### Protected Paths — NEVER modify or delete:
+- \`.copilot/skills/\` — ORBIT's learning memory
+- \`.copilot/state/\` — Runtime state
+- \`.copilot/metrics.json\` — Historical data
+- \`.copilot/*.yaml\` — Configuration definitions
+
+### Common ORBIT Commands
+\`\`\`bash
+orbit launch "feature"    # Full mission: plan → implement → test → commit
+orbit repair "bug"        # Debug mission: analyze → fix → test → commit
+orbit warp "change"       # Quick change: implement → commit
+orbit evolve --once       # Self-improvement cycle
+orbit doctor              # System health check
+orbit flight-plan new "x" # Create implementation plan
+orbit status              # Show current state
+\`\`\`
+
+### When working on ORBIT tasks:
+1. Read the relevant \`.copilot/*.yaml\` files for context before making changes
+2. Never delete or overwrite files in \`.copilot/skills/\` or \`.copilot/state/\`
+3. Run \`orbit doctor\` to verify system health after changes
+4. Follow patterns in \`best-practices.yaml\` for code style
+
+${ORBIT_MARKER_END}
+`;
+
+function deployOrbitInstructions(targetPath: string): void {
+  const ghDir = join(targetPath, '.github');
+  const instructionsFile = join(ghDir, 'copilot-instructions.md');
+
+  if (!existsSync(ghDir)) {
+    mkdirSync(ghDir, { recursive: true });
+  }
+
+  if (existsSync(instructionsFile)) {
+    const existing = readFileSync(instructionsFile, 'utf-8');
+
+    if (existing.includes(ORBIT_MARKER)) {
+      // Replace existing ORBIT section
+      const updated = existing.replace(
+        new RegExp(`${ORBIT_MARKER}[\\s\\S]*?${ORBIT_MARKER_END}`),
+        ORBIT_INSTRUCTIONS.trim()
+      );
+      writeFileSync(instructionsFile, updated);
+      console.log('   ✓ Updated ORBIT section in copilot-instructions.md');
+    } else {
+      // Append to existing file
+      const appended = existing.trimEnd() + '\n\n' + ORBIT_INSTRUCTIONS;
+      writeFileSync(instructionsFile, appended);
+      console.log('   ✓ Appended ORBIT instructions to copilot-instructions.md');
+    }
+  } else {
+    // Create new file
+    const header = `# Copilot Instructions\n\nThis file is auto-read by GitHub Copilot before every task.\n`;
+    writeFileSync(instructionsFile, header + ORBIT_INSTRUCTIONS);
+    console.log('   ✓ Created .github/copilot-instructions.md');
+  }
 }
 
 // CLI entry
