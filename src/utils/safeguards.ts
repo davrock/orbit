@@ -4,30 +4,37 @@ import { existsSync } from 'fs';
 import { join } from 'path';
 import { printError, printWarning, colors } from './output.js';
 import { escapeShellArg } from './shell-escape.js';
+import { getConfigPaths } from './paths.js';
 
-const CRITICAL_FILES = [
-  'src/config/best-practices.yaml',
-  'src/config/crew.yaml',
-  'src/config/missions.yaml',
-  'src/config/models.yaml',
-  'src/config/cargo_manifest.txt'
-];
+function getCriticalFiles(): string[] {
+  const p = getConfigPaths();
+  return [
+    p.bestPractices,
+    p.crew,
+    p.missions,
+    p.models,
+    p.cargo
+  ];
+}
 
-// Directories that should never be deleted
-const PROTECTED_DIRECTORIES = [
-  '.copilot',  // GitHub Copilot's own directory - NEVER touch
-  'src/config/skills',
-  'src/config/state',
-  'src/config/plans'
-];
+function getProtectedDirectories(): string[] {
+  const p = getConfigPaths();
+  return [
+    '.copilot',
+    p.skills,
+    p.state,
+    p.plans
+  ];
+}
 
 /**
  * Check if all critical configuration files exist
  */
 export function validateCriticalFiles(): { valid: boolean; missing: string[] } {
   const missing: string[] = [];
+  const criticalFiles = getCriticalFiles();
   
-  for (const file of CRITICAL_FILES) {
+  for (const file of criticalFiles) {
     if (!existsSync(file)) {
       missing.push(file);
     }
@@ -54,7 +61,7 @@ export function checkCriticalFilesBeforeMission(): boolean {
     });
     console.log('');
     console.log(colors.warning('These files are required for ORBIT to function properly.'));
-    console.log(colors.warning('Restore them from git: git checkout HEAD -- src/config/*.yaml'));
+    console.log(colors.warning('Restore them from git or run: orbit init --force'));
     console.log('');
     return false;
   }
@@ -91,8 +98,7 @@ export function checkCriticalFilesAfterMission(): void {
       console.log(colors.success('✓ Critical files restored successfully'));
       console.log('');
     } catch (error) {
-      printError('Failed to restore files automatically. Please restore manually:');
-      console.log(colors.error('  git checkout HEAD -- src/config/*.yaml'));
+      printError('Failed to restore files automatically. Please run: orbit init --force');
       console.log('');
     }
   }
@@ -102,9 +108,10 @@ export function checkCriticalFilesAfterMission(): void {
  * Add warning to prompts about critical files
  */
 export function getCriticalFilesWarning(): string {
+  const criticalFiles = getCriticalFiles();
   return `
 ⚠️  CRITICAL: Do NOT delete or modify these files:
-${CRITICAL_FILES.map(f => `  - ${f}`).join('\n')}
+${criticalFiles.map(f => `  - ${f}`).join('\n')}
 These files are essential configuration for ORBIT.
 `;
 }

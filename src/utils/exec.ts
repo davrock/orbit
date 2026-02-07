@@ -260,14 +260,19 @@ export function validateAdditionalArgs(args: string[]): { valid: boolean; reason
   return { valid: true };
 }
 
+import { getConfigPaths } from './paths.js';
+
 /**
  * ORBIT context preamble prepended to every Copilot CLI call.
  * Tells the LLM about ORBIT's config files and protected paths.
  */
-const ORBIT_CONTEXT = `[ORBIT CONTEXT] You are being orchestrated by ORBIT (Orchestrated Robotic Build & Integration Toolkit).
-Config files are in .copilot/ — read missions.yaml, crew.yaml, models.yaml, best-practices.yaml for project conventions.
-PROTECTED: Never delete or overwrite .copilot/skills/, .copilot/state/, or .copilot/metrics.json.
+function getOrbitContext(): string {
+  const p = getConfigPaths();
+  return `[ORBIT CONTEXT] You are being orchestrated by ORBIT (Orchestrated Robotic Build & Integration Toolkit).
+Config files are in ${p.base}/ — read missions.yaml, crew.yaml, models.yaml, best-practices.yaml for project conventions.
+PROTECTED: Never delete or overwrite ${p.skills}/, ${p.state}/, or ${p.metrics}.
 `;
+}
 
 /**
  * Single execution of Copilot CLI (internal helper).
@@ -288,7 +293,7 @@ async function executeCopilotOnce(
     };
   }
 
-  const fullPrompt = ORBIT_CONTEXT + prompt;
+  const fullPrompt = getOrbitContext() + prompt;
 
   const args = [
     '-p', fullPrompt,

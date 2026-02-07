@@ -4,6 +4,7 @@
 import { existsSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { readJsonFile, writeJsonFile } from '../utils/json-file.js';
+import { getConfigPaths } from '../utils/paths.js';
 import type { MissionType, Phase, ModelTier } from './types.js';
 
 interface CheckpointConfig {
@@ -11,7 +12,7 @@ interface CheckpointConfig {
 }
 
 let config: CheckpointConfig = {
-  stateDir: 'src/config/state'
+  stateDir: getConfigPaths().state
 };
 
 export function setCheckpointConfig(newConfig: Partial<CheckpointConfig>): void {
@@ -20,7 +21,7 @@ export function setCheckpointConfig(newConfig: Partial<CheckpointConfig>): void 
 
 export function resetCheckpointConfig(): void {
   config = {
-    stateDir: 'src/config/state'
+    stateDir: getConfigPaths().state
   };
 }
 

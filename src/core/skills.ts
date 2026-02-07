@@ -4,8 +4,9 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
 import { join } from 'path';
 import type { Skill } from './types.js';
+import { getConfigPaths } from '../utils/paths.js';
 
-let SKILLS_DIR = 'src/config/skills';
+let SKILLS_DIR = getConfigPaths().skills;
 let INDEX_FILE = join(SKILLS_DIR, 'index.json');
 
 export function setSkillsDir(dir: string): void {
@@ -14,7 +15,7 @@ export function setSkillsDir(dir: string): void {
 }
 
 export function resetSkillsDir(): void {
-  SKILLS_DIR = 'src/config/skills';
+  SKILLS_DIR = getConfigPaths().skills;
   INDEX_FILE = join(SKILLS_DIR, 'index.json');
 }
 

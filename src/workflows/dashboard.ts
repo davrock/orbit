@@ -9,8 +9,9 @@ import { getSkillStats } from '../core/skills.js';
 import { loadFuelUsage } from '../core/state.js';
 import { FlightPlanGenerator } from './flight-plan.js';
 import { colors, printSuccess } from '../utils/output.js';
+import { getConfigPaths } from '../utils/paths.js';
 
-const DASHBOARD_DIR = 'src/config/dashboard';
+const DASHBOARD_DIR = `${getConfigPaths().base}/dashboard`;
 const DASHBOARD_FILE = join(DASHBOARD_DIR, 'index.html');
 
 function formatDuration(seconds: number): string {

@@ -65,6 +65,12 @@ missions:
     phases: [plan, implement, test, security, review, test, commit, deploy]
     aliases: [prod, release]
 
+  # Self-Improvement
+  evolve:
+    description: "Autonomous self-improvement cycle"
+    phases: [improve, implement, test, commit]
+    aliases: [self-improve, hal]
+
   # Advanced Modes
   pipeline:
     description: "Sequential multi-stage processing with handoffs"

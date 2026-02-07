@@ -33,7 +33,8 @@ const config: ModelConfig = {
     security: 'premium',
     document: 'fast',
     commit: 'fast',
-    research: 'standard'
+    research: 'standard',
+    improve: 'standard'
   },
   crewTiers: {
     commander: 'premium',
@@ -71,7 +72,8 @@ const config: ModelConfig = {
     security: 'standard',
     document: 'fast',
     commit: 'fast',
-    research: 'fast'
+    research: 'fast',
+    improve: 'fast'
   },
   ecamodeCrewTiers: {
     commander: 'standard',

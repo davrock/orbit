@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { readJsonFile, writeJsonFile, updateJsonFile } from '../utils/json-file.js';
+import { getConfigPaths } from '../utils/paths.js';
 import type { GroundControlState, FuelUsage, Skill, ModelTier, CargoItem } from './types.js';
 
 interface StateConfig {
@@ -12,22 +13,23 @@ interface StateConfig {
   cargoFile: string;
 }
 
-let config: StateConfig = {
-  stateDir: 'src/config/state',
-  skillsDir: 'src/config/skills',
-  cargoFile: 'src/config/cargo_manifest.txt'
-};
+function getDefaultStateConfig(): StateConfig {
+  const p = getConfigPaths();
+  return {
+    stateDir: p.state,
+    skillsDir: p.skills,
+    cargoFile: p.cargo
+  };
+}
+
+let config: StateConfig = getDefaultStateConfig();
 
 export function setStateConfig(newConfig: Partial<StateConfig>): void {
   config = { ...config, ...newConfig };
 }
 
 export function resetStateConfig(): void {
-  config = {
-    stateDir: 'src/config/state',
-    skillsDir: 'src/config/skills',
-    cargoFile: 'src/config/cargo_manifest.txt'
-  };
+  config = getDefaultStateConfig();
 }
 
 function getGcFile(): string {

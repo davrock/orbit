@@ -27,7 +27,8 @@ const DEFAULT_PHASE_CREWS: Record<Phase, CrewMember> = {
   commit: 'pilot',
   security: 'security-officer',
   document: 'comms',
-  research: 'scout'
+  research: 'scout',
+  improve: 'hal'
 };
 
 // Default phase models (fallback)
@@ -40,7 +41,8 @@ const DEFAULT_PHASE_MODELS: Record<Phase, ModelTier> = {
   commit: 'fast',
   security: 'premium',
   document: 'fast',
-  research: 'standard'
+  research: 'standard',
+  improve: 'standard'
 };
 
 /**

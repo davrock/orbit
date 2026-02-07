@@ -7,6 +7,7 @@ import { join } from 'path';
 import { detectProjectConfig } from '../core/detect.js';
 import { colors, printSection, printSuccess, printError, printWarning, printInfo } from '../utils/output.js';
 import { execQuiet } from '../utils/exec.js';
+import { getConfigPaths } from '../utils/paths.js';
 
 interface DiagnosticCheck {
   name: string;
@@ -105,7 +106,7 @@ function checkCopilotDirectory(): DiagnosticCheck {
 }
 
 function checkBestPractices(): DiagnosticCheck {
-  const path = 'src/config/best-practices.yaml';
+  const path = getConfigPaths().bestPractices;
   
   if (existsSync(path)) {
     const stat = statSync(path);
@@ -126,7 +127,7 @@ function checkBestPractices(): DiagnosticCheck {
 }
 
 function checkFlightLog(): DiagnosticCheck {
-  const path = 'src/config/state/flight_log.md';
+  const path = getConfigPaths().flightLog;
   
   if (existsSync(path)) {
     const content = readFileSync(path, 'utf-8');
@@ -282,20 +283,22 @@ function checkDiskSpace(): DiagnosticCheck {
 
 function checkWritePermissions(): DiagnosticCheck {
   try {
-    const testFile = 'src/config/.orbit-write-test';
+    const p = getConfigPaths();
+    const testFile = `${p.base}/.orbit-write-test`;
     execSync(`touch ${testFile} && rm ${testFile}`, { stdio: 'pipe' });
     
     return {
       name: 'Write Permissions',
       status: 'pass',
-      message: 'Can write to .copilot directory'
+      message: `Can write to ${p.base} directory`
     };
   } catch {
+    const p = getConfigPaths();
     return {
       name: 'Write Permissions',
       status: 'fail',
-      message: 'Cannot write to .copilot directory',
-      fix: 'Fix permissions: chmod -R u+w .copilot'
+      message: `Cannot write to ${p.base} directory`,
+      fix: `Fix permissions: chmod -R u+w ${p.base}`
     };
   }
 }
@@ -308,7 +311,8 @@ function checkStateFiles(): DiagnosticCheck {
     'metrics.json'
   ];
   
-  const existing = stateFiles.filter(f => existsSync(join('src/config/state', f)));
+  const stateDir = getConfigPaths().state;
+  const existing = stateFiles.filter(f => existsSync(join(stateDir, f)));
   
   if (existing.length === 0) {
     return {

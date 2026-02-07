@@ -6,8 +6,9 @@ import { join } from 'path';
 import { appendLog } from '../core/index.js';
 import { printSection, printSuccess, printError, colors } from '../utils/output.js';
 import { commandExists, execQuiet, execCopilot } from '../utils/exec.js';
+import { getConfigPaths } from '../utils/paths.js';
 
-const PLANS_DIR = 'src/config/plans';
+const PLANS_DIR = getConfigPaths().plans;
 
 export interface FlightPlanOptions {
   depth?: 1 | 2 | 3;

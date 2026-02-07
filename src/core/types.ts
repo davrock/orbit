@@ -6,11 +6,11 @@ export type ModelTier = 'premium' | 'standard' | 'fast' | 'ecomode';
 export type MissionType = 
   | 'launch' | 'repair' | 'warp' | 'mayday' | 'preflight'
   | 'shields-up' | 'dock' | 'transmit' | 'apollo' | 'ralph' | 'ultrawork' | 'swarm' | 'pipeline'
-  | 'design-review';
+  | 'design-review' | 'evolve';
 
 export type Phase = 
   | 'plan' | 'implement' | 'test' | 'review' | 'debug' 
-  | 'commit' | 'security' | 'document' | 'research';
+  | 'commit' | 'security' | 'document' | 'research' | 'improve';
 
 export type CrewMember = 
   | 'commander' | 'pilot' | 'engineer' | 'navigator' | 'specialist'

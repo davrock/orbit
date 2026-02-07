@@ -3,6 +3,7 @@
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { getConfigPaths } from '../utils/paths.js';
 import {
   type Phase,
   type CrewMember,
@@ -36,8 +37,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = 'src/config/state';
-const PIPELINE_DIR = 'src/config/state/pipeline';
+const STATE_DIR = getConfigPaths().state;
+const PIPELINE_DIR = `${STATE_DIR}/pipeline`;
 
 export interface PipelineStage {
   id: string;
@@ -432,6 +433,7 @@ export class PipelineExecutor {
 
   private generatePlanningPrompt(task: string): string {
     const crewPrompt = getAgentSystemPrompt('mission-planner');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -477,12 +479,13 @@ CREW: pilot
 PHASE: implement
 INPUT_FROM_PREVIOUS: yes
 
-Read src/config/state/flight_log.md first, update when done.
+Read ${paths.flightLog} first, update when done.
 Output all stages then say 'PIPELINE PLAN COMPLETE'`;
   }
 
   private generateStagePrompt(stage: PipelineStage): string {
     const crewPrompt = getAgentSystemPrompt(stage.crew);
+    const paths = getConfigPaths();
     
     let handoffSection = '';
     if (stage.inputFromPrevious && this.handoffContext) {
@@ -516,13 +519,14 @@ Format:
 <your handoff context here>
 === END HANDOFF ===
 
-Read src/config/state/flight_log.md for context.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} for context.
+Reference ${paths.bestPractices} for standards.
 Complete the stage then say 'STAGE ${stage.id} COMPLETE'`;
   }
 
   private generateReviewPrompt(task: string, results: PipelineStageResult[]): string {
     const crewPrompt = getAgentSystemPrompt('navigator');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -542,8 +546,8 @@ Your mission:
 4. Ensure consistency and quality across all stages
 5. Verify the final result meets the original task requirements
 
-Read src/config/state/flight_log.md first, update when done.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} first, update when done.
+Reference ${paths.bestPractices} for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

@@ -3,6 +3,7 @@
 
 import { existsSync, writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { getConfigPaths } from '../utils/paths.js';
 import {
   type MissionType,
   type Phase,
@@ -52,7 +53,8 @@ import { exec, execCopilot, commandExists } from '../utils/exec.js';
 import { saveCheckpoint, clearCheckpoint, loadCheckpoint, shouldResume, getResumePhases } from '../core/checkpoint.js';
 import { checkCriticalFilesBeforeMission, checkCriticalFilesAfterMission, getCriticalFilesWarning } from '../utils/safeguards.js';
 
-const STATE_DIR = 'src/config/state';
+const paths = getConfigPaths();
+const STATE_DIR = paths.state;
 
 export interface MissionControlOptions {
   mission: MissionType;
@@ -451,8 +453,8 @@ TASK: ${this.missionConfig.task}${planSection}
 PHASE: ${phase}
 PROJECT: ${this.config.name}
 
-Read src/config/state/flight_log.md first, update when done.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} first, update when done.
+Reference ${paths.bestPractices} for standards.
 
 ${getAutonomousGuardrails()}
 

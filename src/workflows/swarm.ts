@@ -3,6 +3,7 @@
 
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { getConfigPaths } from '../utils/paths.js';
 import {
   type Phase,
   type CrewMember,
@@ -37,8 +38,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = 'src/config/state';
-const SWARM_DIR = 'src/config/state/swarm';
+const STATE_DIR = getConfigPaths().state;
+const SWARM_DIR = `${STATE_DIR}/swarm`;
 
 export interface SwarmTask {
   id: string;
@@ -509,6 +510,7 @@ export class SwarmExecutor {
 
   private generatePlanningPrompt(task: string): string {
     const crewPrompt = getAgentSystemPrompt('mission-planner');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -551,12 +553,13 @@ PRIORITY: 7
 COMPLEXITY: medium
 DEPENDS_ON: task-1
 
-Read src/config/state/flight_log.md first, update when done.
+Read ${paths.flightLog} first, update when done.
 Output all tasks then say 'SWARM PLAN COMPLETE'`;
   }
 
   private generateSwarmTaskPrompt(task: SwarmTask): string {
     const crewPrompt = getAgentSystemPrompt(task.crew);
+    const paths = getConfigPaths();
     
     let coordinationContext = '';
     if (this.enableCoordination && task.dependencies.length > 0) {
@@ -589,13 +592,14 @@ ${coordinationContext}
 
 Complete this specific task. Be aware of work done by dependency tasks.
 
-Read src/config/state/flight_log.md for context.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} for context.
+Reference ${paths.bestPractices} for standards.
 Complete the task then say 'TASK ${task.id} COMPLETE'`;
   }
 
   private generateReviewPrompt(task: string, successfulResults: SwarmTaskResult[]): string {
     const crewPrompt = getAgentSystemPrompt('navigator');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -615,8 +619,8 @@ Your mission:
 4. Ensure consistency and quality across all changes
 5. Suggest fixes if needed
 
-Read src/config/state/flight_log.md first, update when done.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} first, update when done.
+Reference ${paths.bestPractices} for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

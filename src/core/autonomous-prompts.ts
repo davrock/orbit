@@ -2,6 +2,8 @@
 // Structured prompts for self-improvement and autonomous operation
 // Based on best practices: Chain-of-Thought, Constitutional AI, and Task Decomposition
 
+import { getConfigPaths } from '../utils/paths.js';
+
 /**
  * Priority-ordered improvement categories for autonomous operation.
  * Order matters: stability → security → quality → features
@@ -20,15 +22,18 @@ export const IMPROVEMENT_PRIORITIES = [
 /**
  * Constitutional AI constraints for autonomous operation.
  * These are hard rules that must never be violated.
+ * Uses dynamic paths based on project context.
  */
-export const CONSTITUTIONAL_CONSTRAINTS = `
+export function getConstitutionalConstraints(): string {
+  const p = getConfigPaths();
+  return `
 ## ABSOLUTE CONSTRAINTS (Never Violate)
 
-🚨 **CRITICAL: DO NOT DELETE, MOVE, OR MODIFY ANYTHING IN .copilot/ DIRECTORY** 🚨
+🚨 **CRITICAL: DO NOT DELETE, MOVE, OR MODIFY ANYTHING IN THE CONFIG DIRECTORY** 🚨
 
-1. **DO NOT DELETE** ANY files or folders in .copilot/ directory
-2. **DO NOT DELETE** the src/config/skills/ directory or any files inside it (ORBIT's learning memory)
-3. **DO NOT DELETE** the src/config/state/ directory or any files inside it (ORBIT's runtime state)
+1. **DO NOT DELETE** ANY files or folders in ${p.base}/ directory
+2. **DO NOT DELETE** the ${p.skills}/ directory or any files inside it (ORBIT's learning memory)
+3. **DO NOT DELETE** the ${p.state}/ directory or any files inside it (ORBIT's runtime state)
 4. **DO NOT MODIFY** package.json dependencies without explicit instruction
 5. **DO NOT REMOVE** existing functionality or tests unless fixing a bug
 6. **DO NOT INTRODUCE** breaking changes to public APIs
@@ -39,13 +44,17 @@ export const CONSTITUTIONAL_CONSTRAINTS = `
 
 PROTECTED PATHS (NEVER delete, move, or modify these):
 - .copilot/** - NEVER touch anything here (GitHub Copilot's directory)
-- src/config/skills/* - Learning/memory system
-- src/config/state/* - Runtime state  
-- src/config/plans/* - Flight plans
-- src/config/*.yaml - Configuration files
+- ${p.skills}/* - Learning/memory system
+- ${p.state}/* - Runtime state  
+- ${p.plans}/* - Flight plans
+- ${p.base}/*.yaml - Configuration files
 
 If any action would violate these constraints, STOP and explain why.
 `;
+}
+
+// Backward compatibility: static constant using default paths
+export const CONSTITUTIONAL_CONSTRAINTS = getConstitutionalConstraints();
 
 /**
  * Chain-of-Thought reasoning structure for autonomous analysis.
@@ -111,9 +120,10 @@ If any check fails:
  * Uses structured reasoning and priority-based improvement selection.
  */
 export function generateSelfImprovementTask(): string {
+  const p = getConfigPaths();
   return `You are an autonomous software improvement agent. Your goal is to make ONE meaningful improvement to this codebase.
 
-${CONSTITUTIONAL_CONSTRAINTS}
+${getConstitutionalConstraints()}
 
 ${REASONING_FRAMEWORK}
 
@@ -125,8 +135,9 @@ Analyze this project and implement exactly ONE improvement following the priorit
 1. Run \`npm test\` to check current test status
 2. Run \`npm run build\` to verify build works
 3. Check \`git log --oneline -10\` to see recent changes
-4. Read \`src/config/state/flight_log.md\` for context
-5. Scan for issues in priority order (bugs → security → stability → tests → performance → quality → docs → features)
+4. Read \`${p.flightLog}\` for context
+5. Read \`${p.bestPractices}\` for project standards
+6. Scan for issues in priority order (bugs → security → stability → tests → performance → quality → docs → features)
 
 ### Selection Criteria
 Choose the HIGHEST PRIORITY improvement that:
@@ -163,6 +174,7 @@ Begin your analysis now.`;
  * Guardrails prompt section for any autonomous operation.
  */
 export function getAutonomousGuardrails(): string {
+  const p = getConfigPaths();
   return `
 ## GUARDRAILS FOR AUTONOMOUS OPERATION
 
@@ -177,7 +189,7 @@ export function getAutonomousGuardrails(): string {
 
 ### What You CANNOT Do:
 🚨 Delete, move, or modify ANYTHING in .copilot/ directory (CRITICAL!)
-❌ Delete files in src/config/ directory  
+❌ Delete files in ${p.base}/ directory  
 ❌ Remove existing tests (unless they test removed code)
 ❌ Change public APIs without deprecation
 ❌ Modify package.json dependencies

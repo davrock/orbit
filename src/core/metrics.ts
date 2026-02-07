@@ -4,13 +4,14 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { MissionType, Phase, ModelTier } from './types.js';
+import { getConfigPaths } from '../utils/paths.js';
 
 interface MetricsConfig {
   metricsFile: string;
 }
 
 let config: MetricsConfig = {
-  metricsFile: 'src/config/metrics.json'
+  metricsFile: getConfigPaths().metrics
 };
 
 export function setMetricsConfig(newConfig: Partial<MetricsConfig>): void {
@@ -19,7 +20,7 @@ export function setMetricsConfig(newConfig: Partial<MetricsConfig>): void {
 
 export function resetMetricsConfig(): void {
   config = {
-    metricsFile: 'src/config/metrics.json'
+    metricsFile: getConfigPaths().metrics
   };
   runCounter = 0;
   currentRun = null;

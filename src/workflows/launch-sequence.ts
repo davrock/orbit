@@ -113,7 +113,7 @@ export class LaunchSequence {
     
     try {
       const result = await runMission({
-        mission: 'warp', // Use minimal mission for self-improvement
+        mission: work.source === 'self' ? 'evolve' : 'warp',
         task: work.task,
         modelTier: 'auto'
       });

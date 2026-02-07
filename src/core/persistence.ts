@@ -98,7 +98,8 @@ export class PersistenceManager {
       commit: ['pilot', 'navigator'],
       security: ['security-officer', 'engineer'],
       document: ['comms', 'tech-writer'],
-      research: ['scout', 'commander', 'mission-planner']
+      research: ['scout', 'commander', 'mission-planner'],
+      improve: ['hal', 'engineer', 'pilot']
     };
 
     const crews = crewRotations[phase] || [currentCrew];
@@ -156,6 +157,11 @@ export class PersistenceManager {
         'Research industry best practices and established patterns.',
         'Compare multiple approaches and document trade-offs.',
         'Look for existing solutions and libraries to leverage.'
+      ],
+      improve: [
+        'Analyze the codebase for the highest-priority improvement opportunity.',
+        'Focus on stability and reliability improvements first.',
+        'Look for patterns that can be refactored to reduce complexity.'
       ]
     };
 

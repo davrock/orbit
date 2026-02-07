@@ -3,6 +3,7 @@
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
+import { getConfigPaths } from '../utils/paths.js';
 import {
   type Phase,
   type CrewMember,
@@ -37,8 +38,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = 'src/config/state';
-const ULTRAWORK_DIR = 'src/config/state/ultrawork';
+const STATE_DIR = getConfigPaths().state;
+const ULTRAWORK_DIR = `${STATE_DIR}/ultrawork`;
 
 export interface Subtask {
   id: string;
@@ -423,6 +424,7 @@ export class UltraworkExecutor {
 
   private generatePlanningPrompt(task: string): string {
     const crewPrompt = getAgentSystemPrompt('mission-planner');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -446,12 +448,13 @@ CREW: <crew-member>
 PRIORITY: <1-10>
 COMPLEXITY: <low/medium/high>
 
-Read src/config/state/flight_log.md first, update when done.
+Read ${paths.flightLog} first, update when done.
 Output all subtasks then say 'PLAN COMPLETE'`;
   }
 
   private generateSubtaskPrompt(subtask: Subtask): string {
     const crewPrompt = getAgentSystemPrompt(subtask.crew);
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -463,13 +466,14 @@ MODE: ultrawork (parallel execution - independent work)
 This is subtask ${subtask.id} in a parallel execution mission.
 Complete this specific subtask independently.
 
-Read src/config/state/flight_log.md for context.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} for context.
+Reference ${paths.bestPractices} for standards.
 Complete the subtask then say 'SUBTASK ${subtask.id} COMPLETE'`;
   }
 
   private generateReviewPrompt(task: string, successfulResults: SubtaskResult[]): string {
     const crewPrompt = getAgentSystemPrompt('navigator');
+    const paths = getConfigPaths();
     
     return `${crewPrompt}
 
@@ -489,8 +493,8 @@ Your mission:
 4. Check for any integration issues or gaps
 5. Suggest fixes if needed
 
-Read src/config/state/flight_log.md first, update when done.
-Reference src/config/best-practices.yaml for standards.
+Read ${paths.flightLog} first, update when done.
+Reference ${paths.bestPractices} for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

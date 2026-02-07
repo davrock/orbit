@@ -6,8 +6,9 @@ import { join } from 'path';
 import type { Phase, CrewMember, ModelTier, HUDState } from './types.js';
 import { loadFuelUsage } from './state.js';
 import { colors } from '../utils/output.js';
+import { getConfigPaths } from '../utils/paths.js';
 
-const STATE_DIR = 'src/config/state';
+const STATE_DIR = getConfigPaths().state;
 const HUD_FILE = join(STATE_DIR, 'hud.json');
 
 function ensureStateDir(): void {

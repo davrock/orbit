@@ -5,8 +5,9 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 import { execCopilot } from '../utils/exec.js';
 import { printSection, printSuccess, printWarning, colors } from '../utils/output.js';
+import { getConfigPaths } from '../utils/paths.js';
 
-const STATE_DIR = 'src/config/state';
+const STATE_DIR = getConfigPaths().state;
 
 export interface PlanModeOptions {
   task: string;
