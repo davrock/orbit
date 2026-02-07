@@ -1,0 +1,34 @@
+# Design Review Mission
+# UI/UX consistency and accessibility review
+
+id: design-review
+name: Design Review
+description: UI/UX consistency and accessibility review with optional external AI validation
+icon: 🎨
+
+phases:
+  - review
+
+phase_crews:
+  review: design-reviewer
+
+phase_models:
+  review: premium
+
+# Special behavior flags
+cross_validation: true
+external_ai_enabled: true
+
+use_when:
+  - UI/UX review needed
+  - Accessibility compliance check
+  - Design consistency validation
+  - Cross-validation with external AI
+
+estimated_time: 20
+
+tags:
+  - design
+  - review
+  - accessibility
+  - ux

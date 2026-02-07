@@ -1,0 +1,39 @@
+# Preflight Mission
+# Test-driven development workflow
+
+id: preflight
+name: Preflight
+description: TDD workflow (test → implement → test → review → commit)
+icon: ✅
+
+phases:
+  - test
+  - implement
+  - test
+  - review
+  - commit
+
+phase_crews:
+  test: specialist
+  implement: pilot
+  review: navigator
+  commit: pilot
+
+phase_models:
+  test: standard
+  implement: standard
+  review: standard
+  commit: fast
+
+use_when:
+  - Test-driven development
+  - High-reliability features
+  - Critical business logic
+  - When tests must come first
+
+estimated_time: 35
+
+tags:
+  - tdd
+  - test-first
+  - quality

@@ -1,0 +1,41 @@
+# Dock Mission
+# API development workflow
+
+id: dock
+name: Dock
+description: API development with documentation (plan → implement → test → document → commit)
+icon: 🔌
+
+phases:
+  - plan
+  - implement
+  - test
+  - document
+  - commit
+
+phase_crews:
+  plan: api-designer
+  implement: backend-specialist
+  test: specialist
+  document: tech-writer
+  commit: pilot
+
+phase_models:
+  plan: standard
+  implement: standard
+  test: standard
+  document: fast
+  commit: fast
+
+use_when:
+  - Building REST APIs
+  - Creating GraphQL endpoints
+  - Implementing webhooks
+  - API integrations
+
+estimated_time: 35
+
+tags:
+  - api
+  - backend
+  - integration

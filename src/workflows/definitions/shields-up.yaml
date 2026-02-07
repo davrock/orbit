@@ -1,0 +1,46 @@
+# Shields-Up Mission
+# Security-focused development workflow
+
+id: shields-up
+name: Shields Up
+description: Security-focused development with security review phase
+icon: 🛡️
+
+phases:
+  - plan
+  - implement
+  - security
+  - test
+  - review
+  - commit
+
+phase_crews:
+  plan: mission-planner
+  implement: pilot
+  security: security-officer
+  test: specialist
+  review: navigator
+  commit: pilot
+
+phase_models:
+  plan: standard
+  implement: standard
+  security: premium
+  test: standard
+  review: standard
+  commit: fast
+
+use_when:
+  - Authentication/authorization features
+  - Payment processing
+  - Handling sensitive data
+  - Security-critical code
+  - OWASP compliance required
+
+estimated_time: 45
+
+tags:
+  - security
+  - secure
+  - compliance
+  - authentication

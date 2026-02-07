@@ -1,0 +1,46 @@
+# Pipeline Mission
+# Sequential multi-stage processing
+
+id: pipeline
+name: Pipeline
+description: Sequential multi-stage processing with handoffs between stages
+icon: 🔄
+
+phases:
+  - plan
+  - implement
+  - test
+  - review
+  - commit
+
+phase_crews:
+  plan: mission-planner
+  implement: pilot
+  test: specialist
+  review: navigator
+  commit: pilot
+
+phase_models:
+  plan: standard
+  implement: standard
+  test: standard
+  review: standard
+  commit: fast
+
+# Special behavior flags
+pipeline_mode: true
+stage_handoffs: true
+
+use_when:
+  - Multi-step transformations
+  - Data processing pipelines
+  - Staged deployments
+  - Complex workflows with dependencies
+
+estimated_time: 40
+
+tags:
+  - pipeline
+  - sequential
+  - staged
+  - workflow

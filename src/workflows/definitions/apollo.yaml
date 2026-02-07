@@ -1,0 +1,50 @@
+# Apollo Mission
+# Comprehensive all-phases workflow
+
+id: apollo
+name: Apollo
+description: All phases - comprehensive development (research → plan → implement → test → security → review → document → commit)
+icon: 🌙
+
+phases:
+  - research
+  - plan
+  - implement
+  - test
+  - security
+  - review
+  - document
+  - commit
+
+phase_crews:
+  research: scout
+  plan: mission-planner
+  implement: pilot
+  test: specialist
+  security: security-officer
+  review: navigator
+  document: tech-writer
+  commit: pilot
+
+phase_models:
+  research: standard
+  plan: premium
+  implement: standard
+  test: standard
+  security: premium
+  review: standard
+  document: fast
+  commit: fast
+
+use_when:
+  - Major new features
+  - New projects or modules
+  - High-stakes development
+  - When thoroughness is critical
+
+estimated_time: 60
+
+tags:
+  - comprehensive
+  - full
+  - major-feature

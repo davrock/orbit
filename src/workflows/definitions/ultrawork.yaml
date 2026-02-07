@@ -1,0 +1,43 @@
+# Ultrawork Mission
+# Parallel execution with subtask distribution
+
+id: ultrawork
+name: Ultrawork
+description: Parallel execution - distributes subtasks across concurrent sessions
+icon: ⚡⚡
+
+phases:
+  - plan
+  - implement
+  - review
+  - commit
+
+phase_crews:
+  plan: mission-planner
+  implement: pilot
+  review: navigator
+  commit: pilot
+
+phase_models:
+  plan: premium
+  implement: standard
+  review: standard
+  commit: fast
+
+# Special behavior flags
+parallel_mode: true
+max_parallel_tasks: 5
+
+use_when:
+  - Large features that can be parallelized
+  - Multiple independent changes needed
+  - When speed is critical
+  - Batch operations
+
+estimated_time: 25
+
+tags:
+  - parallel
+  - concurrent
+  - fast
+  - batch

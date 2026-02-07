@@ -1,0 +1,35 @@
+# Transmit Mission
+# Documentation-focused workflow
+
+id: transmit
+name: Transmit
+description: Documentation only (implement → review → commit)
+icon: 📡
+
+phases:
+  - implement
+  - review
+  - commit
+
+phase_crews:
+  implement: tech-writer
+  review: navigator
+  commit: pilot
+
+phase_models:
+  implement: fast
+  review: standard
+  commit: fast
+
+use_when:
+  - Writing documentation
+  - Updating README files
+  - Creating guides and tutorials
+  - API documentation updates
+
+estimated_time: 15
+
+tags:
+  - documentation
+  - docs
+  - readme

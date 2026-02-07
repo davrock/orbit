@@ -1,0 +1,33 @@
+# Warp Mission
+# Minimal/fast workflow
+
+id: warp
+name: Warp
+description: Minimal workflow for quick changes (implement → commit)
+icon: ⚡
+
+phases:
+  - implement
+  - commit
+
+phase_crews:
+  implement: pilot
+  commit: pilot
+
+phase_models:
+  implement: standard
+  commit: fast
+
+use_when:
+  - Quick fixes
+  - Small changes
+  - Typo corrections
+  - Configuration updates
+  - Simple refactoring
+
+estimated_time: 5
+
+tags:
+  - quick
+  - minimal
+  - fast

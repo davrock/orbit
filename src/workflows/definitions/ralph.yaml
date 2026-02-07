@@ -1,0 +1,44 @@
+# Ralph Mission
+# Persistent mode that never gives up
+
+id: ralph
+name: Ralph
+description: Persistent mode - never gives up, retries with escalation until complete
+icon: 🦁
+
+phases:
+  - implement
+  - test
+  - review
+  - commit
+
+phase_crews:
+  implement: pilot
+  test: specialist
+  review: navigator
+  commit: pilot
+
+phase_models:
+  implement: standard
+  test: standard
+  review: standard
+  commit: fast
+
+# Special behavior flags
+persistence_mode: true
+max_retries: 10
+escalate_on_failure: true
+
+use_when:
+  - Critical tasks that must succeed
+  - When automatic retry is desired
+  - For autonomous overnight runs
+  - When you need guaranteed completion
+
+estimated_time: 45
+
+tags:
+  - persistent
+  - retry
+  - autonomous
+  - reliable

@@ -1,0 +1,44 @@
+# Swarm Mission
+# Coordinated parallel execution with intelligent distribution
+
+id: swarm
+name: Swarm
+description: Coordinated parallel execution with intelligent task distribution and awareness
+icon: 🐝
+
+phases:
+  - plan
+  - implement
+  - review
+  - commit
+
+phase_crews:
+  plan: mission-planner
+  implement: pilot
+  review: navigator
+  commit: pilot
+
+phase_models:
+  plan: premium
+  implement: standard
+  review: standard
+  commit: fast
+
+# Special behavior flags
+swarm_mode: true
+max_swarm_agents: 3
+coordination_enabled: true
+
+use_when:
+  - Complex tasks with multiple components
+  - When multiple AI agents need to coordinate
+  - Large refactoring efforts
+  - Multi-file changes
+
+estimated_time: 30
+
+tags:
+  - swarm
+  - coordinated
+  - parallel
+  - multi-agent

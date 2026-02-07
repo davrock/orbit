@@ -1,0 +1,36 @@
+# Mayday Mission
+# Emergency hotfix workflow
+
+id: mayday
+name: Mayday
+description: Emergency hotfix (debug → implement → commit)
+icon: 🆘
+
+phases:
+  - debug
+  - implement
+  - commit
+
+phase_crews:
+  debug: engineer
+  implement: pilot
+  commit: pilot
+
+phase_models:
+  debug: premium
+  implement: standard
+  commit: fast
+
+use_when:
+  - Production emergencies
+  - Critical bugs
+  - Security vulnerabilities requiring immediate fix
+  - System outages
+
+estimated_time: 15
+
+tags:
+  - emergency
+  - hotfix
+  - critical
+  - urgent

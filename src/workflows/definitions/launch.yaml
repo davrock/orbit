@@ -1,0 +1,46 @@
+# Launch Mission
+# Full feature development workflow
+
+id: launch
+name: Launch
+description: Full feature development (plan → implement → test → review → commit)
+icon: 🚀
+
+phases:
+  - plan
+  - implement
+  - test
+  - review
+  - commit
+
+# Which agent/crew handles each phase (optional overrides)
+phase_crews:
+  plan: mission-planner
+  implement: pilot
+  test: specialist
+  review: navigator
+  commit: pilot
+
+# Model tier preferences per phase (optional)
+phase_models:
+  plan: premium
+  implement: standard
+  test: standard
+  review: standard
+  commit: fast
+
+# When to use this mission
+use_when:
+  - Adding new features
+  - Implementing user stories
+  - Building new functionality
+  - Creating new modules or components
+
+# Estimated time (in minutes)
+estimated_time: 30
+
+# Tags for filtering/search
+tags:
+  - feature
+  - full-workflow
+  - standard
