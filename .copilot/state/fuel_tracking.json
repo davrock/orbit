@@ -1,9 +1,9 @@
 {
-  "total": 14,
+  "total": 16,
   "byTier": {
     "premium": 0,
-    "standard": 14,
+    "standard": 16,
     "fast": 0
   },
-  "sessions": 14
+  "sessions": 16
 }
