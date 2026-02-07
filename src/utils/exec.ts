@@ -9,6 +9,7 @@ import {
   type RateLimitConfig
 } from './rate-limit.js';
 import { colors } from './output.js';
+import { escapeShellArg } from './shell-escape.js';
 
 export interface ExecResult {
   stdout: string;
@@ -94,9 +95,7 @@ export function runWithTimeout(cmd: string, timeoutSecs: number): ExecResult {
 }
 
 export function commandExists(cmd: string): boolean {
-  // Escape the command to prevent command injection
-  const escapedCmd = cmd.replace(/'/g, "'\\''");
-  return !!execQuiet(`which '${escapedCmd}'`);
+  return !!execQuiet(`which ${escapeShellArg(cmd)}`);
 }
 
 export interface CopilotResult {
