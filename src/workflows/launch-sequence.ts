@@ -13,6 +13,7 @@ import {
   appendLog,
   getRandomQuote
 } from '../core/index.js';
+import { generateSelfImprovementTask } from '../core/autonomous-prompts.js';
 import {
   printLaunchBanner,
   printSection,
@@ -158,10 +159,10 @@ export class LaunchSequence {
       return githubIssue;
     }
 
-    // 3. Self-improvement
+    // 3. Self-improvement with structured autonomous prompt
     return {
       source: 'self',
-      task: 'Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.'
+      task: generateSelfImprovementTask()
     };
   }
 

@@ -36,6 +36,7 @@ import {
 } from '../core/index.js';
 import { createPersistenceManager, type PersistenceManager } from '../core/persistence.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
+import { getAutonomousGuardrails, VERIFICATION_REQUIREMENTS } from '../core/autonomous-prompts.js';
 import {
   printBanner,
   printPhase,
@@ -452,7 +453,13 @@ PROJECT: ${this.config.name}
 
 Read .copilot/state/flight_log.md first, update when done.
 Reference .copilot/best-practices.yaml for standards.
+
+${getAutonomousGuardrails()}
+
 ${getCriticalFilesWarning()}
+
+${VERIFICATION_REQUIREMENTS}
+
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
   }
 
