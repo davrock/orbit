@@ -150,7 +150,7 @@ describe('output utilities', () => {
       printMissionComplete(1, 45);
       const calls = consoleLogSpy.mock.calls.map((c: unknown[]) => c[0]).join('');
       expect(calls).toContain('Phases: 1');
-      expect(calls).toContain('0m 45s');
+      expect(calls).toContain('45s');
     });
   });
 

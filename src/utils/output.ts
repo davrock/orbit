@@ -62,11 +62,9 @@ export function printPhase(phase: string, crew: string, tier: string, icon: stri
 }
 
 export function printMissionComplete(cycles: number, duration: number): void {
-  const mins = Math.floor(duration / 60);
-  const secs = duration % 60;
   console.log('');
   console.log(colors.success('━'.repeat(64)));
-  console.log(colors.success(`  🎯 MISSION COMPLETE │ Phases: ${cycles} │ Time: ${mins}m ${secs}s`));
+  console.log(colors.success(`  🎯 MISSION COMPLETE │ Phases: ${cycles} │ Time: ${formatDuration(duration)}`));
   console.log(colors.success('━'.repeat(64)));
 }
 
