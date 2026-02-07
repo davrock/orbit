@@ -1,8 +1,0 @@
-{
-  "id": "skill-1770412438304",
-  "pattern": "Expand crew roster to 32 specialized agents including: data-scientist, ml-engineer, devops, frontend-specialist, backend-specialist, database-architect, api-designer, ux-researcher, tech-writer, qa-lead, performance-engineer, cloud-architect",
-  "solution": "Files: to, with, commit, flight | IMPLEMENT COMPLETE | Perfect! The build succeeds, confirming all the agents are properly implemented. Now let me update the flight log to mark this phase as complete:",
-  "context": "warp",
-  "successCount": 1,
-  "lastUsed": "2026-02-06T21:13:58.304Z"
-}

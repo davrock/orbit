@@ -1,8 +1,0 @@
-{
-  "id": "skill-1770413448248",
-  "pattern": "Implement magic keyword detection in task descriptions (ralph, eco, plan, ulw) to auto-select execution modes",
-  "solution": "Files: all, parallel | IMPLEMENT COMPLETE | │ 12  +  Successfully implemented magic keyword detection feature that allows users to use     │",
-  "context": "warp",
-  "successCount": 1,
-  "lastUsed": "2026-02-06T21:30:48.248Z"
-}

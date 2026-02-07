@@ -1,6 +1,5 @@
-# Orchestration state and logs
-.copilot/state/*.log
-.copilot/queue_processor.log
+# .copilot/ is created by 'orbit deploy' in target projects, not used in ORBIT's own repo
+.copilot/
 queue_output.log
 
 # Temporary files
