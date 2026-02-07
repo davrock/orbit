@@ -14,6 +14,8 @@ import {
   createFlightPlan,
   listFlightPlans,
   showFlightPlan,
+  deleteFlightPlan,
+  updateFlightPlanStatus,
   generateIssuesFromPlan,
   runDeploy,
   generateDashboard,
@@ -344,8 +346,9 @@ flightPlan
 
 flightPlan
   .command('show <planId>')
-  .description('Show a flight plan')
-  .action((planId) => showFlightPlan(planId));
+  .description('Show a flight plan summary')
+  .option('--full', 'Show full markdown content')
+  .action((planId, options) => showFlightPlan(planId, { full: options.full }));
 
 flightPlan
   .command('issues <planId>')
@@ -354,6 +357,16 @@ flightPlan
   .action(async (planId, options) => {
     await generateIssuesFromPlan(planId, { dryRun: options.dryRun });
   });
+
+flightPlan
+  .command('status <planId> <status>')
+  .description('Update plan status (draft, in_progress, complete, failed)')
+  .action((planId, status) => updateFlightPlanStatus(planId, status));
+
+flightPlan
+  .command('delete <planId>')
+  .description('Delete a flight plan')
+  .action((planId) => deleteFlightPlan(planId));
 
 // Deploy
 program

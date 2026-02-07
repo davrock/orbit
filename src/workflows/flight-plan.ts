@@ -1,7 +1,7 @@
 // 🛸 ORBIT Flight Plan
 // Implementation planning and GitHub issue generation
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync, statSync } from 'fs';
 import { join } from 'path';
 import { appendLog } from '../core/index.js';
 import { printSection, printSuccess, printError, colors } from '../utils/output.js';
@@ -21,6 +21,8 @@ export interface FlightPlan {
   objective: string;
   status: 'draft' | 'issues_created' | 'in_progress' | 'complete' | 'failed';
   createdAt: string;
+  totalTasks: number;
+  completedTasks: number;
   phases: FlightPlanPhase[];
 }
 
@@ -221,14 +223,28 @@ ${feature}
       
       const titleMatch = content.match(/^# 🛸 Flight Plan: (.+)$/m);
       const statusMatch = content.match(/^# Status: (.+)$/m);
+      const dateMatch = content.match(/^# Generated: (.+)$/m);
+
+      // Count tasks and completed tasks
+      const totalTasks = (content.match(/^- \[[ x]\] /gm) || []).length;
+      const completedTasks = (content.match(/^- \[x\] /gm) || []).length;
+
+      // Extract phases
+      const phaseMatches = content.matchAll(/^### (?:Phase \d+: )?(.+)$/gm);
+      const phases: FlightPlanPhase[] = [];
+      for (const pm of phaseMatches) {
+        phases.push({ name: pm[1], tasks: [] });
+      }
 
       plans.push({
         id,
         title: titleMatch?.[1] || 'Unknown',
         objective: titleMatch?.[1] || '',
         status: (statusMatch?.[1]?.toLowerCase() || 'draft') as FlightPlan['status'],
-        createdAt: '',
-        phases: []
+        createdAt: dateMatch?.[1] || '',
+        totalTasks,
+        completedTasks,
+        phases
       });
     }
 
@@ -242,6 +258,94 @@ ${feature}
       return null;
     }
     return readFileSync(planFile, 'utf-8');
+  }
+
+  showPlanSummary(planId: string): void {
+    const planFile = join(PLANS_DIR, `${planId}.md`);
+    if (!existsSync(planFile)) {
+      printError(`Plan not found: ${planId}`);
+      return;
+    }
+
+    const content = readFileSync(planFile, 'utf-8');
+    const titleMatch = content.match(/^# 🛸 Flight Plan: (.+)$/m);
+    const statusMatch = content.match(/^# Status: (.+)$/m);
+    const dateMatch = content.match(/^# Generated: (.+)$/m);
+    const complexityMatch = content.match(/^- Complexity: (.+)$/m);
+
+    const totalTasks = (content.match(/^- \[[ x]\] /gm) || []).length;
+    const completedTasks = (content.match(/^- \[x\] /gm) || []).length;
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    const statusColors: Record<string, (s: string) => string> = {
+      'draft': colors.warning,
+      'issues_created': colors.secondary,
+      'in_progress': colors.primary,
+      'complete': colors.success,
+      'failed': colors.error,
+    };
+    const status = statusMatch?.[1]?.toLowerCase() || 'draft';
+    const colorFn = statusColors[status] || colors.secondary;
+
+    console.log('');
+    console.log(`  📋 ${colors.secondary(titleMatch?.[1] || 'Unknown')}`);
+    console.log(`  ID:       ${planId}`);
+    console.log(`  Status:   ${colorFn(status.toUpperCase())}`);
+    if (dateMatch?.[1]) console.log(`  Created:  ${dateMatch[1]}`);
+    if (complexityMatch?.[1]) console.log(`  Complexity: ${complexityMatch[1]}`);
+    console.log('');
+
+    // Progress bar
+    const barWidth = 30;
+    const filled = Math.round((progress / 100) * barWidth);
+    const empty = barWidth - filled;
+    const bar = '█'.repeat(filled) + '░'.repeat(empty);
+    console.log(`  Progress: [${bar}] ${progress}% (${completedTasks}/${totalTasks} tasks)`);
+    console.log('');
+
+    // Show phases with task counts
+    const sections = content.split(/^### /gm);
+    let phaseNum = 0;
+    for (const section of sections.slice(1)) {
+      const nameEnd = section.indexOf('\n');
+      const phaseName = section.substring(0, nameEnd).replace(/^Phase \d+: /, '');
+      // Stop counting at the next ## header to avoid bleeding into other sections
+      const nextH2 = section.indexOf('\n## ');
+      const phaseContent = nextH2 > -1 ? section.substring(nameEnd, nextH2) : section.substring(nameEnd);
+      const pTotal = (phaseContent.match(/^- \[[ x]\] /gm) || []).length;
+      const pDone = (phaseContent.match(/^- \[x\] /gm) || []).length;
+      if (pTotal === 0) continue;
+      phaseNum++;
+      const phaseIcon = pDone === pTotal ? '✅' : pDone > 0 ? '🔄' : '⬜';
+      console.log(`  ${phaseIcon} Phase ${phaseNum}: ${phaseName} (${pDone}/${pTotal})`);
+    }
+    console.log('');
+    console.log(`  View full plan: ${colors.secondary(`orbit flight-plan show ${planId} --full`)}`);
+  }
+
+  deletePlan(planId: string): boolean {
+    const planFile = join(PLANS_DIR, `${planId}.md`);
+    if (!existsSync(planFile)) {
+      printError(`Plan not found: ${planId}`);
+      return false;
+    }
+    unlinkSync(planFile);
+    printSuccess(`Deleted flight plan: ${planId}`);
+    appendLog(`Deleted flight plan: ${planId}`);
+    return true;
+  }
+
+  updateStatus(planId: string, newStatus: FlightPlan['status']): boolean {
+    const planFile = join(PLANS_DIR, `${planId}.md`);
+    if (!existsSync(planFile)) {
+      printError(`Plan not found: ${planId}`);
+      return false;
+    }
+    let content = readFileSync(planFile, 'utf-8');
+    content = content.replace(/^# Status: .+$/m, `# Status: ${newStatus.toUpperCase()}`);
+    writeFileSync(planFile, content);
+    printSuccess(`Updated ${planId} status to: ${newStatus.toUpperCase()}`);
+    return true;
   }
 
   async generateIssues(planId: string): Promise<boolean> {
@@ -329,17 +433,52 @@ export function listFlightPlans(): void {
     return;
   }
 
+  const statusIcons: Record<string, string> = {
+    'draft': '📝',
+    'issues_created': '🐙',
+    'in_progress': '🚀',
+    'complete': '✅',
+    'failed': '❌',
+  };
+
   for (const plan of plans) {
-    console.log(`  ${colors.secondary(plan.id)}: ${plan.title} [${plan.status}]`);
+    const icon = statusIcons[plan.status] || '📋';
+    const progress = plan.totalTasks > 0
+      ? ` (${plan.completedTasks}/${plan.totalTasks} tasks)`
+      : '';
+    const date = plan.createdAt ? ` │ ${plan.createdAt}` : '';
+    console.log(`  ${icon} ${colors.secondary(plan.id)}: ${plan.title}${progress}${date}`);
+  }
+
+  console.log('');
+  console.log(`  View details: ${colors.secondary('orbit flight-plan show <planId>')}`);
+}
+
+export function showFlightPlan(planId: string, options: { full?: boolean } = {}): void {
+  const generator = new FlightPlanGenerator();
+  if (options.full) {
+    const content = generator.showPlan(planId);
+    if (content) {
+      console.log(content);
+    }
+  } else {
+    generator.showPlanSummary(planId);
   }
 }
 
-export function showFlightPlan(planId: string): void {
+export function deleteFlightPlan(planId: string): void {
   const generator = new FlightPlanGenerator();
-  const content = generator.showPlan(planId);
-  if (content) {
-    console.log(content);
+  generator.deletePlan(planId);
+}
+
+export function updateFlightPlanStatus(planId: string, status: string): void {
+  const validStatuses: FlightPlan['status'][] = ['draft', 'in_progress', 'complete', 'failed'];
+  if (!validStatuses.includes(status as FlightPlan['status'])) {
+    printError(`Invalid status: ${status}. Valid: ${validStatuses.join(', ')}`);
+    return;
   }
+  const generator = new FlightPlanGenerator();
+  generator.updateStatus(planId, status as FlightPlan['status']);
 }
 
 export async function generateIssuesFromPlan(planId: string, options: FlightPlanOptions = {}): Promise<void> {
