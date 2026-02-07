@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770424108593",
+  "pattern": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+  "solution": "Files: **Impact:**, to, corresponding, with | IMPLEMENT COMPLETE | │ 18  +  Refactored commandExists() function in src/utils/exec.ts to use the centralized   │",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-07T00:28:28.593Z"
+}

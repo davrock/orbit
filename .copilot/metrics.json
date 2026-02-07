@@ -31,25 +31,211 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-06T23:52:37.748Z"
+    },
+    {
+      "id": "run-1770422078220",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-06T23:54:38.220Z",
+      "totalDuration": 369,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-06T23:54:38.224Z",
+          "duration": 107,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-06T23:56:25.688Z",
+          "duration": 262,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 4,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:00:48.157Z"
+    },
+    {
+      "id": "run-1770422568631",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-07T00:02:48.631Z",
+      "totalDuration": 272,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-07T00:02:48.635Z",
+          "duration": 146,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-07T00:05:14.658Z",
+          "duration": 126,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:07:21.472Z"
+    },
+    {
+      "id": "run-1770422961946",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-07T00:09:21.946Z",
+      "totalDuration": 423,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-07T00:09:21.950Z",
+          "duration": 155,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-07T00:11:57.361Z",
+          "duration": 267,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:16:25.285Z"
+    },
+    {
+      "id": "run-1770423505760",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-07T00:18:25.760Z",
+      "totalDuration": 221,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-07T00:18:25.764Z",
+          "duration": 98,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-07T00:20:04.117Z",
+          "duration": 123,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:22:07.247Z"
+    },
+    {
+      "id": "run-1770423847754",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-07T00:24:07.754Z",
+      "totalDuration": 260,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-07T00:24:07.768Z",
+          "duration": 104,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-07T00:25:52.236Z",
+          "duration": 156,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 7,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:28:28.599Z"
+    },
+    {
+      "id": "run-1770424229114",
+      "task": "Analyze this project and implement ONE improvement. Focus on code quality, tests, or performance. Commit it.",
+      "mission": "warp",
+      "started": "2026-02-07T00:30:29.114Z",
+      "totalDuration": 434,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-07T00:30:29.120Z",
+          "duration": 277,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        },
+        {
+          "name": "commit",
+          "started": "2026-02-07T00:35:06.983Z",
+          "duration": 156,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 6,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-07T00:37:43.582Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 1,
+    "totalRuns": 7,
     "successRate": 100,
-    "avgDuration": 681,
+    "avgDuration": 380,
     "byMission": {
       "warp": {
-        "count": 1,
+        "count": 7,
         "successRate": 100
       }
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 344,
+        "avgDuration": 176,
         "successRate": 100
       },
       "commit": {
-        "avgDuration": 337,
+        "avgDuration": 204,
         "successRate": 100
       }
     }
