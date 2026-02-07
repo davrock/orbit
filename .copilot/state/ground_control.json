@@ -2,10 +2,10 @@
   "fails": 0,
   "noProgress": 0,
   "types": [
-    "self",
-    "self",
-    "self"
+    "cargo",
+    "cargo",
+    "cargo"
   ],
-  "cycles": 8,
-  "successes": 8
+  "cycles": 15,
+  "successes": 15
 }

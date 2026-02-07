@@ -1,0 +1,23 @@
+{
+  "completedTasks": [
+    "task-1",
+    "task-2",
+    "task-3"
+  ],
+  "inProgressTasks": [],
+  "failedTasks": [],
+  "sharedContext": {
+    "task-1": {
+      "output": "Dry run",
+      "files": []
+    },
+    "task-2": {
+      "output": "Dry run",
+      "files": []
+    },
+    "task-3": {
+      "output": "Dry run",
+      "files": []
+    }
+  }
+}

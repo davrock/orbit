@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770414096858",
+  "pattern": "Add 'plan' mode that conducts planning interview before execution to gather requirements",
+  "solution": "Files: correctly:, 3., (13, with, metrics | │  8  +  Status: COMPLETE                                                                      │ | Now let me check the mission-control.ts to see if the plan requirements integration is implemented:",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T21:41:36.858Z"
+}

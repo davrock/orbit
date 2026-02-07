@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770411154484",
+  "pattern": "Add 'ecomode' for budget-conscious execution that aggressively uses fast/cheap models where possible (target 30-50% token savings)",
+  "solution": "Files: src/cli/index.ts:, src/core/state.ts:, all, src/workflows/ultrawork.ts, README.md: | IMPLEMENT COMPLETE | │ 14  +  1. Core Types - Added 'ecomode' to ModelTier type                                 │",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T20:52:34.485Z"
+}
