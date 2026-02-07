@@ -17,7 +17,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && chmod +x dist/cli/index.js 2>/dev/null || true",
+    "build": "tsc && mkdir -p dist/agents/definitions && cp src/agents/definitions/*.yaml dist/agents/definitions/ && chmod +x dist/cli/index.js 2>/dev/null || true",
     "dev": "tsx src/cli/index.ts",
     "start": "node dist/cli/index.js",
     "test": "vitest run",
