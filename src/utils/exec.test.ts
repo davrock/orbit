@@ -281,4 +281,81 @@ describe('exec utilities', () => {
       expect(result).toBeDefined();
     });
   });
+
+  describe('Input validation', () => {
+    it('should handle empty command in exec', () => {
+      const result = exec('');
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Command cannot be empty');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should handle whitespace-only command in exec', () => {
+      const result = exec('   ');
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Command cannot be empty');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should handle empty command in execQuiet', () => {
+      const result = execQuiet('');
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle whitespace-only command in execQuiet', () => {
+      const result = execQuiet('   ');
+      expect(result).toBeUndefined();
+    });
+
+    it('should handle zero timeout in exec', () => {
+      const result = exec('echo test', 0);
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Timeout must be greater than 0');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should handle negative timeout in exec', () => {
+      const result = exec('echo test', -5);
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Timeout must be greater than 0');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should handle empty command in commandExists', () => {
+      const result = commandExists('');
+      expect(result).toBe(false);
+    });
+
+    it('should handle whitespace-only command in commandExists', () => {
+      const result = commandExists('   ');
+      expect(result).toBe(false);
+    });
+
+    it('should accept valid timeout values', () => {
+      const result = exec('echo test', 1);
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe('execAsync input validation', () => {
+    it('should handle empty command in execAsync', async () => {
+      const result = await execAsync('');
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Command cannot be empty');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should handle whitespace-only command in execAsync', async () => {
+      const result = await execAsync('   ');
+      expect(result.success).toBe(false);
+      expect(result.stderr).toContain('Command cannot be empty');
+      expect(result.exitCode).toBe(1);
+    });
+
+    it('should execute valid commands in execAsync', async () => {
+      const result = await execAsync('echo', ['test']);
+      expect(result.success).toBe(true);
+      expect(result.stdout).toContain('test');
+    });
+  });
 });

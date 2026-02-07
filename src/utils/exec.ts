@@ -19,6 +19,10 @@ export interface ExecResult {
 }
 
 export function execQuiet(cmd: string): string | undefined {
+  if (!cmd || cmd.trim().length === 0) {
+    return undefined;
+  }
+  
   try {
     return execSync(cmd, { 
       encoding: 'utf-8', 
@@ -30,6 +34,24 @@ export function execQuiet(cmd: string): string | undefined {
 }
 
 export function exec(cmd: string, timeout = 600): ExecResult {
+  if (!cmd || cmd.trim().length === 0) {
+    return {
+      stdout: '',
+      stderr: 'Error: Command cannot be empty',
+      exitCode: 1,
+      success: false
+    };
+  }
+
+  if (timeout <= 0) {
+    return {
+      stdout: '',
+      stderr: 'Error: Timeout must be greater than 0',
+      exitCode: 1,
+      success: false
+    };
+  }
+
   try {
     const stdout = execSync(cmd, {
       encoding: 'utf-8',
@@ -53,6 +75,15 @@ export async function execAsync(
   args: string[] = [],
   options: SpawnOptions = {}
 ): Promise<ExecResult> {
+  if (!cmd || cmd.trim().length === 0) {
+    return {
+      stdout: '',
+      stderr: 'Error: Command cannot be empty',
+      exitCode: 1,
+      success: false
+    };
+  }
+
   return new Promise((resolve) => {
     const proc = spawn(cmd, args, {
       shell: true,
@@ -103,6 +134,9 @@ export function runWithTimeout(cmd: string, timeoutSecs: number): ExecResult {
 }
 
 export function commandExists(cmd: string): boolean {
+  if (!cmd || cmd.trim().length === 0) {
+    return false;
+  }
   return !!execQuiet(`which ${escapeShellArg(cmd)}`);
 }
 

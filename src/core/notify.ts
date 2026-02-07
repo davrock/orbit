@@ -24,9 +24,7 @@ export function configureNotify(options: Partial<NotifyConfig>): void {
 
 function commandExists(cmd: string): boolean {
   try {
-    // Escape the command to prevent command injection
-    const escapedCmd = cmd.replace(/'/g, "'\\''");
-    execSync(`which '${escapedCmd}'`, { stdio: 'ignore' });
+    execSync(`which ${escapeShellArg(cmd)}`, { stdio: 'ignore' });
     return true;
   } catch {
     return false;
