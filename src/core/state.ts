@@ -1,7 +1,7 @@
 // 🛸 ORBIT State Management
 // Persists ground control state, fuel usage, and skills
 
-import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { readJsonFile, writeJsonFile, updateJsonFile } from '../utils/json-file.js';
 import type { GroundControlState, FuelUsage, Skill, ModelTier, CargoItem } from './types.js';
@@ -292,10 +292,6 @@ export function appendLog(message: string): void {
   const timestamp = new Date().toISOString().replace('T', ' ').split('.')[0];
   const entry = `[${timestamp}] ${message}\n`;
   
-  if (existsSync(logFile)) {
-    const content = readFileSync(logFile, 'utf-8');
-    writeFileSync(logFile, content + entry);
-  } else {
-    writeFileSync(logFile, entry);
-  }
+  // Use appendFileSync for atomic writes to prevent race conditions
+  appendFileSync(logFile, entry, 'utf-8');
 }
