@@ -3,6 +3,7 @@
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { printError, printWarning, colors } from './output.js';
+import { escapeShellArg } from './shell-escape.js';
 
 const CRITICAL_FILES = [
   'src/config/best-practices.yaml',
@@ -85,7 +86,7 @@ export function checkCriticalFilesAfterMission(): void {
     const { execSync } = require('child_process');
     try {
       for (const file of result.missing) {
-        execSync(`git checkout HEAD -- ${file}`, { stdio: 'ignore' });
+        execSync(`git checkout HEAD -- ${escapeShellArg(file)}`, { stdio: 'ignore' });
       }
       console.log(colors.success('✓ Critical files restored successfully'));
       console.log('');
