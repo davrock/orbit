@@ -1,24 +1,16 @@
 // 🚀 ORBIT Deploy Workflow
-// Install ORBIT into target projects
+// Initialize ORBIT in target projects
+// Creates .orbit/ for per-project state and .github/copilot-instructions.md
+// Config YAML files are read directly from the npm package — no copying needed
 
-import { existsSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, statSync, readFileSync } from 'fs';
-import { join, dirname, resolve } from 'path';
+import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
+import { join, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { colors, printBanner, printSuccess, printError, printWarning } from '../utils/output.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-// Resolve the config directory relative to the compiled deploy.js location
-// In dist: dist/workflows/deploy.js → dist/config/
-// In dev:  src/workflows/deploy.ts  → src/config/
-function getConfigDir(): string {
-  const distConfig = join(__dirname, '..', 'config');
-  if (existsSync(distConfig)) return distConfig;
-  const srcConfig = join(__dirname, '..', '..', 'src', 'config');
-  if (existsSync(srcConfig)) return srcConfig;
-  return distConfig;
-}
 
 export interface DeployOptions {
   targetDir: string;
@@ -40,7 +32,6 @@ export function deploy(options: DeployOptions): boolean {
   }
   
   const targetPath = resolve(targetDir);
-  const configDir = getConfigDir();
   
   // Prevent deploying into ORBIT's own package directory
   const orbitRoot = resolve(__dirname, '..', '..');
@@ -49,59 +40,28 @@ export function deploy(options: DeployOptions): boolean {
     return false;
   }
   
-  console.log(`Config: ${configDir}`);
-  console.log(`To:     ${targetPath}`);
+  console.log(`To: ${targetPath}`);
   console.log('');
   
-  // Check for existing .copilot
-  const targetCopilot = join(targetPath, '.copilot');
-  if (existsSync(targetCopilot) && !force) {
-    printWarning('.copilot already exists. Use --force to overwrite.');
+  // Check for existing .orbit
+  const targetOrbit = join(targetPath, '.orbit');
+  if (existsSync(targetOrbit) && !force) {
+    printWarning('.orbit already exists. Use --force to overwrite.');
     return false;
   }
   
-  // Create directories
-  console.log(colors.secondary('📁 Creating directories...'));
-  mkdirSync(join(targetPath, '.copilot/state'), { recursive: true });
-  mkdirSync(join(targetPath, '.copilot/plans'), { recursive: true });
-  mkdirSync(join(targetPath, '.copilot/skills'), { recursive: true });
-  mkdirSync(join(targetPath, '.copilot/dashboard'), { recursive: true });
-  printSuccess('Directories created');
-  
-  // Copy config files
-  console.log(colors.secondary('📋 Copying configuration files...'));
-  const configFiles = [
-    'best-practices.yaml',
-    'crew.yaml', 
-    'missions.yaml',
-    'models.yaml'
-  ];
-  
-  for (const file of configFiles) {
-    const src = join(configDir, file);
-    const dest = join(targetPath, '.copilot', file);
-    
-    if (existsSync(src)) {
-      copyFileSync(src, dest);
-      console.log(`   ✓ ${file}`);
-    } else {
-      printWarning(`Config file not found: ${file}`);
-    }
-  }
-  
-  // Copy dashboard
-  const dashboardSrc = join(configDir, 'dashboard/index.html');
-  const dashboardDest = join(targetPath, '.copilot/dashboard/index.html');
-  if (existsSync(dashboardSrc)) {
-    copyFileSync(dashboardSrc, dashboardDest);
-    console.log('   ✓ dashboard/index.html');
-  }
+  // Create .orbit state directories
+  console.log(colors.secondary('📁 Creating state directories...'));
+  mkdirSync(join(targetPath, '.orbit/state'), { recursive: true });
+  mkdirSync(join(targetPath, '.orbit/plans'), { recursive: true });
+  mkdirSync(join(targetPath, '.orbit/skills'), { recursive: true });
+  printSuccess('State directories created');
   
   // Initialize state files
   console.log(colors.secondary('📊 Initializing state...'));
   
   // Empty cargo manifest
-  writeFileSync(join(targetPath, '.copilot/cargo_manifest.txt'), `# 🚀 ORBIT Cargo Manifest - Feature Queue
+  writeFileSync(join(targetPath, '.orbit/cargo_manifest.txt'), `# 🚀 ORBIT Cargo Manifest - Feature Queue
 # Priority order: HIGH → MEDIUM → LOW
 
 # HIGH PRIORITY
@@ -114,7 +74,7 @@ export function deploy(options: DeployOptions): boolean {
 `);
   
   // Initial metrics
-  writeFileSync(join(targetPath, '.copilot/metrics.json'), JSON.stringify({
+  writeFileSync(join(targetPath, '.orbit/metrics.json'), JSON.stringify({
     version: '1.0',
     runs: [],
     aggregates: {
@@ -127,7 +87,7 @@ export function deploy(options: DeployOptions): boolean {
   }, null, 2));
   
   // Initial ground control
-  writeFileSync(join(targetPath, '.copilot/state/ground_control.json'), JSON.stringify({
+  writeFileSync(join(targetPath, '.orbit/state/ground_control.json'), JSON.stringify({
     fails: 0,
     noProgress: 0,
     types: [],
@@ -150,7 +110,6 @@ export function deploy(options: DeployOptions): boolean {
         const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
         pkg.scripts = pkg.scripts || {};
         
-        // Only add if not already present
         const orbitScripts = {
           'orbit': 'npx orbit',
           'orbit:launch': 'npx orbit launch',
@@ -187,6 +146,9 @@ export function deploy(options: DeployOptions): boolean {
   console.log('  2. npm install -g @davrock/orbit');
   console.log('  3. orbit launch "your first feature"');
   console.log('');
+  console.log(colors.dim('Config files are read from the npm package — no local copies needed.'));
+  console.log(colors.dim('Per-project state is stored in .orbit/'));
+  console.log('');
   
   return true;
 }
@@ -202,11 +164,11 @@ ${ORBIT_MARKER}
 This project uses [ORBIT](https://github.com/davrock/orbit) for AI-powered autonomous development.
 ORBIT orchestrates Copilot CLI to plan, implement, test, and commit changes.
 
-### Key Config Files (in \`.copilot/\`)
-- \`missions.yaml\` — Defines mission workflows (launch, repair, warp, etc.)
-- \`crew.yaml\` — Agent roles and system prompts (commander, pilot, engineer, etc.)
-- \`models.yaml\` — LLM model tiers (premium, standard, fast)
-- \`best-practices.yaml\` — Coding standards and conventions
+### Config Files
+Config files (missions.yaml, crew.yaml, models.yaml, best-practices.yaml) are read directly
+from the ORBIT npm package — they are NOT stored in the project.
+
+### Per-Project State (in \`.orbit/\`)
 - \`state/ground_control.json\` — Automation state and health tracking
 - \`skills/\` — Learned patterns from previous runs (DO NOT DELETE)
 - \`plans/\` — Flight plans (implementation plans)
@@ -214,10 +176,9 @@ ORBIT orchestrates Copilot CLI to plan, implement, test, and commit changes.
 - \`cargo_manifest.txt\` — Feature queue
 
 ### Protected Paths — NEVER modify or delete:
-- \`.copilot/skills/\` — ORBIT's learning memory
-- \`.copilot/state/\` — Runtime state
-- \`.copilot/metrics.json\` — Historical data
-- \`.copilot/*.yaml\` — Configuration definitions
+- \`.orbit/skills/\` — ORBIT's learning memory
+- \`.orbit/state/\` — Runtime state
+- \`.orbit/metrics.json\` — Historical data
 
 ### Common ORBIT Commands
 \`\`\`bash
@@ -231,10 +192,9 @@ orbit status              # Show current state
 \`\`\`
 
 ### When working on ORBIT tasks:
-1. Read the relevant \`.copilot/*.yaml\` files for context before making changes
-2. Never delete or overwrite files in \`.copilot/skills/\` or \`.copilot/state/\`
-3. Run \`orbit doctor\` to verify system health after changes
-4. Follow patterns in \`best-practices.yaml\` for code style
+1. Never delete or overwrite files in \`.orbit/skills/\` or \`.orbit/state/\`
+2. Run \`orbit doctor\` to verify system health after changes
+3. Config is in the npm package — do not create local copies
 
 ${ORBIT_MARKER_END}
 `;

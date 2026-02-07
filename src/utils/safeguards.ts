@@ -20,7 +20,7 @@ function getCriticalFiles(): string[] {
 function getProtectedDirectories(): string[] {
   const p = getConfigPaths();
   return [
-    '.copilot',
+    p.base,
     p.skills,
     p.state,
     p.plans

@@ -83,25 +83,26 @@ function checkGitRepository(): DiagnosticCheck {
 }
 
 function checkCopilotDirectory(): DiagnosticCheck {
-  if (existsSync('.copilot')) {
-    const stat = statSync('.copilot');
+  const p = getConfigPaths();
+  if (existsSync(p.base)) {
+    const stat = statSync(p.base);
     if (stat.isDirectory()) {
-      const subdirs = ['state', 'tasks', 'agents'].filter(d => 
-        existsSync(join('.copilot', d))
+      const subdirs = ['state', 'skills', 'plans'].filter(d => 
+        existsSync(join(p.base, d))
       );
       return {
-        name: '.copilot Directory',
+        name: 'ORBIT State Directory',
         status: 'pass',
-        message: `Present (subdirs: ${subdirs.join(', ')})`
+        message: `Present at ${p.base} (subdirs: ${subdirs.join(', ')})`
       };
     }
   }
   
   return {
-    name: '.copilot Directory',
+    name: 'ORBIT State Directory',
     status: 'fail',
-    message: 'Not found',
-    fix: 'Run: orbit deploy . --force'
+    message: `Not found at ${p.base}`,
+    fix: 'Run: orbit init --force'
   };
 }
 

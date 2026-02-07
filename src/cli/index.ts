@@ -389,7 +389,7 @@ flightPlan
 program
   .command('deploy <targetDir>')
   .description('Install ORBIT into a target project')
-  .option('-f, --force', 'Overwrite existing .copilot')
+  .option('-f, --force', 'Overwrite existing .orbit config')
   .action((targetDir, options) => {
     runDeploy(targetDir, { force: options.force });
   });
@@ -397,7 +397,7 @@ program
 program
   .command('init')
   .description('Initialize ORBIT in the current project')
-  .option('-f, --force', 'Overwrite existing .copilot')
+  .option('-f, --force', 'Overwrite existing .orbit config')
   .action((options) => {
     runDeploy('.', { force: options.force });
   });

@@ -43,11 +43,10 @@ export function getConstitutionalConstraints(): string {
 10. **DO NOT EXECUTE** destructive commands (rm -rf, drop database, etc.)
 
 PROTECTED PATHS (NEVER delete, move, or modify these):
-- .copilot/** - NEVER touch anything here (GitHub Copilot's directory)
 - ${p.skills}/* - Learning/memory system
 - ${p.state}/* - Runtime state  
 - ${p.plans}/* - Flight plans
-- ${p.base}/*.yaml - Configuration files
+- ${p.metrics} - Performance history
 
 If any action would violate these constraints, STOP and explain why.
 `;
@@ -188,8 +187,8 @@ export function getAutonomousGuardrails(): string {
 ✅ Add security validations
 
 ### What You CANNOT Do:
-🚨 Delete, move, or modify ANYTHING in .copilot/ directory (CRITICAL!)
-❌ Delete files in ${p.base}/ directory  
+🚨 Delete, move, or modify ANYTHING in ${p.base}/ directory (CRITICAL!)
+❌ Delete ORBIT state files (skills, metrics, plans)
 ❌ Remove existing tests (unless they test removed code)
 ❌ Change public APIs without deprecation
 ❌ Modify package.json dependencies

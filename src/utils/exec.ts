@@ -269,7 +269,8 @@ import { getConfigPaths } from './paths.js';
 function getOrbitContext(): string {
   const p = getConfigPaths();
   return `[ORBIT CONTEXT] You are being orchestrated by ORBIT (Orchestrated Robotic Build & Integration Toolkit).
-Config files are in ${p.base}/ — read missions.yaml, crew.yaml, models.yaml, best-practices.yaml for project conventions.
+Config files (missions.yaml, crew.yaml, models.yaml, best-practices.yaml) are in the ORBIT npm package at: ${p.bestPractices.replace('/best-practices.yaml', '/')}.
+Per-project state is in ${p.base}/ — flight logs, skills, plans, metrics.
 PROTECTED: Never delete or overwrite ${p.skills}/, ${p.state}/, or ${p.metrics}.
 `;
 }
