@@ -106,12 +106,14 @@ function isRetryableError(error: NodeJS.ErrnoException): boolean {
 
 /**
  * Helper: Synchronous sleep for retry delays.
+ * Uses Atomics.wait for efficient blocking without busy-waiting.
  */
 function sleepSync(ms: number): void {
-  const end = Date.now() + ms;
-  while (Date.now() < end) {
-    // Busy wait - only for short delays (< 1s)
-  }
+  const buffer = new SharedArrayBuffer(4);
+  const view = new Int32Array(buffer);
+  // Atomics.wait blocks the thread efficiently without CPU spinning
+  // Returns 'timed-out' after the specified time, which is expected behavior
+  Atomics.wait(view, 0, 0, ms);
 }
 
 /**
