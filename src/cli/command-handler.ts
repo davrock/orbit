@@ -4,6 +4,8 @@
 import {
   runMission,
   runUltrawork,
+  runSwarm,
+  runPipeline,
   createFlightPlan,
   runPlanMode
 } from '../workflows/index.js';
@@ -120,4 +122,29 @@ function determineModelTier(
   if (options.ecomode) return 'ecomode';
   if (detectedTier) return detectedTier;
   return 'auto';
+}
+
+export async function handleParallelCommand(
+  task: string,
+  options: CommandOptions,
+  workflowFn: (params: any) => Promise<any>,
+  workflowParams: any = {}
+): Promise<void> {
+  const detected = detectMagicKeywords(task);
+  
+  if (detected.shouldCreatePlan) {
+    printWarning('🔮 Magic keyword detected: creating flight plan first');
+    await createFlightPlan(detected.cleanedTask, { depth: 2 });
+    console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
+    return;
+  }
+  
+  const modelTier = determineModelTier(options, detected.modelTier);
+  
+  await workflowFn({
+    task: detected.cleanedTask,
+    dryRun: options.dryRun,
+    modelTier,
+    ...workflowParams
+  });
 }

@@ -30,7 +30,6 @@ import {
 } from '../workflows/index.js';
 import {
   detectProjectConfig,
-  detectMagicKeywords,
   loadFuelUsage,
   addCargoItem,
   getCheckpointInfo,
@@ -38,8 +37,8 @@ import {
   getMetricsSummary,
   printHUD
 } from '../core/index.js';
-import { printBanner, printKeyValue, colors, printWarning } from '../utils/output.js';
-import { handleMissionCommand } from './command-handler.js';
+import { printBanner, printKeyValue, colors } from '../utils/output.js';
+import { handleMissionCommand, handleParallelCommand } from './command-handler.js';
 
 const program = new Command();
 
@@ -134,27 +133,12 @@ program
   .option('--economy', 'Use fast models (0.5x fuel)')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
-    if (options.premium) modelTier = 'premium';
-    else if (options.economy) modelTier = 'fast';
-    else if (options.ecomode) modelTier = 'ecomode';
-    else if (detected.modelTier) modelTier = detected.modelTier;
-    
-    await runUltrawork({
-      task: detected.cleanedTask,
-      dryRun: options.dryRun,
-      maxConcurrency: parseInt(options.concurrency) || 4,
-      modelTier
-    });
+    await handleParallelCommand(
+      task,
+      options,
+      runUltrawork,
+      { maxConcurrency: parseInt(options.concurrency) || 4 }
+    );
   });
 
 program
@@ -167,28 +151,15 @@ program
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .option('--no-coordination', 'Disable inter-agent coordination')
   .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
-    if (options.premium) modelTier = 'premium';
-    else if (options.economy) modelTier = 'fast';
-    else if (options.ecomode) modelTier = 'ecomode';
-    else if (detected.modelTier) modelTier = detected.modelTier;
-    
-    await runSwarm({
-      task: detected.cleanedTask,
-      dryRun: options.dryRun,
-      maxConcurrency: parseInt(options.concurrency) || 4,
-      modelTier,
-      enableCoordination: options.coordination
-    });
+    await handleParallelCommand(
+      task,
+      options,
+      runSwarm,
+      { 
+        maxConcurrency: parseInt(options.concurrency) || 4,
+        enableCoordination: options.coordination
+      }
+    );
   });
 
 program
@@ -199,26 +170,7 @@ program
   .option('--economy', 'Use fast models (0.5x fuel)')
   .option('--ecomode', 'Budget-conscious mode (30-50% savings)')
   .action(async (task, options) => {
-    const detected = detectMagicKeywords(task);
-    
-    if (detected.shouldCreatePlan) {
-      printWarning('🔮 Magic keyword detected: creating flight plan first');
-      await createFlightPlan(detected.cleanedTask, { depth: 2 });
-      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-      return;
-    }
-    
-    let modelTier: 'auto' | 'premium' | 'fast' | 'ecomode' = 'auto';
-    if (options.premium) modelTier = 'premium';
-    else if (options.economy) modelTier = 'fast';
-    else if (options.ecomode) modelTier = 'ecomode';
-    else if (detected.modelTier) modelTier = detected.modelTier;
-    
-    await runPipeline({
-      task: detected.cleanedTask,
-      dryRun: options.dryRun,
-      modelTier
-    });
+    await handleParallelCommand(task, options, runPipeline);
   });
 
 program
