@@ -3,8 +3,8 @@
 
 import { existsSync, readFileSync } from 'fs';
 import { basename } from 'path';
-import { execSync } from 'child_process';
 import type { ProjectConfig, TechStack } from './types.js';
+import { execQuiet } from '../utils/exec.js';
 
 function readJsonField(file: string, field: string): string | undefined {
   try {
@@ -20,14 +20,6 @@ function grepFirst(file: string, pattern: RegExp): string | undefined {
     const content = readFileSync(file, 'utf-8');
     const match = content.match(pattern);
     return match?.[1];
-  } catch {
-    return undefined;
-  }
-}
-
-function execQuiet(cmd: string): string | undefined {
-  try {
-    return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
   } catch {
     return undefined;
   }

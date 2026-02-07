@@ -6,6 +6,7 @@ import { execSync } from 'child_process';
 import { join } from 'path';
 import { detectProjectConfig } from '../core/detect.js';
 import { colors, printSection, printSuccess, printError, printWarning, printInfo } from '../utils/output.js';
+import { execQuiet } from '../utils/exec.js';
 
 interface DiagnosticCheck {
   name: string;
@@ -19,14 +20,6 @@ interface DiagnosticResult {
   passed: number;
   failed: number;
   warnings: number;
-}
-
-function execQuiet(cmd: string): string | undefined {
-  try {
-    return execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-  } catch {
-    return undefined;
-  }
 }
 
 function checkNodeVersion(): DiagnosticCheck {
