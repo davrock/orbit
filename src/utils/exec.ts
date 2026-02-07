@@ -61,6 +61,14 @@ export async function execAsync(
 
     let stdout = '';
     let stderr = '';
+    let resolved = false;
+
+    const resolveOnce = (result: ExecResult) => {
+      if (!resolved) {
+        resolved = true;
+        resolve(result);
+      }
+    };
 
     proc.stdout?.on('data', (data) => {
       stdout += data.toString();
@@ -71,7 +79,7 @@ export async function execAsync(
     });
 
     proc.on('close', (code) => {
-      resolve({
+      resolveOnce({
         stdout,
         stderr,
         exitCode: code || 0,
@@ -80,7 +88,7 @@ export async function execAsync(
     });
 
     proc.on('error', (error) => {
-      resolve({
+      resolveOnce({
         stdout,
         stderr: error.message,
         exitCode: 1,
@@ -220,6 +228,15 @@ async function executeCopilotOnce(
 
     let stdout = '';
     let stderr = '';
+    let resolved = false;
+
+    const resolveOnce = (result: CopilotResult) => {
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timeoutId);
+        resolve(result);
+      }
+    };
 
     proc.stdout?.on('data', (data) => {
       const text = data.toString();
@@ -235,7 +252,7 @@ async function executeCopilotOnce(
 
     const timeoutId = setTimeout(() => {
       proc.kill('SIGTERM');
-      resolve({
+      resolveOnce({
         success: false,
         output: stdout + '\n[TIMEOUT] Copilot CLI exceeded time limit',
         exitCode: 124
@@ -243,8 +260,7 @@ async function executeCopilotOnce(
     }, timeout * 1000);
 
     proc.on('close', (code) => {
-      clearTimeout(timeoutId);
-      resolve({
+      resolveOnce({
         success: code === 0,
         output: stdout + (stderr ? `\n${stderr}` : ''),
         exitCode: code || 0
@@ -252,8 +268,7 @@ async function executeCopilotOnce(
     });
 
     proc.on('error', (error) => {
-      clearTimeout(timeoutId);
-      resolve({
+      resolveOnce({
         success: false,
         output: `Failed to start Copilot CLI: ${error.message}`,
         exitCode: 1
