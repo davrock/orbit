@@ -438,7 +438,6 @@ program
     console.log('  ralph       Persistent mode (retry with escalation until verified)');
     console.log('  plan        Planning interview mode (gather requirements before execution)');
     console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
-    console.log('  ultrawork   Parallel execution (distributes subtasks across concurrent sessions)');
     console.log('  swarm       Coordinated parallel (intelligent task distribution with dependencies)');
     console.log('  pipeline    Sequential multi-stage processing with handoffs between stages');
   });
