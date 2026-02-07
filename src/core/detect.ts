@@ -92,25 +92,34 @@ export function detectProjectName(): string {
 }
 
 export function detectTechStack(): TechStack {
+  // Cache package.json read to avoid multiple reads
+  let packageJsonContent: string | undefined;
+  const hasPackageJson = existsSync('package.json');
+  if (hasPackageJson) {
+    try {
+      packageJsonContent = readFileSync('package.json', 'utf-8');
+    } catch {
+      packageJsonContent = undefined;
+    }
+  }
+
   // React Native / Expo
   if (existsSync('app.json') || existsSync('app.config.js') || existsSync('app.config.ts')) {
-    if (existsSync('package.json')) {
-      const pkg = readFileSync('package.json', 'utf-8');
-      if (pkg.includes('"expo"')) return 'expo';
-      if (pkg.includes('"react-native"')) return 'react-native';
+    if (packageJsonContent) {
+      if (packageJsonContent.includes('"expo"')) return 'expo';
+      if (packageJsonContent.includes('"react-native"')) return 'react-native';
     }
   }
 
   // Node.js frameworks
-  if (existsSync('package.json')) {
+  if (hasPackageJson && packageJsonContent) {
     if (existsSync('next.config.js') || existsSync('next.config.mjs') || existsSync('next.config.ts')) return 'nextjs';
     if (existsSync('nuxt.config.js') || existsSync('nuxt.config.ts')) return 'nuxt';
     if (existsSync('svelte.config.js')) return 'svelte';
     if (existsSync('angular.json')) return 'angular';
     
-    const pkg = readFileSync('package.json', 'utf-8');
-    if (pkg.includes('"vue"')) return 'vue';
-    if (pkg.includes('"react"')) return 'react';
+    if (packageJsonContent.includes('"vue"')) return 'vue';
+    if (packageJsonContent.includes('"react"')) return 'react';
     if (existsSync('tsconfig.json')) return 'typescript';
     return 'node';
   }
