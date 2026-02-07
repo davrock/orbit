@@ -4,32 +4,36 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { existsSync, rmSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 import {
   detectCategory,
   extractSkill,
   findMatchingSkills,
   recordSkillUse,
   getSkillStats,
+  setSkillsDir,
+  resetSkillsDir,
   type SkillCategory
 } from './skills.js';
 import type { Skill } from './types.js';
 
-const TEST_SKILLS_DIR = 'src/config/skills';
+const TEST_SKILLS_DIR = join(tmpdir(), 'orbit-test-skills');
 const TEST_INDEX_FILE = join(TEST_SKILLS_DIR, 'index.json');
 
 describe('Skills Module', () => {
   beforeEach(() => {
-    // Clean up before each test
+    // Use temp directory for tests to avoid deleting real skills
     if (existsSync(TEST_SKILLS_DIR)) {
       rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
     }
+    setSkillsDir(TEST_SKILLS_DIR);
   });
 
   afterEach(() => {
-    // Clean up after each test
     if (existsSync(TEST_SKILLS_DIR)) {
       rmSync(TEST_SKILLS_DIR, { recursive: true, force: true });
     }
+    resetSkillsDir();
   });
 
   describe('detectCategory', () => {

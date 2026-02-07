@@ -3,9 +3,9 @@
   "noProgress": 0,
   "types": [
     "cargo",
-    "cargo",
+    "self",
     "self"
   ],
-  "cycles": 16,
-  "successes": 16
+  "cycles": 17,
+  "successes": 17
 }

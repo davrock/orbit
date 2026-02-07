@@ -5,8 +5,18 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 
 import { join } from 'path';
 import type { Skill } from './types.js';
 
-const SKILLS_DIR = 'src/config/skills';
-const INDEX_FILE = join(SKILLS_DIR, 'index.json');
+let SKILLS_DIR = 'src/config/skills';
+let INDEX_FILE = join(SKILLS_DIR, 'index.json');
+
+export function setSkillsDir(dir: string): void {
+  SKILLS_DIR = dir;
+  INDEX_FILE = join(dir, 'index.json');
+}
+
+export function resetSkillsDir(): void {
+  SKILLS_DIR = 'src/config/skills';
+  INDEX_FILE = join(SKILLS_DIR, 'index.json');
+}
 
 interface SkillsIndex {
   skills: string[];

@@ -9,6 +9,7 @@
   },
   "files": [
     "dist",
+    "scripts/postbuild.mjs",
     "README.md",
     "README.ko.md",
     "README.zh.md",
@@ -17,7 +18,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && mkdir -p dist/agents/definitions && cp src/agents/definitions/*.yaml dist/agents/definitions/ && mkdir -p dist/workflows/definitions && cp src/workflows/definitions/*.yaml dist/workflows/definitions/ && chmod +x dist/cli/index.js 2>/dev/null || true",
+    "build": "tsc && node scripts/postbuild.mjs",
     "dev": "tsx src/cli/index.ts",
     "start": "node dist/cli/index.js",
     "test": "vitest run",
@@ -25,7 +26,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
     "prepublishOnly": "npm run build",
     "postinstall": "node dist/cli/postinstall.js 2>/dev/null || true"
   },

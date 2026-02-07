@@ -33,6 +33,17 @@ npm run build
 Write-Host "🔗 Linking globally..."
 npm link
 
+# Check if npm global bin is in PATH
+$npmBin = (npm config get prefix) + "\node_modules\.bin"
+$npmPrefix = npm config get prefix
+if (-not ($env:Path -like "*$npmPrefix*")) {
+    Write-Host ""
+    Write-Host "⚠️  npm global bin may not be in your PATH." -ForegroundColor Yellow
+    Write-Host "   Add this to your PATH:" -ForegroundColor Yellow
+    Write-Host "   $npmPrefix" -ForegroundColor Cyan
+    Write-Host ""
+}
+
 Write-Host ""
 Write-Host "✅ ORBIT installed successfully!" -ForegroundColor Green
 Write-Host ""

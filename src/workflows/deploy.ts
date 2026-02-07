@@ -2,24 +2,23 @@
 // Install ORBIT into target projects
 
 import { existsSync, mkdirSync, copyFileSync, writeFileSync, readdirSync, statSync, readFileSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { colors, printBanner, printSuccess, printError, printWarning } from '../utils/output.js';
 
-const ORBIT_FILES = {
-  // Core configs
-  '.copilot/best-practices.yaml': true,
-  '.copilot/crew.yaml': true,
-  '.copilot/missions.yaml': true,
-  '.copilot/models.yaml': true,
-  
-  // State directories (create empty)
-  '.copilot/state': 'dir',
-  '.copilot/plans': 'dir',
-  '.copilot/skills': 'dir',
-  
-  // Dashboard
-  '.copilot/dashboard/index.html': true
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Resolve the config directory relative to the compiled deploy.js location
+// In dist: dist/workflows/deploy.js → dist/config/
+// In dev:  src/workflows/deploy.ts  → src/config/
+function getConfigDir(): string {
+  const distConfig = join(__dirname, '..', 'config');
+  if (existsSync(distConfig)) return distConfig;
+  const srcConfig = join(__dirname, '..', '..', 'src', 'config');
+  if (existsSync(srcConfig)) return srcConfig;
+  return distConfig;
+}
 
 export interface DeployOptions {
   targetDir: string;
@@ -40,16 +39,16 @@ export function deploy(options: DeployOptions): boolean {
     return false;
   }
   
-  const targetPath = join(process.cwd(), targetDir);
-  const orbitPath = process.cwd(); // Assuming running from ORBIT dir
+  const targetPath = resolve(targetDir);
+  const configDir = getConfigDir();
   
-  if (targetPath === orbitPath) {
+  if (targetPath === resolve('.')) {
     printError("Cannot deploy to ORBIT's own directory");
     return false;
   }
   
-  console.log(`From: ${orbitPath}`);
-  console.log(`To:   ${targetPath}`);
+  console.log(`Config: ${configDir}`);
+  console.log(`To:     ${targetPath}`);
   console.log('');
   
   // Check for existing .copilot
@@ -77,17 +76,19 @@ export function deploy(options: DeployOptions): boolean {
   ];
   
   for (const file of configFiles) {
-    const src = join(orbitPath, 'src/config', file);
+    const src = join(configDir, file);
     const dest = join(targetPath, '.copilot', file);
     
     if (existsSync(src)) {
       copyFileSync(src, dest);
       console.log(`   ✓ ${file}`);
+    } else {
+      printWarning(`Config file not found: ${file}`);
     }
   }
   
   // Copy dashboard
-  const dashboardSrc = join(orbitPath, 'src/config/dashboard/index.html');
+  const dashboardSrc = join(configDir, 'dashboard/index.html');
   const dashboardDest = join(targetPath, '.copilot/dashboard/index.html');
   if (existsSync(dashboardSrc)) {
     copyFileSync(dashboardSrc, dashboardDest);
@@ -177,7 +178,7 @@ export function deploy(options: DeployOptions): boolean {
   console.log('');
   console.log('Next steps:');
   console.log('  1. cd ' + targetDir);
-  console.log('  2. npm install orbit-cli (or use npx)');
+  console.log('  2. npm install -g @davrock/orbit');
   console.log('  3. orbit launch "your first feature"');
   console.log('');
   
