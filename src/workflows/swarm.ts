@@ -37,8 +37,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = '.copilot/state';
-const SWARM_DIR = '.copilot/state/swarm';
+const STATE_DIR = 'src/config/state';
+const SWARM_DIR = 'src/config/state/swarm';
 
 export interface SwarmTask {
   id: string;
@@ -551,7 +551,7 @@ PRIORITY: 7
 COMPLEXITY: medium
 DEPENDS_ON: task-1
 
-Read .copilot/state/flight_log.md first, update when done.
+Read src/config/state/flight_log.md first, update when done.
 Output all tasks then say 'SWARM PLAN COMPLETE'`;
   }
 
@@ -589,8 +589,8 @@ ${coordinationContext}
 
 Complete this specific task. Be aware of work done by dependency tasks.
 
-Read .copilot/state/flight_log.md for context.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md for context.
+Reference src/config/best-practices.yaml for standards.
 Complete the task then say 'TASK ${task.id} COMPLETE'`;
   }
 
@@ -615,8 +615,8 @@ Your mission:
 4. Ensure consistency and quality across all changes
 5. Suggest fixes if needed
 
-Read .copilot/state/flight_log.md first, update when done.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md first, update when done.
+Reference src/config/best-practices.yaml for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

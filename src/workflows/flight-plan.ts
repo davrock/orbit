@@ -7,7 +7,7 @@ import { appendLog } from '../core/index.js';
 import { printSection, printSuccess, printError, colors } from '../utils/output.js';
 import { commandExists, execQuiet, execCopilot } from '../utils/exec.js';
 
-const PLANS_DIR = '.copilot/plans';
+const PLANS_DIR = 'src/config/plans';
 
 export interface FlightPlanOptions {
   depth?: 1 | 2 | 3;

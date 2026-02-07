@@ -52,7 +52,7 @@ import { exec, execCopilot, commandExists } from '../utils/exec.js';
 import { saveCheckpoint, clearCheckpoint, loadCheckpoint, shouldResume, getResumePhases } from '../core/checkpoint.js';
 import { checkCriticalFilesBeforeMission, checkCriticalFilesAfterMission, getCriticalFilesWarning } from '../utils/safeguards.js';
 
-const STATE_DIR = '.copilot/state';
+const STATE_DIR = 'src/config/state';
 
 export interface MissionControlOptions {
   mission: MissionType;
@@ -451,8 +451,8 @@ TASK: ${this.missionConfig.task}${planSection}
 PHASE: ${phase}
 PROJECT: ${this.config.name}
 
-Read .copilot/state/flight_log.md first, update when done.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md first, update when done.
+Reference src/config/best-practices.yaml for standards.
 
 ${getAutonomousGuardrails()}
 

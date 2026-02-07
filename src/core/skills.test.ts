@@ -14,7 +14,7 @@ import {
 } from './skills.js';
 import type { Skill } from './types.js';
 
-const TEST_SKILLS_DIR = '.copilot/skills';
+const TEST_SKILLS_DIR = 'src/config/skills';
 const TEST_INDEX_FILE = join(TEST_SKILLS_DIR, 'index.json');
 
 describe('Skills Module', () => {

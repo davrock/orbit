@@ -7,7 +7,7 @@ import type { Phase, CrewMember, ModelTier, HUDState } from './types.js';
 import { loadFuelUsage } from './state.js';
 import { colors } from '../utils/output.js';
 
-const STATE_DIR = '.copilot/state';
+const STATE_DIR = 'src/config/state';
 const HUD_FILE = join(STATE_DIR, 'hud.json');
 
 function ensureStateDir(): void {

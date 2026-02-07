@@ -5,7 +5,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync } from 
 import { join } from 'path';
 import type { Skill } from './types.js';
 
-const SKILLS_DIR = '.copilot/skills';
+const SKILLS_DIR = 'src/config/skills';
 const INDEX_FILE = join(SKILLS_DIR, 'index.json');
 
 interface SkillsIndex {

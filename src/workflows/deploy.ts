@@ -77,7 +77,7 @@ export function deploy(options: DeployOptions): boolean {
   ];
   
   for (const file of configFiles) {
-    const src = join(orbitPath, '.copilot', file);
+    const src = join(orbitPath, 'src/config', file);
     const dest = join(targetPath, '.copilot', file);
     
     if (existsSync(src)) {
@@ -87,7 +87,7 @@ export function deploy(options: DeployOptions): boolean {
   }
   
   // Copy dashboard
-  const dashboardSrc = join(orbitPath, '.copilot/dashboard/index.html');
+  const dashboardSrc = join(orbitPath, 'src/config/dashboard/index.html');
   const dashboardDest = join(targetPath, '.copilot/dashboard/index.html');
   if (existsSync(dashboardSrc)) {
     copyFileSync(dashboardSrc, dashboardDest);

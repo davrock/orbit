@@ -1,0 +1,11 @@
+🚨 CRITICAL: DO NOT DELETE OR MODIFY THIS DIRECTORY 🚨
+
+This directory contains ORBIT's configuration, learning memory, and runtime state.
+
+PROTECTED CONTENTS:
+- skills/     - Learning and memory system (DO NOT DELETE)
+- state/      - Runtime state and logs (DO NOT DELETE)
+- plans/      - Flight plans (DO NOT DELETE)
+- *.yaml      - Configuration files (DO NOT MODIFY without explicit instruction)
+
+Any deletion or unauthorized modification will break ORBIT's functionality.

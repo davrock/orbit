@@ -6,7 +6,7 @@ import { join } from 'path';
 import { execCopilot } from '../utils/exec.js';
 import { printSection, printSuccess, printWarning, colors } from '../utils/output.js';
 
-const STATE_DIR = '.copilot/state';
+const STATE_DIR = 'src/config/state';
 
 export interface PlanModeOptions {
   task: string;

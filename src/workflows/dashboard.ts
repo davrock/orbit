@@ -9,7 +9,7 @@ import { getSkillStats } from '../core/skills.js';
 import { loadFuelUsage } from '../core/state.js';
 import { colors, printSuccess } from '../utils/output.js';
 
-const DASHBOARD_DIR = '.copilot/dashboard';
+const DASHBOARD_DIR = 'src/config/dashboard';
 const DASHBOARD_FILE = join(DASHBOARD_DIR, 'index.html');
 
 export function generateDashboard(): void {

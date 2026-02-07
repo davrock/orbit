@@ -11,7 +11,7 @@ interface CheckpointConfig {
 }
 
 let config: CheckpointConfig = {
-  stateDir: '.copilot/state'
+  stateDir: 'src/config/state'
 };
 
 export function setCheckpointConfig(newConfig: Partial<CheckpointConfig>): void {
@@ -20,7 +20,7 @@ export function setCheckpointConfig(newConfig: Partial<CheckpointConfig>): void 
 
 export function resetCheckpointConfig(): void {
   config = {
-    stateDir: '.copilot/state'
+    stateDir: 'src/config/state'
   };
 }
 

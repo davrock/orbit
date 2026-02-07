@@ -5,18 +5,19 @@ import { join } from 'path';
 import { printError, printWarning, colors } from './output.js';
 
 const CRITICAL_FILES = [
-  '.copilot/best-practices.yaml',
-  '.copilot/crew.yaml',
-  '.copilot/missions.yaml',
-  '.copilot/models.yaml',
-  '.copilot/cargo_manifest.txt'
+  'src/config/best-practices.yaml',
+  'src/config/crew.yaml',
+  'src/config/missions.yaml',
+  'src/config/models.yaml',
+  'src/config/cargo_manifest.txt'
 ];
 
 // Directories that should never be deleted
 const PROTECTED_DIRECTORIES = [
-  '.copilot/skills',
-  '.copilot/state',
-  '.copilot/plans'
+  '.copilot',  // GitHub Copilot's own directory - NEVER touch
+  'src/config/skills',
+  'src/config/state',
+  'src/config/plans'
 ];
 
 /**
@@ -52,7 +53,7 @@ export function checkCriticalFilesBeforeMission(): boolean {
     });
     console.log('');
     console.log(colors.warning('These files are required for ORBIT to function properly.'));
-    console.log(colors.warning('Restore them from git: git checkout HEAD -- .copilot/*.yaml'));
+    console.log(colors.warning('Restore them from git: git checkout HEAD -- src/config/*.yaml'));
     console.log('');
     return false;
   }
@@ -90,7 +91,7 @@ export function checkCriticalFilesAfterMission(): void {
       console.log('');
     } catch (error) {
       printError('Failed to restore files automatically. Please restore manually:');
-      console.log(colors.error('  git checkout HEAD -- .copilot/*.yaml'));
+      console.log(colors.error('  git checkout HEAD -- src/config/*.yaml'));
       console.log('');
     }
   }

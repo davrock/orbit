@@ -13,9 +13,9 @@ interface StateConfig {
 }
 
 let config: StateConfig = {
-  stateDir: '.copilot/state',
-  skillsDir: '.copilot/skills',
-  cargoFile: '.copilot/cargo_manifest.txt'
+  stateDir: 'src/config/state',
+  skillsDir: 'src/config/skills',
+  cargoFile: 'src/config/cargo_manifest.txt'
 };
 
 export function setStateConfig(newConfig: Partial<StateConfig>): void {
@@ -24,9 +24,9 @@ export function setStateConfig(newConfig: Partial<StateConfig>): void {
 
 export function resetStateConfig(): void {
   config = {
-    stateDir: '.copilot/state',
-    skillsDir: '.copilot/skills',
-    cargoFile: '.copilot/cargo_manifest.txt'
+    stateDir: 'src/config/state',
+    skillsDir: 'src/config/skills',
+    cargoFile: 'src/config/cargo_manifest.txt'
   };
 }
 

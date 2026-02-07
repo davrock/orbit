@@ -1,0 +1,8 @@
+{
+  "id": "skill-1770415621436",
+  "pattern": "Implement design review agent that can optionally use external AI for UI/UX consistency feedback",
+  "solution": "Files: (design-review.ts, (types,, files): | IMPLEMENT COMPLETE 🚀 | - 3 files created (design-review.ts agent and workflow)",
+  "context": "warp",
+  "successCount": 1,
+  "lastUsed": "2026-02-06T22:07:01.436Z"
+}

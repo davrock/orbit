@@ -36,8 +36,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = '.copilot/state';
-const PIPELINE_DIR = '.copilot/state/pipeline';
+const STATE_DIR = 'src/config/state';
+const PIPELINE_DIR = 'src/config/state/pipeline';
 
 export interface PipelineStage {
   id: string;
@@ -477,7 +477,7 @@ CREW: pilot
 PHASE: implement
 INPUT_FROM_PREVIOUS: yes
 
-Read .copilot/state/flight_log.md first, update when done.
+Read src/config/state/flight_log.md first, update when done.
 Output all stages then say 'PIPELINE PLAN COMPLETE'`;
   }
 
@@ -516,8 +516,8 @@ Format:
 <your handoff context here>
 === END HANDOFF ===
 
-Read .copilot/state/flight_log.md for context.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md for context.
+Reference src/config/best-practices.yaml for standards.
 Complete the stage then say 'STAGE ${stage.id} COMPLETE'`;
   }
 
@@ -542,8 +542,8 @@ Your mission:
 4. Ensure consistency and quality across all stages
 5. Verify the final result meets the original task requirements
 
-Read .copilot/state/flight_log.md first, update when done.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md first, update when done.
+Reference src/config/best-practices.yaml for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

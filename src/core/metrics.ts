@@ -10,7 +10,7 @@ interface MetricsConfig {
 }
 
 let config: MetricsConfig = {
-  metricsFile: '.copilot/metrics.json'
+  metricsFile: 'src/config/metrics.json'
 };
 
 export function setMetricsConfig(newConfig: Partial<MetricsConfig>): void {
@@ -19,7 +19,7 @@ export function setMetricsConfig(newConfig: Partial<MetricsConfig>): void {
 
 export function resetMetricsConfig(): void {
   config = {
-    metricsFile: '.copilot/metrics.json'
+    metricsFile: 'src/config/metrics.json'
   };
   runCounter = 0;
   currentRun = null;

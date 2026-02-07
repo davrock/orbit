@@ -37,8 +37,8 @@ import {
 import { getCurrentCommit, getChangedFiles } from '../utils/git.js';
 import { execCopilot, commandExists } from '../utils/exec.js';
 
-const STATE_DIR = '.copilot/state';
-const ULTRAWORK_DIR = '.copilot/state/ultrawork';
+const STATE_DIR = 'src/config/state';
+const ULTRAWORK_DIR = 'src/config/state/ultrawork';
 
 export interface Subtask {
   id: string;
@@ -446,7 +446,7 @@ CREW: <crew-member>
 PRIORITY: <1-10>
 COMPLEXITY: <low/medium/high>
 
-Read .copilot/state/flight_log.md first, update when done.
+Read src/config/state/flight_log.md first, update when done.
 Output all subtasks then say 'PLAN COMPLETE'`;
   }
 
@@ -463,8 +463,8 @@ MODE: ultrawork (parallel execution - independent work)
 This is subtask ${subtask.id} in a parallel execution mission.
 Complete this specific subtask independently.
 
-Read .copilot/state/flight_log.md for context.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md for context.
+Reference src/config/best-practices.yaml for standards.
 Complete the subtask then say 'SUBTASK ${subtask.id} COMPLETE'`;
   }
 
@@ -489,8 +489,8 @@ Your mission:
 4. Check for any integration issues or gaps
 5. Suggest fixes if needed
 
-Read .copilot/state/flight_log.md first, update when done.
-Reference .copilot/best-practices.yaml for standards.
+Read src/config/state/flight_log.md first, update when done.
+Reference src/config/best-practices.yaml for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
   }
 

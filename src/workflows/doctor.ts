@@ -105,7 +105,7 @@ function checkCopilotDirectory(): DiagnosticCheck {
 }
 
 function checkBestPractices(): DiagnosticCheck {
-  const path = '.copilot/best-practices.yaml';
+  const path = 'src/config/best-practices.yaml';
   
   if (existsSync(path)) {
     const stat = statSync(path);
@@ -126,7 +126,7 @@ function checkBestPractices(): DiagnosticCheck {
 }
 
 function checkFlightLog(): DiagnosticCheck {
-  const path = '.copilot/state/flight_log.md';
+  const path = 'src/config/state/flight_log.md';
   
   if (existsSync(path)) {
     const content = readFileSync(path, 'utf-8');
@@ -282,7 +282,7 @@ function checkDiskSpace(): DiagnosticCheck {
 
 function checkWritePermissions(): DiagnosticCheck {
   try {
-    const testFile = '.copilot/.orbit-write-test';
+    const testFile = 'src/config/.orbit-write-test';
     execSync(`touch ${testFile} && rm ${testFile}`, { stdio: 'pipe' });
     
     return {
@@ -308,7 +308,7 @@ function checkStateFiles(): DiagnosticCheck {
     'metrics.json'
   ];
   
-  const existing = stateFiles.filter(f => existsSync(join('.copilot/state', f)));
+  const existing = stateFiles.filter(f => existsSync(join('src/config/state', f)));
   
   if (existing.length === 0) {
     return {
