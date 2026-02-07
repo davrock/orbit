@@ -42,7 +42,9 @@ export function deploy(options: DeployOptions): boolean {
   const targetPath = resolve(targetDir);
   const configDir = getConfigDir();
   
-  if (targetPath === resolve('.')) {
+  // Prevent deploying into ORBIT's own package directory
+  const orbitRoot = resolve(__dirname, '..', '..');
+  if (targetPath === orbitRoot) {
     printError("Cannot deploy to ORBIT's own directory");
     return false;
   }
