@@ -92,16 +92,27 @@ export function detectProjectName(): string {
 }
 
 export function detectTechStack(): TechStack {
-  // Cache package.json read to avoid multiple reads
-  let packageJsonContent: string | undefined;
-  const hasPackageJson = existsSync('package.json');
-  if (hasPackageJson) {
-    try {
-      packageJsonContent = readFileSync('package.json', 'utf-8');
-    } catch {
-      packageJsonContent = undefined;
+  // Cache file reads to avoid multiple reads
+  const fileCache = new Map<string, string>();
+  
+  const readFileCached = (path: string): string | undefined => {
+    if (fileCache.has(path)) {
+      return fileCache.get(path);
     }
-  }
+    if (!existsSync(path)) {
+      return undefined;
+    }
+    try {
+      const content = readFileSync(path, 'utf-8');
+      fileCache.set(path, content);
+      return content;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const packageJsonContent = readFileCached('package.json');
+  const hasPackageJson = packageJsonContent !== undefined;
 
   // React Native / Expo
   if (existsSync('app.json') || existsSync('app.config.js') || existsSync('app.config.ts')) {
@@ -127,8 +138,8 @@ export function detectTechStack(): TechStack {
   // Python
   if (existsSync('requirements.txt') || existsSync('pyproject.toml') || existsSync('setup.py') || existsSync('Pipfile')) {
     if (existsSync('manage.py')) return 'django';
-    const reqs = existsSync('requirements.txt') ? readFileSync('requirements.txt', 'utf-8') : '';
-    const pyproj = existsSync('pyproject.toml') ? readFileSync('pyproject.toml', 'utf-8') : '';
+    const reqs = readFileCached('requirements.txt') || '';
+    const pyproj = readFileCached('pyproject.toml') || '';
     if (reqs.includes('fastapi') || pyproj.includes('fastapi')) return 'fastapi';
     if (reqs.includes('flask') || pyproj.includes('flask')) return 'flask';
     return 'python';
@@ -142,14 +153,12 @@ export function detectTechStack(): TechStack {
 
   // Java/Kotlin
   if (existsSync('pom.xml')) {
-    const pom = readFileSync('pom.xml', 'utf-8');
+    const pom = readFileCached('pom.xml') || '';
     if (pom.includes('spring')) return 'spring';
     return 'maven';
   }
   if (existsSync('build.gradle') || existsSync('build.gradle.kts')) {
-    const gradle = existsSync('build.gradle') 
-      ? readFileSync('build.gradle', 'utf-8') 
-      : readFileSync('build.gradle.kts', 'utf-8');
+    const gradle = readFileCached('build.gradle') || readFileCached('build.gradle.kts') || '';
     if (existsSync('android') || gradle.includes('android')) return 'android';
     if (gradle.includes('kotlin')) return 'kotlin';
     return 'gradle';
@@ -157,7 +166,7 @@ export function detectTechStack(): TechStack {
 
   // Ruby
   if (existsSync('Gemfile')) {
-    const gemfile = readFileSync('Gemfile', 'utf-8');
+    const gemfile = readFileCached('Gemfile') || '';
     if (existsSync('config/application.rb') || gemfile.includes('rails')) return 'rails';
     return 'ruby';
   }
@@ -167,7 +176,7 @@ export function detectTechStack(): TechStack {
 
   // PHP
   if (existsSync('composer.json')) {
-    const composer = readFileSync('composer.json', 'utf-8');
+    const composer = readFileCached('composer.json') || '';
     if (composer.includes('laravel')) return 'laravel';
     if (composer.includes('symfony')) return 'symfony';
     return 'php';
