@@ -197,12 +197,13 @@ function updateAggregates(store: MetricsStore): void {
   if (runs.length === 0) return;
   
   const successCount = runs.filter(r => r.success).length;
-  const totalDuration = runs.reduce((sum, r) => sum + r.totalDuration, 0);
+  const validDurations = runs.filter(r => r.totalDuration != null);
+  const totalDuration = validDurations.reduce((sum, r) => sum + r.totalDuration, 0);
   
   store.aggregates = {
     totalRuns: runs.length,
     successRate: Math.round((successCount / runs.length) * 100),
-    avgDuration: Math.round(totalDuration / runs.length),
+    avgDuration: validDurations.length > 0 ? Math.round(totalDuration / validDurations.length) : 0,
     byMission: {},
     byPhase: {}
   };
@@ -210,6 +211,7 @@ function updateAggregates(store: MetricsStore): void {
   // By mission type
   const missionGroups = new Map<string, RunMetric[]>();
   for (const run of runs) {
+    if (!run.mission) continue;
     const group = missionGroups.get(run.mission) || [];
     group.push(run);
     missionGroups.set(run.mission, group);
@@ -228,7 +230,7 @@ function updateAggregates(store: MetricsStore): void {
   for (const run of runs) {
     for (const phase of run.phases) {
       const stats = phaseStats.get(phase.name) || { totalDuration: 0, success: 0, total: 0 };
-      stats.totalDuration += phase.duration;
+      stats.totalDuration += phase.duration || 0;
       stats.total++;
       if (phase.status === 'success') stats.success++;
       phaseStats.set(phase.name, stats);
@@ -244,7 +246,9 @@ function updateAggregates(store: MetricsStore): void {
 }
 
 export function getMetricsSummary(): MetricsStore['aggregates'] {
-  return loadMetrics().aggregates;
+  const store = loadMetrics();
+  updateAggregates(store);
+  return store.aggregates;
 }
 
 export function getRecentRuns(limit = 10): RunMetric[] {
