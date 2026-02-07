@@ -1,5 +1,7 @@
 # .copilot/ is created by 'orbit deploy' in target projects, not used in ORBIT's own repo
-.copilot/
+# Exception: instructions.md is tracked for Copilot awareness
+.copilot/*
+!.copilot/instructions.md
 queue_output.log
 
 # Temporary files
