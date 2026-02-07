@@ -37,77 +37,65 @@ export const techStackSchema = z.enum([
   'terraform', 'docker', 'unknown'
 ]);
 
+// Generic validation factory functions
+function createValidator<T extends z.ZodSchema>(
+  schema: T,
+  errorMessage: string
+): (value: unknown) => asserts value is z.infer<T> {
+  return (value: unknown): asserts value is z.infer<T> => {
+    const result = schema.safeParse(value);
+    if (!result.success) {
+      throw new Error(errorMessage.replace('{value}', String(value)));
+    }
+  };
+}
+
+function createSafeParser<T extends z.ZodSchema>(
+  schema: T
+): (value: unknown) => z.infer<T> | undefined {
+  return (value: unknown): z.infer<T> | undefined => {
+    const result = schema.safeParse(value);
+    return result.success ? result.data : undefined;
+  };
+}
+
+function createIsValid<T extends z.ZodSchema>(
+  schema: T
+): (value: unknown) => boolean {
+  return (value: unknown): boolean => {
+    return schema.safeParse(value).success;
+  };
+}
+
 // Validation functions with helpful error messages
-export function validateModelTier(value: unknown): asserts value is z.infer<typeof modelTierSchema> {
-  const result = modelTierSchema.safeParse(value);
-  if (!result.success) {
-    throw new Error(
-      `Invalid model tier: "${value}". Must be one of: premium, standard, fast, ecomode`
-    );
-  }
-}
+export const validateModelTier = createValidator(
+  modelTierSchema,
+  'Invalid model tier: "{value}". Must be one of: premium, standard, fast, ecomode'
+);
 
-export function validateMissionType(value: unknown): asserts value is z.infer<typeof missionTypeSchema> {
-  const result = missionTypeSchema.safeParse(value);
-  if (!result.success) {
-    throw new Error(
-      `Invalid mission type: "${value}". Use 'orbit --help' to see available mission types.`
-    );
-  }
-}
+export const validateMissionType = createValidator(
+  missionTypeSchema,
+  'Invalid mission type: "{value}". Use \'orbit --help\' to see available mission types.'
+);
 
-export function validatePhase(value: unknown): asserts value is z.infer<typeof phaseSchema> {
-  const result = phaseSchema.safeParse(value);
-  if (!result.success) {
-    throw new Error(
-      `Invalid phase: "${value}". Must be one of: plan, implement, test, review, debug, commit, security, document, research`
-    );
-  }
-}
+export const validatePhase = createValidator(
+  phaseSchema,
+  'Invalid phase: "{value}". Must be one of: plan, implement, test, review, debug, commit, security, document, research'
+);
 
-export function validateCrewMember(value: unknown): asserts value is z.infer<typeof crewMemberSchema> {
-  const result = crewMemberSchema.safeParse(value);
-  if (!result.success) {
-    throw new Error(
-      `Invalid crew member: "${value}". Check crew.yaml for valid crew members.`
-    );
-  }
-}
+export const validateCrewMember = createValidator(
+  crewMemberSchema,
+  'Invalid crew member: "{value}". Check crew.yaml for valid crew members.'
+);
 
 // Safe parsing (returns undefined instead of throwing)
-export function safeParseModelTier(value: unknown): z.infer<typeof modelTierSchema> | undefined {
-  const result = modelTierSchema.safeParse(value);
-  return result.success ? result.data : undefined;
-}
-
-export function safeParseMissionType(value: unknown): z.infer<typeof missionTypeSchema> | undefined {
-  const result = missionTypeSchema.safeParse(value);
-  return result.success ? result.data : undefined;
-}
-
-export function safeParsePhase(value: unknown): z.infer<typeof phaseSchema> | undefined {
-  const result = phaseSchema.safeParse(value);
-  return result.success ? result.data : undefined;
-}
-
-export function safeParseCrewMember(value: unknown): z.infer<typeof crewMemberSchema> | undefined {
-  const result = crewMemberSchema.safeParse(value);
-  return result.success ? result.data : undefined;
-}
+export const safeParseModelTier = createSafeParser(modelTierSchema);
+export const safeParseMissionType = createSafeParser(missionTypeSchema);
+export const safeParsePhase = createSafeParser(phaseSchema);
+export const safeParseCrewMember = createSafeParser(crewMemberSchema);
 
 // Utility to check if a value is valid without throwing
-export function isValidModelTier(value: unknown): boolean {
-  return modelTierSchema.safeParse(value).success;
-}
-
-export function isValidMissionType(value: unknown): boolean {
-  return missionTypeSchema.safeParse(value).success;
-}
-
-export function isValidPhase(value: unknown): boolean {
-  return phaseSchema.safeParse(value).success;
-}
-
-export function isValidCrewMember(value: unknown): boolean {
-  return crewMemberSchema.safeParse(value).success;
-}
+export const isValidModelTier = createIsValid(modelTierSchema);
+export const isValidMissionType = createIsValid(missionTypeSchema);
+export const isValidPhase = createIsValid(phaseSchema);
+export const isValidCrewMember = createIsValid(crewMemberSchema);
