@@ -2,7 +2,7 @@
 // Comprehensive test coverage for exec utilities
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { exec, execQuiet, execAsync, commandExists, runWithTimeout } from './exec.js';
+import { exec, execQuiet, execAsync, commandExists, runWithTimeout, validateAdditionalArgs } from './exec.js';
 import type { ExecResult } from './exec.js';
 
 describe('exec utilities', () => {
@@ -356,6 +356,66 @@ describe('exec utilities', () => {
       const result = await execAsync('echo', ['test']);
       expect(result.success).toBe(true);
       expect(result.stdout).toContain('test');
+    });
+  });
+
+  describe('validateAdditionalArgs', () => {
+    it('should accept valid CLI flags', () => {
+      expect(validateAdditionalArgs(['--model', '--verbose'])).toEqual({ valid: true });
+      expect(validateAdditionalArgs(['-v', '-q'])).toEqual({ valid: true });
+      expect(validateAdditionalArgs(['--model=gpt-4'])).toEqual({ valid: true });
+      expect(validateAdditionalArgs(['--timeout=300'])).toEqual({ valid: true });
+    });
+
+    it('should accept empty array', () => {
+      expect(validateAdditionalArgs([])).toEqual({ valid: true });
+    });
+
+    it('should reject arguments not starting with dash', () => {
+      const result = validateAdditionalArgs(['safe', '--flag']);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toContain('must start with "-"');
+    });
+
+    it('should reject arguments with shell metacharacters', () => {
+      const dangerous = [
+        '--flag;rm -rf /',
+        '--flag&whoami',
+        '--flag|cat /etc/passwd',
+        '--flag`whoami`',
+        '--flag$(whoami)',
+        '--flag>{output}',
+        '--flag<input',
+        '--flag\\n',
+      ];
+
+      for (const arg of dangerous) {
+        const result = validateAdditionalArgs([arg]);
+        expect(result.valid).toBe(false);
+        expect(result.reason).toContain('dangerous characters');
+      }
+    });
+
+    it('should reject empty string arguments', () => {
+      const result = validateAdditionalArgs(['']);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toContain('Empty argument');
+    });
+
+    it('should reject non-string arguments', () => {
+      const result = validateAdditionalArgs([42 as unknown as string]);
+      expect(result.valid).toBe(false);
+      expect(result.reason).toContain('not a string');
+    });
+
+    it('should accept flags with equals and values', () => {
+      expect(validateAdditionalArgs(['--model=claude-sonnet-4'])).toEqual({ valid: true });
+      expect(validateAdditionalArgs(['--max-tokens=1000'])).toEqual({ valid: true });
+    });
+
+    it('should reject all args if any one is invalid', () => {
+      const result = validateAdditionalArgs(['--valid', 'invalid']);
+      expect(result.valid).toBe(false);
     });
   });
 });

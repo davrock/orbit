@@ -235,6 +235,32 @@ export async function execCopilot(
 }
 
 /**
+ * Validate that additional CLI arguments are safe flags.
+ * Prevents argument injection by ensuring args start with '-' and
+ * contain no shell metacharacters.
+ */
+export function validateAdditionalArgs(args: string[]): { valid: boolean; reason?: string } {
+  const dangerousPattern = /[;&|`$(){}!<>\\]/;
+
+  for (const arg of args) {
+    if (typeof arg !== 'string') {
+      return { valid: false, reason: `Argument is not a string: ${String(arg)}` };
+    }
+    if (arg.length === 0) {
+      return { valid: false, reason: 'Empty argument not allowed' };
+    }
+    if (!arg.startsWith('-')) {
+      return { valid: false, reason: `Argument must start with "-": "${arg}"` };
+    }
+    if (dangerousPattern.test(arg)) {
+      return { valid: false, reason: `Argument contains dangerous characters: "${arg}"` };
+    }
+  }
+
+  return { valid: true };
+}
+
+/**
  * Single execution of Copilot CLI (internal helper).
  */
 async function executeCopilotOnce(
@@ -243,6 +269,16 @@ async function executeCopilotOnce(
   allowAllPaths: boolean,
   additionalArgs: string[]
 ): Promise<CopilotResult> {
+  // Validate additionalArgs to prevent argument injection
+  const validation = validateAdditionalArgs(additionalArgs);
+  if (!validation.valid) {
+    return {
+      success: false,
+      output: `Invalid additional argument: ${validation.reason}`,
+      exitCode: 1
+    };
+  }
+
   const args = [
     '-p', prompt,
     '--allow-all-tools'
