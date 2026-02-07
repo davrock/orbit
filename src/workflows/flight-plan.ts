@@ -15,6 +15,15 @@ export interface FlightPlanOptions {
   noIssues?: boolean;
 }
 
+export type PublishMode = 'issues' | 'epic' | 'milestone';
+
+export interface PublishOptions {
+  mode: PublishMode;
+  dryRun?: boolean;
+  labels?: string[];
+  assignee?: string;
+}
+
 export interface FlightPlan {
   id: string;
   title: string;
@@ -349,54 +358,279 @@ ${feature}
   }
 
   async generateIssues(planId: string): Promise<boolean> {
+    return this.publishToGitHub(planId, { mode: 'issues' });
+  }
+
+  parsePhases(content: string): { name: string; tasks: string[] }[] {
+    const result: { name: string; tasks: string[] }[] = [];
+    const sections = content.split(/^### /gm);
+
+    for (const section of sections.slice(1)) {
+      const nameEnd = section.indexOf('\n');
+      const phaseName = section.substring(0, nameEnd).trim();
+      const nextH2 = section.indexOf('\n## ');
+      const phaseContent = nextH2 > -1 ? section.substring(nameEnd, nextH2) : section.substring(nameEnd);
+
+      const tasks: string[] = [];
+      const taskRegex = /^- \[ \] (.+)$/gm;
+      let match;
+      while ((match = taskRegex.exec(phaseContent)) !== null) {
+        if (!match[1].includes('Requirement ') && !match[1].includes('Description')) {
+          tasks.push(match[1]);
+        }
+      }
+      if (tasks.length > 0) {
+        result.push({ name: phaseName, tasks });
+      }
+    }
+    return result;
+  }
+
+  async publishToGitHub(planId: string, options: PublishOptions): Promise<boolean> {
     const planFile = join(PLANS_DIR, `${planId}.md`);
-    
+
     if (!existsSync(planFile)) {
       printError(`Plan not found: ${planId}`);
       return false;
     }
 
     if (!commandExists('gh')) {
-      printError('GitHub CLI (gh) not installed');
+      printError('GitHub CLI (gh) not installed. Install: https://cli.github.com');
       return false;
     }
 
+    const content = readFileSync(planFile, 'utf-8');
+    const titleMatch = content.match(/^# 🛸 Flight Plan: (.+)$/m);
+    const planTitle = titleMatch?.[1] || planId;
+    const phases = this.parsePhases(content);
+    const totalTasks = phases.reduce((sum, p) => sum + p.tasks.length, 0);
+
     console.log(colors.primary(`
 ╔══════════════════════════════════════════════════════════════╗
-║  🐙 ORBIT - Issue Transmitter                                ║
+║  🐙 ORBIT - GitHub Publisher                                  ║
 ╚══════════════════════════════════════════════════════════════╝
 `));
 
-    console.log(`Plan: ${colors.secondary(planId)}`);
+    console.log(`  Plan:   ${colors.secondary(planTitle)}`);
+    console.log(`  Mode:   ${colors.secondary(options.mode)}`);
+    console.log(`  Phases: ${phases.length}`);
+    console.log(`  Tasks:  ${totalTasks}`);
+    if (options.labels?.length) console.log(`  Labels: ${options.labels.join(', ')}`);
+    if (options.assignee) console.log(`  Assign: ${options.assignee}`);
     console.log('');
 
-    if (this.options.dryRun) {
-      console.log(colors.warning('[DRY RUN] Would generate issues'));
+    if (totalTasks === 0) {
+      printError('No tasks found in plan');
+      return false;
+    }
+
+    if (options.dryRun) {
+      this.printDryRun(planId, planTitle, phases, options);
       return true;
     }
 
-    const content = readFileSync(planFile, 'utf-8');
-    const tasks = this.extractTasks(content);
+    const labelArgs = (options.labels || ['enhancement']).map(l => `--label "${l}"`).join(' ');
+    const assigneeArg = options.assignee ? `--assignee "${options.assignee}"` : '';
 
-    console.log(`Found ${tasks.length} tasks to create as issues`);
+    let success = false;
+    switch (options.mode) {
+      case 'issues':
+        success = await this.publishFlatIssues(planId, planTitle, phases, labelArgs, assigneeArg, planFile, content);
+        break;
+      case 'epic':
+        success = await this.publishEpic(planId, planTitle, phases, labelArgs, assigneeArg, planFile, content);
+        break;
+      case 'milestone':
+        success = await this.publishMilestone(planId, planTitle, phases, labelArgs, assigneeArg, planFile, content);
+        break;
+    }
 
-    for (const task of tasks) {
-      const result = execQuiet(
-        `gh issue create --title "[${planId}] ${task}" --body "From flight plan ${planId}" --label enhancement`
-      );
-      if (result) {
-        printSuccess(`Created issue for: ${task}`);
+    return success;
+  }
+
+  private printDryRun(planId: string, planTitle: string, phases: { name: string; tasks: string[] }[], options: PublishOptions): void {
+    console.log(colors.warning('[DRY RUN] The following would be created:\n'));
+
+    if (options.mode === 'milestone') {
+      console.log(`  📌 Milestone: "${planTitle}"`);
+      console.log('');
+    }
+
+    for (let i = 0; i < phases.length; i++) {
+      const phase = phases[i];
+      if (options.mode === 'epic') {
+        console.log(`  🎯 Epic Issue: "[${planId}] ${phase.name}"`);
+        for (const task of phase.tasks) {
+          console.log(`     └─ 📋 Sub-issue: "${task}"`);
+        }
       } else {
-        printError(`Failed to create issue for: ${task}`);
+        console.log(`  📂 ${phase.name}:`);
+        for (const task of phase.tasks) {
+          console.log(`     📋 Issue: "[${planId}] ${task}"`);
+        }
+      }
+      console.log('');
+    }
+  }
+
+  private async publishFlatIssues(
+    planId: string, planTitle: string, phases: { name: string; tasks: string[] }[],
+    labelArgs: string, assigneeArg: string, planFile: string, content: string
+  ): Promise<boolean> {
+    let created = 0;
+    let failed = 0;
+
+    for (const phase of phases) {
+      for (const task of phase.tasks) {
+        const body = `**Flight Plan:** ${planTitle} (\`${planId}\`)\\n**Phase:** ${phase.name}\\n\\n${task}`;
+        const cmd = `gh issue create --title "[${planId}] ${task}" --body "${body}" ${labelArgs} ${assigneeArg}`;
+        const result = execQuiet(cmd);
+        if (result) {
+          const issueNum = result.match(/#?(\d+)/)?.[1] || result.match(/\/(\d+)$/)?.[1];
+          printSuccess(`#${issueNum || '?'} ${task}`);
+          created++;
+        } else {
+          printError(`Failed: ${task}`);
+          failed++;
+        }
       }
     }
 
-    // Update plan status
-    let updatedContent = content.replace(/^# Status: .+$/m, '# Status: ISSUES_CREATED');
-    writeFileSync(planFile, updatedContent);
-
-    printSuccess('Issues created');
+    this.updatePlanAfterPublish(planFile, content, 'issues');
+    console.log('');
+    printSuccess(`Created ${created} issues${failed > 0 ? `, ${failed} failed` : ''}`);
+    appendLog(`Published ${planId} as ${created} flat issues`);
     return true;
+  }
+
+  private async publishEpic(
+    planId: string, planTitle: string, phases: { name: string; tasks: string[] }[],
+    labelArgs: string, assigneeArg: string, planFile: string, content: string
+  ): Promise<boolean> {
+    let created = 0;
+    let failed = 0;
+
+    for (const phase of phases) {
+      // Create parent (epic) issue for each phase
+      const taskList = phase.tasks.map(t => `- [ ] ${t}`).join('\\n');
+      const epicBody = `**Flight Plan:** ${planTitle} (\`${planId}\`)\\n\\n## Tasks\\n${taskList}`;
+      const epicCmd = `gh issue create --title "[${planId}] ${phase.name}" --body "${epicBody}" ${labelArgs} ${assigneeArg}`;
+      const epicResult = execQuiet(epicCmd);
+
+      if (!epicResult) {
+        printError(`Failed to create epic: ${phase.name}`);
+        failed += 1 + phase.tasks.length;
+        continue;
+      }
+
+      const epicUrl = epicResult.trim();
+      const epicNum = epicUrl.match(/\/(\d+)$/)?.[1];
+      // Get epic node ID for sub-issues
+      const epicNodeId = epicNum ? execQuiet(`gh issue view ${epicNum} --json id -q .id`) : null;
+
+      console.log(colors.secondary(`\n  🎯 Epic #${epicNum || '?'}: ${phase.name}`));
+      created++;
+
+      // Create sub-issues and link them
+      for (const task of phase.tasks) {
+        const subBody = `**Epic:** #${epicNum}\\n**Phase:** ${phase.name}\\n\\n${task}`;
+        const subCmd = `gh issue create --title "${task}" --body "${subBody}" ${labelArgs} ${assigneeArg}`;
+        const subResult = execQuiet(subCmd);
+
+        if (subResult) {
+          const subNum = subResult.match(/\/(\d+)$/)?.[1];
+          // Link as sub-issue via GraphQL
+          if (epicNodeId && subNum) {
+            const subNodeId = execQuiet(`gh issue view ${subNum} --json id -q .id`);
+            if (subNodeId) {
+              execQuiet(`gh api graphql -f query='mutation { addSubIssue(input: {issueId: "${epicNodeId}", subIssueId: "${subNodeId}"}) { issue { id } } }'`);
+            }
+          }
+          console.log(`     └─ #${subNum || '?'} ${task}`);
+          created++;
+        } else {
+          printError(`     └─ Failed: ${task}`);
+          failed++;
+        }
+      }
+    }
+
+    this.updatePlanAfterPublish(planFile, content, 'epic');
+    console.log('');
+    printSuccess(`Created ${created} issues (${phases.length} epics + sub-issues)${failed > 0 ? `, ${failed} failed` : ''}`);
+    appendLog(`Published ${planId} as ${phases.length} epics with sub-issues`);
+    return true;
+  }
+
+  private async publishMilestone(
+    planId: string, planTitle: string, phases: { name: string; tasks: string[] }[],
+    labelArgs: string, assigneeArg: string, planFile: string, content: string
+  ): Promise<boolean> {
+    // Create milestone
+    const milestoneResult = execQuiet(
+      `gh api repos/{owner}/{repo}/milestones -f title="${planTitle}" -f description="Flight plan ${planId}"`
+    );
+
+    if (!milestoneResult) {
+      printError('Failed to create milestone');
+      return false;
+    }
+
+    let milestoneTitle: string;
+    try {
+      const ms = JSON.parse(milestoneResult);
+      milestoneTitle = ms.title;
+      console.log(colors.secondary(`  📌 Milestone created: ${ms.title} (#${ms.number})`));
+      console.log('');
+    } catch {
+      printError('Failed to parse milestone response');
+      return false;
+    }
+
+    let created = 0;
+    let failed = 0;
+
+    // Ensure phase labels exist
+    const phaseLabels = new Set<string>();
+    for (const phase of phases) {
+      const label = `phase: ${phase.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 50)}`;
+      phaseLabels.add(label);
+    }
+
+    for (const label of phaseLabels) {
+      execQuiet(`gh label create "${label}" --color "0E8A16" --force`);
+    }
+
+    for (const phase of phases) {
+      const phaseLabel = `phase: ${phase.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').substring(0, 50)}`;
+      console.log(colors.secondary(`  📂 ${phase.name}`));
+
+      for (const task of phase.tasks) {
+        const body = `**Phase:** ${phase.name}\\n\\n${task}`;
+        const cmd = `gh issue create --title "[${planId}] ${task}" --body "${body}" --milestone "${milestoneTitle}" --label "${phaseLabel}" ${labelArgs} ${assigneeArg}`;
+        const result = execQuiet(cmd);
+
+        if (result) {
+          const issueNum = result.match(/\/(\d+)$/)?.[1];
+          console.log(`     📋 #${issueNum || '?'} ${task}`);
+          created++;
+        } else {
+          printError(`     Failed: ${task}`);
+          failed++;
+        }
+      }
+    }
+
+    this.updatePlanAfterPublish(planFile, content, 'milestone');
+    console.log('');
+    printSuccess(`Created milestone + ${created} issues${failed > 0 ? `, ${failed} failed` : ''}`);
+    appendLog(`Published ${planId} as milestone with ${created} issues`);
+    return true;
+  }
+
+  private updatePlanAfterPublish(planFile: string, content: string, mode: string): void {
+    const updatedContent = content.replace(/^# Status: .+$/m, '# Status: ISSUES_CREATED');
+    writeFileSync(planFile, updatedContent);
   }
 
   private extractTasks(content: string): string[] {
@@ -405,7 +639,6 @@ ${feature}
     let match;
     
     while ((match = regex.exec(content)) !== null) {
-      // Skip generic placeholders
       if (!match[1].includes('Requirement') && !match[1].includes('Description')) {
         tasks.push(match[1]);
       }
@@ -479,6 +712,11 @@ export function updateFlightPlanStatus(planId: string, status: string): void {
   }
   const generator = new FlightPlanGenerator();
   generator.updateStatus(planId, status as FlightPlan['status']);
+}
+
+export async function publishFlightPlan(planId: string, options: PublishOptions): Promise<void> {
+  const generator = new FlightPlanGenerator({ dryRun: options.dryRun });
+  await generator.publishToGitHub(planId, options);
 }
 
 export async function generateIssuesFromPlan(planId: string, options: FlightPlanOptions = {}): Promise<void> {

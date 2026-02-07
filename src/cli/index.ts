@@ -16,6 +16,7 @@ import {
   showFlightPlan,
   deleteFlightPlan,
   updateFlightPlanStatus,
+  publishFlightPlan,
   generateIssuesFromPlan,
   runDeploy,
   generateDashboard,
@@ -351,8 +352,24 @@ flightPlan
   .action((planId, options) => showFlightPlan(planId, { full: options.full }));
 
 flightPlan
+  .command('publish <planId>')
+  .description('Publish plan to GitHub as issues, epics, or milestones')
+  .option('-m, --mode <mode>', 'Publish mode: issues, epic, milestone', 'epic')
+  .option('--dry-run', 'Preview what would be created')
+  .option('-l, --label <labels...>', 'Labels to apply')
+  .option('-a, --assignee <login>', 'Assign to user')
+  .action(async (planId, options) => {
+    await publishFlightPlan(planId, {
+      mode: options.mode,
+      dryRun: options.dryRun,
+      labels: options.label,
+      assignee: options.assignee,
+    });
+  });
+
+flightPlan
   .command('issues <planId>')
-  .description('Generate GitHub issues from plan')
+  .description('Create flat issues from plan (alias for publish --mode issues)')
   .option('--dry-run', 'Show what would happen')
   .action(async (planId, options) => {
     await generateIssuesFromPlan(planId, { dryRun: options.dryRun });
