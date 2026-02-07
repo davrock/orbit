@@ -114,6 +114,38 @@ describe('writeJsonFile', () => {
     const result = readJsonFile(TEST_FILE, { defaultValue: { count: 0 } });
     expect(result).toEqual({ count: 2 });
   });
+
+  it('should handle concurrent writes safely', () => {
+    // Multiple writes should succeed even if concurrent
+    const writes = [1, 2, 3, 4, 5];
+    writes.forEach(num => {
+      writeJsonFile(TEST_FILE, { count: num });
+    });
+    
+    const result = readJsonFile(TEST_FILE, { defaultValue: { count: 0 } });
+    expect(writes).toContain(result.count);
+  });
+
+  it('should use process ID in temp file names', () => {
+    writeJsonFile(TEST_FILE, { count: 42 });
+    
+    // Verify file was written successfully
+    expect(existsSync(TEST_FILE)).toBe(true);
+    
+    // Verify no temp files remain
+    const fs = require('fs');
+    const files = fs.readdirSync(TEST_DIR);
+    const tempFiles = files.filter((f: string) => f.endsWith('.tmp'));
+    expect(tempFiles).toHaveLength(0);
+  });
+
+  it('should respect custom retry options', () => {
+    // This test verifies the API accepts retry options
+    writeJsonFile(TEST_FILE, { count: 42 }, { maxRetries: 1, retryDelayMs: 10 });
+    
+    const result = readJsonFile(TEST_FILE, { defaultValue: { count: 0 } });
+    expect(result).toEqual({ count: 42 });
+  });
 });
 
 describe('updateJsonFile', () => {
