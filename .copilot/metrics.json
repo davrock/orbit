@@ -611,7 +611,7 @@
     },
     {
       "id": "run-1770415741540",
-      "task": "Add internationalization support (multiple language READMEs like oh-my-claudecode)",
+      "task": "Add internationalization support (multiple language READMEs like i18n best practices)",
       "mission": "warp",
       "started": "2026-02-06T22:09:01.540Z",
       "totalDuration": 590,

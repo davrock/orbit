@@ -1,4 +1,4 @@
-[English](README.md) | [한국어](README.ko.md) | 中文 | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | [한국어](README.ko.md) | 中文 | [日本語](README.ja.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Italiano](README.it.md)
 
 # 🛸 ORBIT - 编排式机器人构建与集成工具包
 

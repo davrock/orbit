@@ -1,4 +1,4 @@
-[English](README.md) | 한국어 | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md)
+[English](README.md) | 한국어 | [中文](README.zh.md) | [日本語](README.ja.md) | [Español](README.es.md) | [Deutsch](README.de.md) | [Italiano](README.it.md)
 
 # 🛸 ORBIT - Orchestrated Robotic Build & Integration Toolkit
 
