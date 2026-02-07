@@ -135,6 +135,8 @@ export async function sleepWithCountdown(
       remaining--;
       if (remaining > 0) {
         process.stdout.write(`\r${colors.warning('⏳')} ${message}: ${colors.secondary(formatDelay(remaining * 1000))} remaining...  `);
+      } else {
+        clearInterval(interval);
       }
     }, 1000);
 
