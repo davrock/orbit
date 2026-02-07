@@ -1,11 +1,7 @@
 {
   "fails": 0,
   "noProgress": 0,
-  "types": [
-    "cargo",
-    "self",
-    "self"
-  ],
-  "cycles": 17,
-  "successes": 17
+  "types": [],
+  "cycles": 0,
+  "successes": 0
 }

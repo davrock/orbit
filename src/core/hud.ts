@@ -88,8 +88,8 @@ export function renderHUD(): string {
   
   const fuel = loadFuelUsage();
   const elapsed = formatElapsed(state.startTime);
-  const progress = state.completedPhases.length;
-  const total = state.phases.length;
+  const progress = Math.min(state.completedPhases.length, state.phases.length);
+  const total = Math.max(state.phases.length, 1);
   const bar = '█'.repeat(progress) + '░'.repeat(total - progress);
   
   const tierIcon = state.modelTier === 'premium' ? '🔥' : state.modelTier === 'fast' ? '💨' : '⚡';

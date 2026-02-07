@@ -45,7 +45,55 @@ const program = new Command();
 program
   .name('orbit')
   .description('🛸 ORBIT - Orchestrated Robotic Build & Integration Toolkit')
-  .version('1.0.0');
+  .version('1.0.0')
+  .addHelpText('after', `
+Command Groups:
+  Missions:   launch, repair, warp, mayday, preflight, shields-up, dock, transmit, apollo, ralph
+  Parallel:   ultrawork, swarm, pipeline
+  Planning:   plan, flight-plan, design-review
+  Automation: evolve, cargo, cargo-add, cargo-run
+  Info:       status, config, doctor, skills, fuel, metrics, hud, missions, crews
+  Setup:      deploy, dashboard, reset, resume
+
+Examples:
+  orbit launch "Add user authentication"
+  orbit repair "Fix login timeout bug"
+  orbit warp "Update README"
+  orbit evolve --once
+  orbit doctor
+`)
+  .action(() => {
+    // Default action: show quick overview when no command given
+    printBanner();
+
+    const config = detectProjectConfig();
+    console.log(colors.secondary('📍 Project: ') + config.name + ` (${config.techStack})`);
+    console.log(colors.secondary('🌿 Branch:  ') + config.gitBranch);
+    console.log('');
+
+    try {
+      const summary = getMetricsSummary();
+      if (summary.totalRuns > 0) {
+        console.log(colors.secondary('📊 Runs: ') + `${summary.totalRuns} (${summary.successRate}% success)`);
+      }
+    } catch { /* no metrics yet */ }
+
+    try {
+      const fuel = loadFuelUsage();
+      if (fuel.sessions > 0) {
+        console.log(colors.secondary('⛽ Fuel: ') + `${fuel.total.toFixed(1)} units (${fuel.sessions} sessions)`);
+      }
+    } catch { /* no fuel data yet */ }
+
+    console.log('');
+    console.log('Quick start:');
+    console.log(`  ${colors.success('orbit launch')} "Add a feature"    Plan → implement → test → commit`);
+    console.log(`  ${colors.success('orbit repair')} "Fix a bug"        Debug → implement → test → commit`);
+    console.log(`  ${colors.success('orbit warp')}   "Quick change"     Implement → commit`);
+    console.log(`  ${colors.success('orbit doctor')}                    Check system health`);
+    console.log('');
+    console.log(`Run ${colors.secondary('orbit --help')} for all commands.`);
+  });
 
 // Mission Control
 program
@@ -316,6 +364,14 @@ program
     runDeploy(targetDir, { force: options.force });
   });
 
+program
+  .command('init')
+  .description('Initialize ORBIT in the current project')
+  .option('-f, --force', 'Overwrite existing .copilot')
+  .action((options) => {
+    runDeploy('.', { force: options.force });
+  });
+
 // Dashboard
 program
   .command('dashboard')
@@ -378,10 +434,11 @@ program
     console.log(colors.secondary('📊 Metrics Summary'));
     console.log(`  Total runs: ${summary.totalRuns}`);
     console.log(`  Success rate: ${summary.successRate}%`);
-    console.log(`  Avg duration: ${summary.avgDuration}s`);
+    console.log(`  Avg duration: ${summary.avgDuration ? `${summary.avgDuration}s` : 'N/A'}`);
     console.log('');
     console.log('  By mission:');
     for (const [mission, data] of Object.entries(summary.byMission)) {
+      if (!mission || mission === 'undefined') continue;
       console.log(`    ${mission}: ${(data as any).count} runs (${(data as any).successRate}% success)`);
     }
   });
