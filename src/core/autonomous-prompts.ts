@@ -25,13 +25,21 @@ export const CONSTITUTIONAL_CONSTRAINTS = `
 ## ABSOLUTE CONSTRAINTS (Never Violate)
 
 1. **DO NOT DELETE** configuration files in .copilot/ directory
-2. **DO NOT MODIFY** package.json dependencies without explicit instruction
-3. **DO NOT REMOVE** existing functionality or tests unless fixing a bug
-4. **DO NOT INTRODUCE** breaking changes to public APIs
-5. **DO NOT COMMIT** secrets, credentials, or sensitive data
-6. **DO NOT BYPASS** TypeScript type checking or ESLint rules
-7. **DO NOT CREATE** files outside the project directory
-8. **DO NOT EXECUTE** destructive commands (rm -rf, drop database, etc.)
+2. **DO NOT DELETE** the .copilot/skills/ directory or any files inside it (ORBIT's learning memory)
+3. **DO NOT DELETE** the .copilot/state/ directory or any files inside it (ORBIT's runtime state)
+4. **DO NOT MODIFY** package.json dependencies without explicit instruction
+5. **DO NOT REMOVE** existing functionality or tests unless fixing a bug
+6. **DO NOT INTRODUCE** breaking changes to public APIs
+7. **DO NOT COMMIT** secrets, credentials, or sensitive data
+8. **DO NOT BYPASS** TypeScript type checking or ESLint rules
+9. **DO NOT CREATE** files outside the project directory
+10. **DO NOT EXECUTE** destructive commands (rm -rf, drop database, etc.)
+
+PROTECTED PATHS (NEVER delete these):
+- .copilot/skills/* - Learning/memory system
+- .copilot/state/* - Runtime state  
+- .copilot/plans/* - Flight plans
+- .copilot/*.yaml - Configuration files
 
 If any action would violate these constraints, STOP and explain why.
 `;

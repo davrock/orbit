@@ -12,6 +12,13 @@ const CRITICAL_FILES = [
   '.copilot/cargo_manifest.txt'
 ];
 
+// Directories that should never be deleted
+const PROTECTED_DIRECTORIES = [
+  '.copilot/skills',
+  '.copilot/state',
+  '.copilot/plans'
+];
+
 /**
  * Check if all critical configuration files exist
  */
