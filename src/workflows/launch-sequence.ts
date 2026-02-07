@@ -189,6 +189,11 @@ export class LaunchSequence {
   }
 
   private closeGitHubIssue(number: number): void {
+    // Validate that number is actually a positive integer to prevent command injection
+    if (!Number.isInteger(number) || number <= 0) {
+      return;
+    }
+    
     try {
       execQuiet(`gh issue close ${number} --comment "Fixed by ORBIT"`);
     } catch {
