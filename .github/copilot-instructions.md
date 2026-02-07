@@ -123,22 +123,72 @@ type CrewMember   = 'commander' | 'pilot' | 'engineer' | 'navigator' | ...;
 5. **Safeguards** — constitutional constraints, pre/post-mission file integrity checks.
 6. **Multi-stack** — auto-detects 30+ tech stacks via `detectProjectConfig()`.
 
-## Do's and Don'ts
+## Guardrails
 
-### ✅ Do
+### ✅ What You CAN Do
 
+- Add new tests for uncovered critical paths.
+- Fix bugs and handle uncaught errors.
+- Improve error handling and recovery.
+- Refactor for clarity (with tests proving equivalence).
+- Optimize performance (with measurable evidence).
+- Update documentation to match current behavior.
+- Add input validation and security checks.
 - Run `npm run build && npm test` before committing any change.
 - Add or update tests when changing behavior.
 - Use existing patterns and utilities (`printSuccess`, `execQuiet`, `readJsonFile`).
 - Keep changes minimal and focused — one concern per commit.
 - Use commit format: `<type>: <description>` (fix, feat, test, refactor, perf, docs, security).
 
-### ❌ Don't
+### ❌ What You MUST NOT Do
 
-- Delete or modify anything in `.copilot/`.
-- Delete `src/config/skills/`, `src/config/state/`, or `src/config/plans/`.
-- Change `package.json` dependencies without explicit instruction.
-- Introduce breaking changes to public CLI commands or APIs.
-- Skip running tests before committing.
-- Use `rm -rf`, `drop database`, or other destructive commands.
-- Commit secrets, credentials, or API keys.
+- **Delete or modify anything in `.copilot/`.** This is GitHub Copilot's own directory.
+- **Delete `src/config/skills/`, `src/config/state/`, or `src/config/plans/`.** These are ORBIT's memory.
+- **Change `package.json` dependencies** without explicit user instruction.
+- **Introduce breaking changes** to public CLI commands or exported function signatures.
+- **Skip running tests** before committing.
+- **Execute destructive commands:** `rm -rf`, `drop database`, `git push --force`, `chmod 777`.
+- **Commit secrets**, credentials, API keys, `.env` files, or private keys.
+- **Use `@ts-ignore` or `as any`** — use `unknown` with type guards instead.
+- **Delete existing source files or tests** unless fixing verified dead code.
+
+### Autonomous Mode Priorities
+
+When running `orbit evolve` or self-improvement, follow this priority order strictly:
+
+| Priority | Category | Rule |
+|----------|----------|------|
+| P0 | Critical bugs | Crashes, data loss, breaking changes → **fix first** |
+| P1 | Security | Vulnerabilities, auth issues, injection → **fix second** |
+| P2 | Stability | Error handling, edge cases → **fix third** |
+| P3 | Test coverage | Missing tests, flaky tests → **add fourth** |
+| P4 | Performance | Bottlenecks, memory leaks → **optimize fifth** |
+| P5 | Code quality | Tech debt, duplication → **refactor sixth** |
+| P6 | Documentation | Missing or outdated docs → **update seventh** |
+| P7 | Features | New functionality → **only if P0–P6 are satisfied** |
+
+### Verification Checklist
+
+**All must pass before any commit:**
+
+```bash
+npm run build      # ✓ Zero TypeScript errors
+npm test           # ✓ All tests pass
+```
+
+If any check fails → fix it → re-run all checks → only commit when everything passes.
+
+### Failsafe Triggers
+
+| Condition | Action |
+|-----------|--------|
+| 3 consecutive failures | 60-second cooldown, reset fail counter |
+| 5 no-progress cycles | Abort the evolve loop entirely |
+
+### Recovery
+
+If config files are lost, restore from git:
+
+```bash
+git checkout HEAD -- src/config/
+```
