@@ -49,6 +49,7 @@ import {
 import { getCurrentCommit, hasChanges, getChangedFiles } from '../utils/git.js';
 import { exec, execCopilot, commandExists } from '../utils/exec.js';
 import { saveCheckpoint, clearCheckpoint, loadCheckpoint, shouldResume, getResumePhases } from '../core/checkpoint.js';
+import { checkCriticalFilesBeforeMission, checkCriticalFilesAfterMission, getCriticalFilesWarning } from '../utils/safeguards.js';
 
 const STATE_DIR = '.copilot/state';
 
@@ -111,6 +112,12 @@ export class MissionControl {
 
   async execute(): Promise<MissionResult> {
     this.ensureStateDir();
+    
+    // Check critical files before starting
+    if (!checkCriticalFilesBeforeMission()) {
+      throw new Error('Critical configuration files missing. Cannot start mission.');
+    }
+    
     printBanner();
 
     const isResuming = this.phasesToRun.length < this.missionConfig.phases.length;
@@ -222,6 +229,9 @@ export class MissionControl {
     printMissionComplete(this.phaseResults.length, duration);
     
     appendLog(`Mission complete: ${this.phaseResults.length} phases in ${duration}s`);
+    
+    // Check if critical files were deleted during mission
+    checkCriticalFilesAfterMission();
 
     return this.buildResult(true, beforeCommit);
   }
@@ -442,6 +452,7 @@ PROJECT: ${this.config.name}
 
 Read .copilot/state/flight_log.md first, update when done.
 Reference .copilot/best-practices.yaml for standards.
+${getCriticalFilesWarning()}
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
   }
 
