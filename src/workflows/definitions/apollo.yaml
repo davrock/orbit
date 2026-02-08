@@ -3,7 +3,7 @@
 
 id: apollo
 name: Apollo
-description: All phases - comprehensive development (research → plan → implement → test → security → review → document → commit)
+description: All phases - comprehensive development (research → plan → implement → test → security → review → document)
 icon: 🌙
 
 phases:
@@ -14,7 +14,6 @@ phases:
   - security
   - review
   - document
-  - commit
 
 phase_crews:
   research: scout
@@ -24,7 +23,6 @@ phase_crews:
   security: security-officer
   review: navigator
   document: tech-writer
-  commit: pilot
 
 phase_models:
   research: standard
@@ -34,7 +32,6 @@ phase_models:
   security: premium
   review: standard
   document: fast
-  commit: fast
 
 use_when:
   - Major new features

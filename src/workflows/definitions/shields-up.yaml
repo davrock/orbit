@@ -12,7 +12,6 @@ phases:
   - security
   - test
   - review
-  - commit
 
 phase_crews:
   plan: mission-planner
@@ -20,7 +19,6 @@ phase_crews:
   security: security-officer
   test: specialist
   review: navigator
-  commit: pilot
 
 phase_models:
   plan: standard
@@ -28,7 +26,6 @@ phase_models:
   security: premium
   test: standard
   review: standard
-  commit: fast
 
 use_when:
   - Authentication/authorization features

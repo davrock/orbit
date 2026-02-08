@@ -11,21 +11,18 @@ phases:
   - implement
   - test
   - review
-  - commit
 
 phase_crews:
   plan: mission-planner
   implement: pilot
   test: specialist
   review: navigator
-  commit: pilot
 
 phase_models:
   plan: standard
   implement: standard
   test: standard
   review: standard
-  commit: fast
 
 # Special behavior flags
 pipeline_mode: true

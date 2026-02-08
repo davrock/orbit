@@ -54,6 +54,16 @@ interface RunMetric {
   };
 }
 
+export interface MissionMetrics {
+  count: number;
+  successRate: number;
+}
+
+export interface PhaseMetrics {
+  avgDuration: number;
+  successRate: number;
+}
+
 interface MetricsStore {
   version: string;
   runs: RunMetric[];
@@ -61,8 +71,8 @@ interface MetricsStore {
     totalRuns: number;
     successRate: number;
     avgDuration: number;
-    byMission: Record<string, { count: number; successRate: number }>;
-    byPhase: Record<string, { avgDuration: number; successRate: number }>;
+    byMission: Record<string, MissionMetrics>;
+    byPhase: Record<string, PhaseMetrics>;
   };
 }
 

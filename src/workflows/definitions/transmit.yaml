@@ -3,23 +3,20 @@
 
 id: transmit
 name: Transmit
-description: Documentation only (implement → review → commit)
+description: Documentation only (implement → review)
 icon: 📡
 
 phases:
   - implement
   - review
-  - commit
 
 phase_crews:
   implement: tech-writer
   review: navigator
-  commit: pilot
 
 phase_models:
   implement: fast
   review: standard
-  commit: fast
 
 use_when:
   - Writing documentation

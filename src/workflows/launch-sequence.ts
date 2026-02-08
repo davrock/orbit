@@ -59,7 +59,11 @@ export class LaunchSequence {
   async launch(): Promise<void> {
     printLaunchBanner();
 
+    // Reset failure counters from any previous run (preserve cumulative stats)
     const gc = loadGroundControl();
+    gc.fails = 0;
+    gc.noProgress = 0;
+    saveGroundControl(gc);
     
     console.log(`Mode: ${colors.secondary(this.options.once ? 'Single' : 'Continuous')}`);
     if (this.options.maxIterations! > 0) {

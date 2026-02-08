@@ -10,19 +10,16 @@ phases:
   - plan
   - implement
   - review
-  - commit
 
 phase_crews:
   plan: mission-planner
   implement: pilot
   review: navigator
-  commit: pilot
 
 phase_models:
   plan: premium
   implement: standard
   review: standard
-  commit: fast
 
 # Special behavior flags
 parallel_mode: true

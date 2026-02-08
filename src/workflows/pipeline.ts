@@ -11,6 +11,7 @@ import {
   type ModelTier,
   selectModelTier,
   getModelIcon,
+  getModelForTier,
   trackFuel,
   appendLog,
   detectProjectConfig,
@@ -113,92 +114,85 @@ export class PipelineExecutor {
 
     const beforeCommit = getCurrentCommit();
 
-    // Phase 1: Plan pipeline stages
-    setPhase('plan', 'mission-planner', this.modelTier);
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('📋 PHASE 1: PIPELINE PLANNING'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const stages = customStages || await this.planPipelineStages(task);
-    
-    if (!stages || stages.length === 0) {
-      metricsEnd(false);
-      endHUD(false);
-      printError('Failed to generate pipeline plan');
-      return this.buildResult(task, [], false, beforeCommit);
-    }
-
-    completePhase('plan');
-    printSuccess(`Planned ${stages.length} sequential stages`);
-    console.log('');
-
-    this.printPipelinePlan(stages);
-    console.log('');
-
-    // Phase 2: Execute pipeline stages sequentially
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('⚡ PHASE 2: PIPELINE EXECUTION'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const results = await this.executePipelineStages(stages);
-    
-    const failedStages = results.filter(r => !r.success);
-    if (failedStages.length > 0) {
+    try {
+      // Phase 1: Plan pipeline stages
+      setPhase('plan', 'mission-planner', this.modelTier);
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('📋 PHASE 1: PIPELINE PLANNING'));
+      console.log(colors.secondary('━'.repeat(64)));
       console.log('');
-      printError(`Pipeline failed at stage: ${failedStages[0].stage.name}`);
+
+      const stages = customStages || await this.planPipelineStages(task);
+      
+      if (!stages || stages.length === 0) {
+        metricsEnd(false);
+        endHUD(false);
+        printError('Failed to generate pipeline plan');
+        return this.buildResult(task, [], false, beforeCommit);
+      }
+
+      completePhase('plan');
+      printSuccess(`Planned ${stages.length} sequential stages`);
+      console.log('');
+
+      this.printPipelinePlan(stages);
+      console.log('');
+
+      // Phase 2: Execute pipeline stages sequentially
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('⚡ PHASE 2: PIPELINE EXECUTION'));
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log('');
+
+      const results = await this.executePipelineStages(stages);
+      
+      const failedStages = results.filter(r => !r.success);
+      if (failedStages.length > 0) {
+        console.log('');
+        printError(`Pipeline failed at stage: ${failedStages[0].stage.name}`);
+        metricsFilesChanged(getChangedFiles().length);
+        metricsEnd(false);
+        endHUD(false);
+        return this.buildResult(task, results, false, beforeCommit);
+      }
+
+      // Phase 3: Final review
+      setPhase('review', 'navigator', this.modelTier);
+      console.log('');
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('🔍 PHASE 3: PIPELINE REVIEW'));
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log('');
+
+      const reviewResult = await this.reviewPipeline(task, results);
+      completePhase('review');
+
+      if (!reviewResult.success) {
+        metricsFilesChanged(getChangedFiles().length);
+        metricsEnd(false);
+        endHUD(false);
+        printError('Pipeline review failed');
+        return this.buildResult(task, results, false, beforeCommit);
+      }
+
+      const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
+      const success = true;
+
       metricsFilesChanged(getChangedFiles().length);
-      metricsEnd(false);
-      endHUD(false);
-      return this.buildResult(task, results, false, beforeCommit);
-    }
+      metricsEnd(success);
+      endHUD(success);
 
-    // Phase 3: Final review
-    setPhase('review', 'navigator', this.modelTier);
-    console.log('');
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('🔍 PHASE 3: PIPELINE REVIEW'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const reviewResult = await this.reviewPipeline(task, results);
-    completePhase('review');
-
-    if (!reviewResult.success) {
-      metricsFilesChanged(getChangedFiles().length);
-      metricsEnd(false);
-      endHUD(false);
-      printError('Pipeline review failed');
-      return this.buildResult(task, results, false, beforeCommit);
-    }
-
-    // Phase 4: Commit
-    setPhase('commit', 'pilot', this.modelTier);
-    console.log('');
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('✅ PHASE 4: COMMIT'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const commitResult = await this.commitChanges(task);
-    completePhase('commit');
-
-    const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
-    const success = commitResult.success;
-
-    metricsFilesChanged(getChangedFiles().length);
-    metricsEnd(success);
-    endHUD(success);
-
-    if (success) {
       printMissionComplete(results.length, duration);
       appendLog(`Pipeline mission complete: ${results.length} stages in ${duration}s`);
-    } else {
-      printError('Pipeline mission failed');
-    }
 
-    return this.buildResult(task, results, success, beforeCommit);
+      return this.buildResult(task, results, success, beforeCommit);
+    } catch (error) {
+      metricsEnd(false);
+      endHUD(false);
+      printError(`Pipeline mission crashed: ${error instanceof Error ? error.message : String(error)}`);
+      appendLog(`Pipeline mission error: ${error instanceof Error ? error.message : String(error)}`);
+      return this.buildResult(task, [], false, beforeCommit);
+    }
   }
 
   private async planPipelineStages(task: string): Promise<PipelineStage[]> {
@@ -233,7 +227,8 @@ export class PipelineExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 300,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -320,7 +315,8 @@ export class PipelineExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 600,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -370,7 +366,8 @@ export class PipelineExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 300,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -380,52 +377,6 @@ export class PipelineExecutor {
       printSuccess(`Review complete (${duration}s)`);
     } else {
       printError(`Review failed (${duration}s)`);
-    }
-
-    return { success: result.success };
-  }
-
-  private async commitChanges(task: string): Promise<{ success: boolean }> {
-    metricsPhaseStart('commit', this.modelTier);
-    const phaseStart = Date.now();
-
-    if (!commandExists('copilot')) {
-      metricsPhaseEnd('commit', 'failed', 0);
-      return { success: false };
-    }
-
-    const crew: CrewMember = 'pilot';
-    const tier = selectModelTier(task, 'commit', crew);
-    const icon = getModelIcon(tier);
-
-    printPhase('commit', crew, tier, icon);
-    trackFuel(tier);
-
-    const prompt = this.generateCommitPrompt(task);
-    this.writePromptFile('commit', prompt);
-
-    if (this.dryRun) {
-      console.log(colors.warning('[DRY RUN] Would commit changes'));
-      metricsPhaseEnd('commit', 'skipped', 0);
-      return { success: true };
-    }
-
-    console.log(colors.secondary(`📋 Prompt saved to: ${STATE_DIR}/pending_prompt.md`));
-    console.log(colors.warning('🚀 Executing with Copilot CLI...'));
-    console.log('');
-
-    const result = await execCopilot(prompt, {
-      timeout: 120,
-      allowAllPaths: true
-    });
-
-    const duration = Math.floor((Date.now() - phaseStart) / 1000);
-    metricsPhaseEnd('commit', result.success ? 'success' : 'failed', duration);
-
-    if (result.success) {
-      printSuccess(`Commit complete (${duration}s)`);
-    } else {
-      printError(`Commit failed (${duration}s)`);
     }
 
     return { success: result.success };
@@ -545,32 +496,10 @@ Your mission:
 3. Check that handoffs between stages were effective
 4. Ensure consistency and quality across all stages
 5. Verify the final result meets the original task requirements
+6. Commit all changes using conventional commit format (feat/fix/refactor(scope): description) and push to the remote branch
 
 Read ${paths.flightLog} first, update when done.
-Reference ${paths.bestPractices} for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
-  }
-
-  private generateCommitPrompt(task: string): string {
-    const crewPrompt = getAgentSystemPrompt('pilot');
-    
-    return `${crewPrompt}
-
-TASK: ${task}
-PHASE: commit
-PROJECT: ${this.config.name}
-MODE: pipeline finalization
-
-Commit all changes from the pipeline execution.
-
-Create a clear commit message that describes:
-1. The overall task accomplished
-2. That work was completed in sequential pipeline stages
-3. Key changes made
-
-Use conventional commit format: feat/fix/refactor(scope): description
-
-Complete the commit then say 'COMMIT COMPLETE'`;
   }
 
   private parsePipelineStagesFromOutput(output: string): PipelineStage[] {

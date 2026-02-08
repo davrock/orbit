@@ -205,6 +205,26 @@ export function getAutonomousGuardrails(): string {
 }
 
 /**
+ * Compact guardrails for non-first phases to reduce token repetition.
+ * References the full guardrails from the first phase without repeating them.
+ */
+export function getCompactGuardrails(): string {
+  const p = getConfigPaths();
+  return `
+## GUARDRAILS (Reminder)
+🚨 Do NOT delete/modify anything in ${p.base}/. Do NOT modify package.json deps. Build and test before committing.
+`;
+}
+
+/**
+ * Compact verification requirements for non-first phases.
+ */
+export const COMPACT_VERIFICATION = `
+## VERIFICATION
+Before committing: \`npm run build\` + \`npm test\` must pass. No regressions.
+`;
+
+/**
  * Generate task prompt with full context for autonomous improvement.
  */
 export function generateAutonomousTaskPrompt(

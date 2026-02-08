@@ -3,26 +3,23 @@
 
 id: repair
 name: Repair
-description: Bug fix workflow (debug → implement → test → commit)
+description: Bug fix workflow (debug → implement → test)
 icon: 🔧
 
 phases:
   - debug
   - implement
   - test
-  - commit
 
 phase_crews:
   debug: engineer
   implement: pilot
   test: specialist
-  commit: pilot
 
 phase_models:
   debug: premium
   implement: standard
   test: standard
-  commit: fast
 
 use_when:
   - Fixing bugs

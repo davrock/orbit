@@ -1,0 +1,25 @@
+# Evolve Mission
+# Self-improvement workflow for autonomous operation
+
+id: evolve
+name: Evolve
+description: Autonomous self-improvement cycle (analyze, implement, verify)
+icon: 🧬
+
+phases:
+  - implement
+
+phase_crews:
+  implement: hal
+
+use_when:
+  - Self-improvement
+  - Autonomous evolution
+  - Code quality improvements
+
+estimated_time: 10
+
+tags:
+  - autonomous
+  - self-improvement
+  - evolve

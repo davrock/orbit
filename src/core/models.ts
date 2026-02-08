@@ -195,6 +195,19 @@ export function getModelIcon(tier: ModelTier): string {
   }
 }
 
+/**
+ * Map a model tier to the actual Copilot CLI model name.
+ * Returns undefined to use the Copilot CLI default model.
+ */
+export function getModelForTier(tier: ModelTier): string | undefined {
+  switch (tier) {
+    case 'premium': return 'claude-sonnet-4.5';
+    case 'standard': return 'claude-sonnet-4';
+    case 'fast': return 'claude-haiku-4.5';
+    case 'ecomode': return 'claude-haiku-4.5';
+  }
+}
+
 export function getCostMultiplier(tier: ModelTier): number {
   return config.costMultipliers[tier];
 }

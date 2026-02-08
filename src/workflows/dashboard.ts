@@ -4,15 +4,36 @@
 import { existsSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-import { exportMetricsForDashboard, getMetricsSummary, getRecentRuns } from '../core/metrics.js';
+import { exportMetricsForDashboard, getMetricsSummary, getRecentRuns, type MissionMetrics, type PhaseMetrics } from '../core/metrics.js';
 import { getSkillStats } from '../core/skills.js';
 import { loadFuelUsage } from '../core/state.js';
 import { FlightPlanGenerator } from './flight-plan.js';
 import { colors, printSuccess } from '../utils/output.js';
 import { getConfigPaths } from '../utils/paths.js';
+import type { FuelUsage } from '../core/types.js';
 
 const DASHBOARD_DIR = `${getConfigPaths().base}/dashboard`;
 const DASHBOARD_FILE = join(DASHBOARD_DIR, 'index.html');
+
+interface DashboardData {
+  metrics: object;
+  summary: ReturnType<typeof getMetricsSummary>;
+  skills: ReturnType<typeof getSkillStats>;
+  fuel: FuelUsage;
+  recent: ReturnType<typeof getRecentRuns>;
+  plans: ReturnType<FlightPlanGenerator['listPlans']>;
+}
+
+interface DashboardMetrics {
+  fuelPerSession: string;
+  fuelTotal: string;
+  topTier: [string, number] | undefined;
+  topTierPct: number;
+  avgDurDisplay: string;
+  totalPlanTasks: number;
+  completedPlanTasks: number;
+  planProgress: number;
+}
 
 function formatDuration(seconds: number): string {
   if (!seconds || isNaN(seconds)) return '—';
@@ -22,42 +43,280 @@ function formatDuration(seconds: number): string {
   return s > 0 ? `${m}m ${s}s` : `${m}m`;
 }
 
-export function generateDashboard(): void {
-  if (!existsSync(DASHBOARD_DIR)) {
-    mkdirSync(DASHBOARD_DIR, { recursive: true });
-  }
-  
+function collectDashboardData(): DashboardData {
   const metrics = exportMetricsForDashboard();
   const summary = getMetricsSummary();
   const skills = getSkillStats();
   const fuel = loadFuelUsage();
   const recent = getRecentRuns(10);
-
-  // Flight plans data
   const fpGen = new FlightPlanGenerator();
   const plans = fpGen.listPlans();
+  return { metrics, summary, skills, fuel, recent, plans };
+}
 
-  // Fuel context
+function calculateDashboardMetrics(data: DashboardData): DashboardMetrics {
+  const { fuel, summary, plans } = data;
   const fuelPerSession = fuel.sessions > 0 ? (fuel.total / fuel.sessions).toFixed(1) : '0';
   const fuelTotal = fuel.total.toFixed(1);
   const topTier = Object.entries(fuel.byTier).sort((a, b) => b[1] - a[1])[0];
   const topTierPct = fuel.total > 0 ? Math.round((topTier[1] / fuel.total) * 100) : 0;
-
-  // Avg duration display
   const avgDurDisplay = summary.avgDuration > 0 ? formatDuration(summary.avgDuration) : '—';
-
-  // Plans summary
   const totalPlanTasks = plans.reduce((s, p) => s + p.totalTasks, 0);
   const completedPlanTasks = plans.reduce((s, p) => s + p.completedTasks, 0);
   const planProgress = totalPlanTasks > 0 ? Math.round((completedPlanTasks / totalPlanTasks) * 100) : 0;
+  return { fuelPerSession, fuelTotal, topTier, topTierPct, avgDurDisplay, totalPlanTasks, completedPlanTasks, planProgress };
+}
 
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🛸 ORBIT Dashboard</title>
-  <style>
+function buildStatsSection(data: DashboardData, metrics: DashboardMetrics): string {
+  const { summary, skills } = data;
+  return `
+    <!-- Summary Stats -->
+    <div class="card">
+      <h2>Total Missions</h2>
+      <div class="stat">${summary.totalRuns}</div>
+      <div class="stat-label">completed runs</div>
+    </div>
+    
+    <div class="card">
+      <h2>Success Rate</h2>
+      <div class="stat ${summary.successRate >= 80 ? 'success' : summary.successRate >= 50 ? 'warning' : 'error'}">${summary.successRate}%</div>
+      <div class="stat-label">mission success</div>
+    </div>
+    
+    <div class="card">
+      <h2>Avg Duration</h2>
+      <div class="stat">${metrics.avgDurDisplay}</div>
+      <div class="stat-label">per mission</div>
+    </div>
+    
+    <div class="card">
+      <h2>Skills Learned</h2>
+      <div class="stat">${skills.total}</div>
+      <div class="stat-label">patterns extracted</div>
+    </div>`;
+}
+
+function buildFuelSection(data: DashboardData, metrics: DashboardMetrics): string {
+  const { fuel } = data;
+  return `
+    <!-- Fuel Usage - Enhanced -->
+    <div class="card">
+      <h2>⛽ Fuel Usage</h2>
+      <div class="stat">${metrics.fuelTotal}</div>
+      <div class="stat-label">total units consumed</div>
+      <div class="stat-context">
+        📊 ${metrics.fuelPerSession} units/session avg · ${fuel.sessions} sessions<br>
+        🏷️ ${metrics.topTierPct}% ${metrics.topTier?.[0] || 'standard'} tier usage
+      </div>
+      <div class="fuel-gauge">
+        <div class="fuel-tier">
+          <div class="icon">🔥</div>
+          <div class="count">${fuel.byTier.premium}</div>
+          <div class="label">Premium</div>
+        </div>
+        <div class="fuel-tier">
+          <div class="icon">⚡</div>
+          <div class="count">${fuel.byTier.standard}</div>
+          <div class="label">Standard</div>
+        </div>
+        <div class="fuel-tier">
+          <div class="icon">💨</div>
+          <div class="count">${fuel.byTier.fast}</div>
+          <div class="label">Fast</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function buildMissionBarRow(mission: string, data: MissionMetrics): string {
+  return `
+        <div class="bar-row">
+          <div class="bar-label">${mission}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${data.successRate}%"></div>
+          </div>
+          <div class="bar-value">${data.count}</div>
+        </div>`;
+}
+
+function buildPhaseBarRow(phase: string, data: PhaseMetrics): string {
+  return `
+        <div class="bar-row">
+          <div class="bar-label">${phase}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: ${data.successRate}%"></div>
+          </div>
+          <div class="bar-value">${formatDuration(data.avgDuration)}</div>
+        </div>`;
+}
+
+function buildPerformanceCharts(data: DashboardData): string {
+  const { summary } = data;
+  return `
+    <!-- Mission Types -->
+    <div class="card">
+      <h2>By Mission Type</h2>
+      <div class="bar-chart">
+        ${Object.entries(summary.byMission).map(([mission, mData]) => buildMissionBarRow(mission, mData)).join('')}
+      </div>
+    </div>
+    
+    <!-- Phase Performance -->
+    <div class="card">
+      <h2>By Phase</h2>
+      <div class="bar-chart">
+        ${Object.entries(summary.byPhase).map(([phase, pData]) => buildPhaseBarRow(phase, pData)).join('')}
+      </div>
+    </div>`;
+}
+
+function buildRecentRunsSection(data: DashboardData): string {
+  const { recent } = data;
+  return `
+    <!-- Recent Runs -->
+    <div class="card" style="grid-column: span 2;">
+      <h2>Recent Missions</h2>
+      <ul class="run-list">
+        ${recent.map(run => `
+        <li class="run-item">
+          <span class="run-status">${run.success ? '✅' : '❌'}</span>
+          <span class="run-task">${run.task.slice(0, 60)}${run.task.length > 60 ? '...' : ''}</span>
+          <span class="run-meta">${run.mission || '—'} · ${formatDuration(run.totalDuration)}</span>
+        </li>
+        `).join('')}
+      </ul>
+    </div>`;
+}
+
+function buildFlightPlansSection(data: DashboardData, metrics: DashboardMetrics): string {
+  const { plans } = data;
+  return `
+    <!-- FLIGHT PLANS SECTION -->
+    <hr class="section-divider">
+    <div class="section-title">📋 Flight Plans</div>
+
+    <!-- Plans Overview -->
+    <div class="card">
+      <h2>Plans Overview</h2>
+      <div class="stat">${plans.length}</div>
+      <div class="stat-label">flight plans</div>
+      <div class="stat-context">
+        ✅ ${metrics.completedPlanTasks}/${metrics.totalPlanTasks} tasks completed (${metrics.planProgress}%)
+      </div>
+      <div class="plan-progress" style="margin-top: 0.75rem;">
+        <div class="plan-progress-fill" style="width: ${metrics.planProgress}%"></div>
+      </div>
+    </div>
+
+    <!-- Active Plans List -->
+    <div class="card" style="grid-column: span 2;">
+      <h2>Flight Plans</h2>
+      ${plans.length === 0 ? '<div class="stat-context">No plans yet — use the Mission Composer below to create one.</div>' : plans.map(plan => {
+        const pProg = plan.totalTasks > 0 ? Math.round((plan.completedTasks / plan.totalTasks) * 100) : 0;
+        return `
+      <div class="plan-item">
+        <div class="plan-header">
+          <span class="title">${plan.title}</span>
+          <span class="plan-status ${plan.status}">${plan.status.replace('_', ' ')}</span>
+        </div>
+        <div class="plan-progress">
+          <div class="plan-progress-fill" style="width: ${pProg}%"></div>
+        </div>
+        <div class="plan-meta">${plan.id} · ${plan.completedTasks}/${plan.totalTasks} tasks · ${plan.createdAt || '—'}</div>
+      </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function buildMissionComposerSection(data: DashboardData): string {
+  const { plans } = data;
+  return `
+    <!-- MISSION COMPOSER SECTION -->
+    <hr class="section-divider">
+    <div class="section-title">🚀 Mission Composer</div>
+
+    <div class="card" style="grid-column: span 2;">
+      <h2>Quick Launch</h2>
+      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
+        Describe what you want to build. ORBIT generates the CLI command to run.
+      </p>
+
+      <div class="quick-actions">
+        <button class="quick-action" onclick="setTemplate('feature')">✨ New Feature</button>
+        <button class="quick-action" onclick="setTemplate('bugfix')">🔧 Fix Bug</button>
+        <button class="quick-action" onclick="setTemplate('refactor')">♻️ Refactor</button>
+        <button class="quick-action" onclick="setTemplate('test')">🧪 Add Tests</button>
+        <button class="quick-action" onclick="setTemplate('docs')">📚 Documentation</button>
+        <button class="quick-action" onclick="setTemplate('security')">🔒 Security Audit</button>
+        <button class="quick-action" onclick="setTemplate('perf')">⚡ Performance</button>
+        <button class="quick-action" onclick="setTemplate('plan')">📋 Flight Plan</button>
+      </div>
+
+      <div class="composer">
+        <textarea id="missionInput" class="composer-input" placeholder="Describe your mission...&#10;e.g. &quot;Add user authentication with JWT tokens and refresh flow&quot;"></textarea>
+        <div class="composer-actions">
+          <select id="missionMode" class="depth-select">
+            <option value="launch">🚀 launch — full mission</option>
+            <option value="warp">⚡ warp — quick change</option>
+            <option value="repair">🔧 repair — fix a bug</option>
+            <option value="plan">📋 flight-plan — plan only</option>
+            <option value="ultrawork">🔥 ultrawork — deep work</option>
+            <option value="swarm">🐝 swarm — parallel agents</option>
+          </select>
+          <select id="missionTier" class="depth-select">
+            <option value="">default tier</option>
+            <option value="--premium">🔥 premium</option>
+            <option value="--fast">💨 fast</option>
+          </select>
+          <button class="composer-btn primary" onclick="generateCommand()">Generate Command</button>
+          <button class="composer-btn" onclick="copyCommand()">📋 Copy</button>
+        </div>
+        <div id="commandOutput" class="composer-output"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Flight Plan Builder</h2>
+      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
+        Break down a feature into a structured plan.
+      </p>
+      <textarea id="planFeature" class="composer-input" placeholder="Describe the feature to plan...&#10;e.g. &quot;User authentication system with OAuth2&quot;" style="min-height: 50px;"></textarea>
+      <div class="composer-actions" style="margin-top: 0.5rem;">
+        <select id="planDepth" class="depth-select">
+          <option value="1">Depth 1 — high-level (3-5 tasks)</option>
+          <option value="2" selected>Depth 2 — standard (8-12 tasks)</option>
+          <option value="3">Depth 3 — detailed (15+ tasks)</option>
+        </select>
+        <button class="composer-btn primary" onclick="generatePlanCommand()">Generate</button>
+        <button class="composer-btn" onclick="copyPlanCommand()">📋 Copy</button>
+      </div>
+      <div id="planOutput" class="composer-output"></div>
+    </div>
+
+    <div class="card">
+      <h2>Publish to GitHub</h2>
+      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
+        Push a flight plan to GitHub as trackable work items.
+      </p>
+      <select id="publishPlan" class="depth-select" style="width: 100%; margin-bottom: 0.5rem;">
+        ${plans.length === 0 ? '<option>No plans available</option>' :
+          plans.map(p => `<option value="${p.id}">${p.id}: ${p.title}</option>`).join('')}
+      </select>
+      <select id="publishMode" class="depth-select" style="width: 100%; margin-bottom: 0.5rem;">
+        <option value="epic">🎯 Epic — parent issues + sub-issues</option>
+        <option value="milestone">📌 Milestone — milestone + labeled issues</option>
+        <option value="issues">📋 Flat Issues — simple issue list</option>
+      </select>
+      <div class="composer-actions">
+        <button class="composer-btn primary" onclick="generatePublishCommand()">Generate</button>
+        <button class="composer-btn" onclick="copyPublishCommand()">📋 Copy</button>
+      </div>
+      <div id="publishOutput" class="composer-output"></div>
+    </div>`;
+}
+
+function buildDashboardStyles(): string {
+  return `  <style>
     :root {
       --bg: #0a0a1a;
       --card: #12122a;
@@ -251,239 +510,11 @@ export function generateDashboard(): void {
       color: var(--dim);
       font-size: 0.8rem;
     }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>🛸 ORBIT Dashboard</h1>
-    <p>Orchestrated Robotic Build & Integration Toolkit</p>
-  </div>
-  
-  <div class="grid">
-    <!-- Summary Stats -->
-    <div class="card">
-      <h2>Total Missions</h2>
-      <div class="stat">${summary.totalRuns}</div>
-      <div class="stat-label">completed runs</div>
-    </div>
-    
-    <div class="card">
-      <h2>Success Rate</h2>
-      <div class="stat ${summary.successRate >= 80 ? 'success' : summary.successRate >= 50 ? 'warning' : 'error'}">${summary.successRate}%</div>
-      <div class="stat-label">mission success</div>
-    </div>
-    
-    <div class="card">
-      <h2>Avg Duration</h2>
-      <div class="stat">${avgDurDisplay}</div>
-      <div class="stat-label">per mission</div>
-    </div>
-    
-    <div class="card">
-      <h2>Skills Learned</h2>
-      <div class="stat">${skills.total}</div>
-      <div class="stat-label">patterns extracted</div>
-    </div>
-    
-    <!-- Fuel Usage - Enhanced -->
-    <div class="card">
-      <h2>⛽ Fuel Usage</h2>
-      <div class="stat">${fuelTotal}</div>
-      <div class="stat-label">total units consumed</div>
-      <div class="stat-context">
-        📊 ${fuelPerSession} units/session avg · ${fuel.sessions} sessions<br>
-        🏷️ ${topTierPct}% ${topTier?.[0] || 'standard'} tier usage
-      </div>
-      <div class="fuel-gauge">
-        <div class="fuel-tier">
-          <div class="icon">🔥</div>
-          <div class="count">${fuel.byTier.premium}</div>
-          <div class="label">Premium</div>
-        </div>
-        <div class="fuel-tier">
-          <div class="icon">⚡</div>
-          <div class="count">${fuel.byTier.standard}</div>
-          <div class="label">Standard</div>
-        </div>
-        <div class="fuel-tier">
-          <div class="icon">💨</div>
-          <div class="count">${fuel.byTier.fast}</div>
-          <div class="label">Fast</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Mission Types -->
-    <div class="card">
-      <h2>By Mission Type</h2>
-      <div class="bar-chart">
-        ${Object.entries(summary.byMission).map(([mission, data]) => `
-        <div class="bar-row">
-          <div class="bar-label">${mission}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width: ${(data as any).successRate}%"></div>
-          </div>
-          <div class="bar-value">${(data as any).count}</div>
-        </div>
-        `).join('')}
-      </div>
-    </div>
-    
-    <!-- Phase Performance -->
-    <div class="card">
-      <h2>By Phase</h2>
-      <div class="bar-chart">
-        ${Object.entries(summary.byPhase).map(([phase, data]) => `
-        <div class="bar-row">
-          <div class="bar-label">${phase}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width: ${(data as any).successRate}%"></div>
-          </div>
-          <div class="bar-value">${formatDuration((data as any).avgDuration)}</div>
-        </div>
-        `).join('')}
-      </div>
-    </div>
-    
-    <!-- Recent Runs -->
-    <div class="card" style="grid-column: span 2;">
-      <h2>Recent Missions</h2>
-      <ul class="run-list">
-        ${recent.map(run => `
-        <li class="run-item">
-          <span class="run-status">${run.success ? '✅' : '❌'}</span>
-          <span class="run-task">${run.task.slice(0, 60)}${run.task.length > 60 ? '...' : ''}</span>
-          <span class="run-meta">${run.mission || '—'} · ${formatDuration(run.totalDuration)}</span>
-        </li>
-        `).join('')}
-      </ul>
-    </div>
+  </style>`; 
+}
 
-    <!-- FLIGHT PLANS SECTION -->
-    <hr class="section-divider">
-    <div class="section-title">📋 Flight Plans</div>
-
-    <!-- Plans Overview -->
-    <div class="card">
-      <h2>Plans Overview</h2>
-      <div class="stat">${plans.length}</div>
-      <div class="stat-label">flight plans</div>
-      <div class="stat-context">
-        ✅ ${completedPlanTasks}/${totalPlanTasks} tasks completed (${planProgress}%)
-      </div>
-      <div class="plan-progress" style="margin-top: 0.75rem;">
-        <div class="plan-progress-fill" style="width: ${planProgress}%"></div>
-      </div>
-    </div>
-
-    <!-- Active Plans List -->
-    <div class="card" style="grid-column: span 2;">
-      <h2>Flight Plans</h2>
-      ${plans.length === 0 ? '<div class="stat-context">No plans yet — use the Mission Composer below to create one.</div>' : plans.map(plan => {
-        const pProg = plan.totalTasks > 0 ? Math.round((plan.completedTasks / plan.totalTasks) * 100) : 0;
-        return `
-      <div class="plan-item">
-        <div class="plan-header">
-          <span class="title">${plan.title}</span>
-          <span class="plan-status ${plan.status}">${plan.status.replace('_', ' ')}</span>
-        </div>
-        <div class="plan-progress">
-          <div class="plan-progress-fill" style="width: ${pProg}%"></div>
-        </div>
-        <div class="plan-meta">${plan.id} · ${plan.completedTasks}/${plan.totalTasks} tasks · ${plan.createdAt || '—'}</div>
-      </div>`;
-      }).join('')}
-    </div>
-
-    <!-- MISSION COMPOSER SECTION -->
-    <hr class="section-divider">
-    <div class="section-title">🚀 Mission Composer</div>
-
-    <div class="card" style="grid-column: span 2;">
-      <h2>Quick Launch</h2>
-      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
-        Describe what you want to build. ORBIT generates the CLI command to run.
-      </p>
-
-      <div class="quick-actions">
-        <button class="quick-action" onclick="setTemplate('feature')">✨ New Feature</button>
-        <button class="quick-action" onclick="setTemplate('bugfix')">🔧 Fix Bug</button>
-        <button class="quick-action" onclick="setTemplate('refactor')">♻️ Refactor</button>
-        <button class="quick-action" onclick="setTemplate('test')">🧪 Add Tests</button>
-        <button class="quick-action" onclick="setTemplate('docs')">📚 Documentation</button>
-        <button class="quick-action" onclick="setTemplate('security')">🔒 Security Audit</button>
-        <button class="quick-action" onclick="setTemplate('perf')">⚡ Performance</button>
-        <button class="quick-action" onclick="setTemplate('plan')">📋 Flight Plan</button>
-      </div>
-
-      <div class="composer">
-        <textarea id="missionInput" class="composer-input" placeholder="Describe your mission...&#10;e.g. &quot;Add user authentication with JWT tokens and refresh flow&quot;"></textarea>
-        <div class="composer-actions">
-          <select id="missionMode" class="depth-select">
-            <option value="launch">🚀 launch — full mission</option>
-            <option value="warp">⚡ warp — quick change</option>
-            <option value="repair">🔧 repair — fix a bug</option>
-            <option value="plan">📋 flight-plan — plan only</option>
-            <option value="ultrawork">🔥 ultrawork — deep work</option>
-            <option value="swarm">🐝 swarm — parallel agents</option>
-          </select>
-          <select id="missionTier" class="depth-select">
-            <option value="">default tier</option>
-            <option value="--premium">🔥 premium</option>
-            <option value="--fast">💨 fast</option>
-          </select>
-          <button class="composer-btn primary" onclick="generateCommand()">Generate Command</button>
-          <button class="composer-btn" onclick="copyCommand()">📋 Copy</button>
-        </div>
-        <div id="commandOutput" class="composer-output"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Flight Plan Builder</h2>
-      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
-        Break down a feature into a structured plan.
-      </p>
-      <textarea id="planFeature" class="composer-input" placeholder="Describe the feature to plan...&#10;e.g. &quot;User authentication system with OAuth2&quot;" style="min-height: 50px;"></textarea>
-      <div class="composer-actions" style="margin-top: 0.5rem;">
-        <select id="planDepth" class="depth-select">
-          <option value="1">Depth 1 — high-level (3-5 tasks)</option>
-          <option value="2" selected>Depth 2 — standard (8-12 tasks)</option>
-          <option value="3">Depth 3 — detailed (15+ tasks)</option>
-        </select>
-        <button class="composer-btn primary" onclick="generatePlanCommand()">Generate</button>
-        <button class="composer-btn" onclick="copyPlanCommand()">📋 Copy</button>
-      </div>
-      <div id="planOutput" class="composer-output"></div>
-    </div>
-
-    <div class="card">
-      <h2>Publish to GitHub</h2>
-      <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 1rem;">
-        Push a flight plan to GitHub as trackable work items.
-      </p>
-      <select id="publishPlan" class="depth-select" style="width: 100%; margin-bottom: 0.5rem;">
-        ${plans.length === 0 ? '<option>No plans available</option>' :
-          plans.map(p => `<option value="${p.id}">${p.id}: ${p.title}</option>`).join('')}
-      </select>
-      <select id="publishMode" class="depth-select" style="width: 100%; margin-bottom: 0.5rem;">
-        <option value="epic">🎯 Epic — parent issues + sub-issues</option>
-        <option value="milestone">📌 Milestone — milestone + labeled issues</option>
-        <option value="issues">📋 Flat Issues — simple issue list</option>
-      </select>
-      <div class="composer-actions">
-        <button class="composer-btn primary" onclick="generatePublishCommand()">Generate</button>
-        <button class="composer-btn" onclick="copyPublishCommand()">📋 Copy</button>
-      </div>
-      <div id="publishOutput" class="composer-output"></div>
-    </div>
-  </div>
-  
-  <footer>
-    Generated ${new Date().toISOString()} · ORBIT v1.0.0 · Refresh: <code>orbit dashboard --generate</code>
-  </footer>
-  
-  <script>
+function buildDashboardScript(): string {
+  return `  <script>
     const templates = {
       feature: { text: 'Add ', mode: 'launch' },
       bugfix: { text: 'Fix ', mode: 'repair' },
@@ -567,7 +598,45 @@ export function generateDashboard(): void {
       out.style.borderColor = 'var(--success)';
       setTimeout(() => out.style.borderColor = '', 1000);
     }
-  </script>
+  </script>`;
+}
+
+export function generateDashboard(): void {
+  if (!existsSync(DASHBOARD_DIR)) {
+    mkdirSync(DASHBOARD_DIR, { recursive: true });
+  }
+  
+  const data = collectDashboardData();
+  const metrics = calculateDashboardMetrics(data);
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🛸 ORBIT Dashboard</title>
+${buildDashboardStyles()}
+</head>
+<body>
+  <div class="header">
+    <h1>🛸 ORBIT Dashboard</h1>
+    <p>Orchestrated Robotic Build & Integration Toolkit</p>
+  </div>
+  
+  <div class="grid">
+${buildStatsSection(data, metrics)}
+${buildFuelSection(data, metrics)}
+${buildPerformanceCharts(data)}
+${buildRecentRunsSection(data)}
+${buildFlightPlansSection(data, metrics)}
+${buildMissionComposerSection(data)}
+  </div>
+  
+  <footer>
+    Generated ${new Date().toISOString()} · ORBIT v1.0.0 · Refresh: <code>orbit dashboard --generate</code>
+  </footer>
+  
+${buildDashboardScript()}
 </body>
 </html>`;
 

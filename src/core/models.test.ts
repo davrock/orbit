@@ -5,6 +5,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   selectModelTier,
   getModelIcon,
+  getModelForTier,
   getCostMultiplier,
   escalateTier,
   estimateCost
@@ -287,6 +288,24 @@ describe('Model Selector', () => {
     });
   });
 
+  describe('getModelForTier', () => {
+    it('should return claude-sonnet-4.5 for premium tier', () => {
+      expect(getModelForTier('premium')).toBe('claude-sonnet-4.5');
+    });
+
+    it('should return claude-sonnet-4 for standard tier', () => {
+      expect(getModelForTier('standard')).toBe('claude-sonnet-4');
+    });
+
+    it('should return claude-haiku-4.5 for fast tier', () => {
+      expect(getModelForTier('fast')).toBe('claude-haiku-4.5');
+    });
+
+    it('should return claude-haiku-4.5 for ecomode tier', () => {
+      expect(getModelForTier('ecomode')).toBe('claude-haiku-4.5');
+    });
+  });
+
   describe('estimateCost', () => {
     it('should calculate cost for single phase', () => {
       const phases: Phase[] = ['implement'];
@@ -324,17 +343,17 @@ describe('Model Selector', () => {
     });
 
     it('should calculate cost for apollo mission (all phases)', () => {
-      const phases: Phase[] = ['research', 'plan', 'implement', 'test', 'security', 'review', 'document', 'commit'];
+      const phases: Phase[] = ['research', 'plan', 'implement', 'test', 'security', 'review', 'document'];
       // research, plan, implement, test, review = 1 each = 5
       // security = 3
-      // document, commit = 0.5 each = 1
-      // Total = 9
-      expect(estimateCost(phases, 'generic task')).toBe(9.0);
+      // document = 0.5
+      // Total = 8.5
+      expect(estimateCost(phases, 'generic task')).toBe(8.5);
     });
 
     it('should calculate cost for warp mission', () => {
-      const phases: Phase[] = ['implement', 'commit'];
-      expect(estimateCost(phases, 'quick fix')).toBe(1.5); // 1 + 0.5
+      const phases: Phase[] = ['implement'];
+      expect(estimateCost(phases, 'quick fix')).toBe(1.0); // standard tier = 1
     });
   });
 

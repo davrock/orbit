@@ -3,7 +3,7 @@
 
 id: preflight
 name: Preflight
-description: TDD workflow (test → implement → test → review → commit)
+description: TDD workflow (test → implement → test → review)
 icon: ✅
 
 phases:
@@ -11,19 +11,16 @@ phases:
   - implement
   - test
   - review
-  - commit
 
 phase_crews:
   test: specialist
   implement: pilot
   review: navigator
-  commit: pilot
 
 phase_models:
   test: standard
   implement: standard
   review: standard
-  commit: fast
 
 use_when:
   - Test-driven development

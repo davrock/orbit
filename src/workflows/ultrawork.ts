@@ -12,6 +12,7 @@ import {
   getCrewForPhase,
   selectModelTier,
   getModelIcon,
+  getModelForTier,
   trackFuel,
   appendLog,
   detectProjectConfig,
@@ -112,93 +113,90 @@ export class UltraworkExecutor {
 
     const beforeCommit = getCurrentCommit();
 
-    // Phase 1: Plan and break down into subtasks
-    setPhase('plan', 'mission-planner', this.modelTier);
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('📋 PHASE 1: PLANNING & TASK BREAKDOWN'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
+    try {
+      // Phase 1: Plan and break down into subtasks
+      setPhase('plan', 'mission-planner', this.modelTier);
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('📋 PHASE 1: PLANNING & TASK BREAKDOWN'));
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log('');
 
-    const subtasks = await this.planSubtasks(task);
-    
-    if (!subtasks || subtasks.length === 0) {
+      const subtasks = await this.planSubtasks(task);
+      
+      if (!subtasks || subtasks.length === 0) {
+        metricsEnd(false);
+        endHUD(false);
+        printError('Failed to break down task into subtasks');
+        return this.buildResult(task, [], false, beforeCommit);
+      }
+
+      completePhase('plan');
+      printSuccess(`Identified ${subtasks.length} subtasks`);
+      console.log('');
+
+      // Phase 2: Execute subtasks in parallel
+      setPhase('implement', 'pilot', this.modelTier);
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('🚀 PHASE 2: PARALLEL EXECUTION'));
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log('');
+
+      this.printSubtaskSummary(subtasks);
+      console.log('');
+
+      const results = await this.executeSubtasksInParallel(subtasks);
+      completePhase('implement');
+
+      const failedSubtasks = results.filter(r => !r.success);
+      if (failedSubtasks.length > 0) {
+        console.log('');
+        printWarning(`${failedSubtasks.length} subtask(s) failed:`);
+        failedSubtasks.forEach(r => {
+          console.log(`  ✗ ${r.subtask.description}`);
+        });
+      }
+
+      // Phase 3: Review and integration
+      setPhase('review', 'navigator', this.modelTier);
+      console.log('');
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log(colors.primary('🔍 PHASE 3: REVIEW & INTEGRATION'));
+      console.log(colors.secondary('━'.repeat(64)));
+      console.log('');
+
+      const reviewResult = await this.reviewIntegration(task, results);
+      completePhase('review');
+
+      if (!reviewResult.success) {
+        metricsFilesChanged(getChangedFiles().length);
+        metricsEnd(false);
+        endHUD(false);
+        printError('Review phase failed');
+        return this.buildResult(task, results, false, beforeCommit);
+      }
+
+      const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
+      const success = failedSubtasks.length === 0;
+
+      metricsFilesChanged(getChangedFiles().length);
+      metricsEnd(success);
+      endHUD(success);
+
+      if (success) {
+        printMissionComplete(results.length, duration);
+        appendLog(`Ultrawork mission complete: ${results.length} subtasks in ${duration}s`);
+      } else {
+        printError('Ultrawork mission failed');
+      }
+
+      return this.buildResult(task, results, success, beforeCommit);
+    } catch (error) {
       metricsEnd(false);
       endHUD(false);
-      printError('Failed to break down task into subtasks');
+      printError(`Ultrawork mission crashed: ${error instanceof Error ? error.message : String(error)}`);
+      appendLog(`Ultrawork mission error: ${error instanceof Error ? error.message : String(error)}`);
       return this.buildResult(task, [], false, beforeCommit);
     }
-
-    completePhase('plan');
-    printSuccess(`Identified ${subtasks.length} subtasks`);
-    console.log('');
-
-    // Phase 2: Execute subtasks in parallel
-    setPhase('implement', 'pilot', this.modelTier);
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('🚀 PHASE 2: PARALLEL EXECUTION'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    this.printSubtaskSummary(subtasks);
-    console.log('');
-
-    const results = await this.executeSubtasksInParallel(subtasks);
-    completePhase('implement');
-
-    const failedSubtasks = results.filter(r => !r.success);
-    if (failedSubtasks.length > 0) {
-      console.log('');
-      printWarning(`${failedSubtasks.length} subtask(s) failed:`);
-      failedSubtasks.forEach(r => {
-        console.log(`  ✗ ${r.subtask.description}`);
-      });
-    }
-
-    // Phase 3: Review and integration
-    setPhase('review', 'navigator', this.modelTier);
-    console.log('');
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('🔍 PHASE 3: REVIEW & INTEGRATION'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const reviewResult = await this.reviewIntegration(task, results);
-    completePhase('review');
-
-    if (!reviewResult.success) {
-      metricsFilesChanged(getChangedFiles().length);
-      metricsEnd(false);
-      endHUD(false);
-      printError('Review phase failed');
-      return this.buildResult(task, results, false, beforeCommit);
-    }
-
-    // Phase 4: Commit
-    setPhase('commit', 'pilot', this.modelTier);
-    console.log('');
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log(colors.primary('✅ PHASE 4: COMMIT'));
-    console.log(colors.secondary('━'.repeat(64)));
-    console.log('');
-
-    const commitResult = await this.commitChanges(task);
-    completePhase('commit');
-
-    const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
-    const success = commitResult.success && failedSubtasks.length === 0;
-
-    metricsFilesChanged(getChangedFiles().length);
-    metricsEnd(success);
-    endHUD(success);
-
-    if (success) {
-      printMissionComplete(results.length, duration);
-      appendLog(`Ultrawork mission complete: ${results.length} subtasks in ${duration}s`);
-    } else {
-      printError('Ultrawork mission failed');
-    }
-
-    return this.buildResult(task, results, success, beforeCommit);
   }
 
   private async planSubtasks(task: string): Promise<Subtask[]> {
@@ -233,7 +231,8 @@ export class UltraworkExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 300,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -309,7 +308,8 @@ export class UltraworkExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 600,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -361,7 +361,8 @@ export class UltraworkExecutor {
 
     const result = await execCopilot(prompt, {
       timeout: 300,
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -371,52 +372,6 @@ export class UltraworkExecutor {
       printSuccess(`Review complete (${duration}s)`);
     } else {
       printError(`Review failed (${duration}s)`);
-    }
-
-    return { success: result.success };
-  }
-
-  private async commitChanges(task: string): Promise<{ success: boolean }> {
-    metricsPhaseStart('commit', this.modelTier);
-    const phaseStart = Date.now();
-
-    if (!commandExists('copilot')) {
-      metricsPhaseEnd('commit', 'failed', 0);
-      return { success: false };
-    }
-
-    const crew: CrewMember = 'pilot';
-    const tier = selectModelTier(task, 'commit', crew);
-    const icon = getModelIcon(tier);
-
-    printPhase('commit', crew, tier, icon);
-    trackFuel(tier);
-
-    const prompt = this.generateCommitPrompt(task);
-    this.writePromptFile('commit', prompt);
-
-    if (this.dryRun) {
-      console.log(colors.warning('[DRY RUN] Would commit changes'));
-      metricsPhaseEnd('commit', 'skipped', 0);
-      return { success: true };
-    }
-
-    console.log(colors.secondary(`📋 Prompt saved to: ${STATE_DIR}/pending_prompt.md`));
-    console.log(colors.warning('🚀 Executing with Copilot CLI...'));
-    console.log('');
-
-    const result = await execCopilot(prompt, {
-      timeout: 120,
-      allowAllPaths: true
-    });
-
-    const duration = Math.floor((Date.now() - phaseStart) / 1000);
-    metricsPhaseEnd('commit', result.success ? 'success' : 'failed', duration);
-
-    if (result.success) {
-      printSuccess(`Commit complete (${duration}s)`);
-    } else {
-      printError(`Commit failed (${duration}s)`);
     }
 
     return { success: result.success };
@@ -492,32 +447,10 @@ Your mission:
 3. Verify consistency across all changes
 4. Check for any integration issues or gaps
 5. Suggest fixes if needed
+6. Commit all changes using conventional commit format (feat/fix/refactor(scope): description) and push to the remote branch
 
 Read ${paths.flightLog} first, update when done.
-Reference ${paths.bestPractices} for standards.
 Complete the review then say 'REVIEW COMPLETE'`;
-  }
-
-  private generateCommitPrompt(task: string): string {
-    const crewPrompt = getAgentSystemPrompt('pilot');
-    
-    return `${crewPrompt}
-
-TASK: ${task}
-PHASE: commit
-PROJECT: ${this.config.name}
-MODE: ultrawork finalization
-
-Commit all changes from the ultrawork parallel execution.
-
-Create a clear commit message that describes:
-1. The overall task accomplished
-2. That multiple subtasks were completed in parallel
-3. Key changes made
-
-Use conventional commit format: feat/fix/refactor(scope): description
-
-Complete the commit then say 'COMMIT COMPLETE'`;
   }
 
   private parseSubtasksFromOutput(output: string): Subtask[] {

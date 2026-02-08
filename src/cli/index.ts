@@ -469,7 +469,7 @@ program
     console.log('  By mission:');
     for (const [mission, data] of Object.entries(summary.byMission)) {
       if (!mission || mission === 'undefined') continue;
-      console.log(`    ${mission}: ${(data as any).count} runs (${(data as any).successRate}% success)`);
+      console.log(`    ${mission}: ${data.count} runs (${data.successRate}% success)`);
     }
   });
 

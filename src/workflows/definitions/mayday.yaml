@@ -3,23 +3,20 @@
 
 id: mayday
 name: Mayday
-description: Emergency hotfix (debug → implement → commit)
+description: Emergency hotfix (debug → implement)
 icon: 🆘
 
 phases:
   - debug
   - implement
-  - commit
 
 phase_crews:
   debug: engineer
   implement: pilot
-  commit: pilot
 
 phase_models:
   debug: premium
   implement: standard
-  commit: fast
 
 use_when:
   - Production emergencies

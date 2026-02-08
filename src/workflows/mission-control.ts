@@ -15,8 +15,10 @@ import {
   type ModelTier,
   getPhasesForMission,
   getCrewForPhase,
+  getModelForPhase,
   selectModelTier,
   getModelIcon,
+  getModelForTier,
   trackFuel,
   appendLog,
   detectProjectConfig,
@@ -37,7 +39,7 @@ import {
 } from '../core/index.js';
 import { createPersistenceManager, type PersistenceManager } from '../core/persistence.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
-import { getAutonomousGuardrails, VERIFICATION_REQUIREMENTS } from '../core/autonomous-prompts.js';
+import { getAutonomousGuardrails, getCompactGuardrails, VERIFICATION_REQUIREMENTS, COMPACT_VERIFICATION } from '../core/autonomous-prompts.js';
 import {
   printBanner,
   printPhase,
@@ -162,81 +164,89 @@ export class MissionControl {
 
     const beforeCommit = getCurrentCommit();
 
-    for (const phase of this.phasesToRun) {
-      // Save checkpoint before each phase
-      saveCheckpoint(
-        this.missionConfig.type,
+    try {
+      for (const phase of this.phasesToRun) {
+        // Save checkpoint before each phase
+        saveCheckpoint(
+          this.missionConfig.type,
+          this.missionConfig.task,
+          phase,
+          completedPhases.concat(this.phaseResults.map(r => r.phase)),
+          this.missionConfig.modelTier,
+          this.missionConfig.dryRun
+        );
+
+        let result: PhaseResult;
+        
+        if (this.persistenceManager) {
+          // Ralph mode: retry with escalation until verified complete
+          result = await this.runPhaseWithPersistence(phase);
+        } else {
+          // Normal mode: single attempt
+          result = await this.runPhase(phase);
+        }
+        
+        // Perform AI provider validations if enabled and phase succeeded
+        if (result.success && (this.enableCrossValidation || this.enableConsistencyCheck) && hasProviders()) {
+          await this.performAIValidation(phase, result);
+        }
+
+        this.phaseResults.push(result);
+
+        // Update HUD with completed phase
+        if (result.success) {
+          completePhase(phase);
+        }
+
+        if (!result.success) {
+          // End metrics and HUD with failure
+          metricsFilesChanged(getChangedFiles().length);
+          metricsEnd(false);
+          endHUD(false);
+
+          if (this.persistenceManager) {
+            printError(`Mission failed at phase: ${phase} after ${this.persistenceManager['state'].totalAttempts} attempts`);
+          } else {
+            printError(`Mission failed at phase: ${phase}`);
+            printWarning('Run "orbit resume" to retry from this phase');
+          }
+          return this.buildResult(false, beforeCommit);
+        }
+      }
+
+      // Clear checkpoint on successful completion
+      clearCheckpoint();
+
+      // Extract skill from successful mission
+      const allOutput = this.phaseResults.map(r => r.output || '').join('\n');
+      extractSkill(
         this.missionConfig.task,
-        phase,
-        completedPhases.concat(this.phaseResults.map(r => r.phase)),
-        this.missionConfig.modelTier,
-        this.missionConfig.dryRun
+        'success',
+        this.missionConfig.type,
+        allOutput
       );
 
-      let result: PhaseResult;
+      // End metrics and HUD with success
+      metricsFilesChanged(getChangedFiles().length);
+      metricsEnd(true);
+      endHUD(true);
+
+      const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
+      printMissionComplete(this.phaseResults.length, duration);
       
-      if (this.persistenceManager) {
-        // Ralph mode: retry with escalation until verified complete
-        result = await this.runPhaseWithPersistence(phase);
-      } else {
-        // Normal mode: single attempt
-        result = await this.runPhase(phase);
-      }
+      appendLog(`Mission complete: ${this.phaseResults.length} phases in ${duration}s`);
       
-      // Perform AI provider validations if enabled and phase succeeded
-      if (result.success && (this.enableCrossValidation || this.enableConsistencyCheck) && hasProviders()) {
-        await this.performAIValidation(phase, result);
-      }
+      // Check if critical files were deleted during mission
+      checkCriticalFilesAfterMission();
 
-      this.phaseResults.push(result);
-
-      // Update HUD with completed phase
-      if (result.success) {
-        completePhase(phase);
-      }
-
-      if (!result.success) {
-        // End metrics and HUD with failure
-        metricsFilesChanged(getChangedFiles().length);
-        metricsEnd(false);
-        endHUD(false);
-
-        if (this.persistenceManager) {
-          printError(`Mission failed at phase: ${phase} after ${this.persistenceManager['state'].totalAttempts} attempts`);
-        } else {
-          printError(`Mission failed at phase: ${phase}`);
-          printWarning('Run "orbit resume" to retry from this phase');
-        }
-        return this.buildResult(false, beforeCommit);
-      }
+      return this.buildResult(true, beforeCommit);
+    } catch (error) {
+      metricsEnd(false);
+      endHUD(false);
+      printError(`Mission crashed: ${error instanceof Error ? error.message : String(error)}`);
+      appendLog(`Mission error: ${error instanceof Error ? error.message : String(error)}`);
+      return this.buildResult(false, beforeCommit);
     }
-
-    // Clear checkpoint on successful completion
-    clearCheckpoint();
-
-    // Extract skill from successful mission
-    const allOutput = this.phaseResults.map(r => r.output || '').join('\n');
-    extractSkill(
-      this.missionConfig.task,
-      'success',
-      this.missionConfig.type,
-      allOutput
-    );
-
-    // End metrics and HUD with success
-    metricsFilesChanged(getChangedFiles().length);
-    metricsEnd(true);
-    endHUD(true);
-
-    const duration = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
-    printMissionComplete(this.phaseResults.length, duration);
-    
-    appendLog(`Mission complete: ${this.phaseResults.length} phases in ${duration}s`);
-    
-    // Check if critical files were deleted during mission
-    checkCriticalFilesAfterMission();
-
-    return this.buildResult(true, beforeCommit);
   }
 
   private async runPhaseWithPersistence(phase: Phase): Promise<PhaseResult> {
@@ -262,8 +272,8 @@ export class MissionControl {
       }
 
       // Get potentially modified crew and tier
-      let crew = getCrewForPhase(phase, this.missionConfig.customCrew);
-      let tier = selectModelTier(this.missionConfig.task, phase, crew);
+      let crew = getCrewForPhase(phase, this.missionConfig.type, this.missionConfig.customCrew);
+      let tier = getModelForPhase(phase, this.missionConfig.type);
 
       if (state.attempt > 0) {
         if (this.persistenceManager.shouldChangeCrew()) {
@@ -271,8 +281,9 @@ export class MissionControl {
           console.log(colors.warning(`🔄 Switching to ${crew} for different perspective`));
         }
 
+        const baseTier = tier;
         tier = this.persistenceManager.getEscalatedTier(tier);
-        if (tier !== selectModelTier(this.missionConfig.task, phase, crew)) {
+        if (tier !== baseTier) {
           console.log(colors.warning(`🚀 Escalating to ${tier} tier for better reasoning`));
         }
       }
@@ -309,7 +320,7 @@ export class MissionControl {
 
     return lastResult || {
       phase,
-      crew: getCrewForPhase(phase),
+      crew: getCrewForPhase(phase, this.missionConfig.type),
       modelTier: 'standard',
       success: false,
       duration: 0,
@@ -318,8 +329,9 @@ export class MissionControl {
   }
 
   private async runPhase(phase: Phase, overrideCrew?: CrewMember, overrideTier?: ModelTier, previousResult?: PhaseResult): Promise<PhaseResult> {
-    const crew = overrideCrew || getCrewForPhase(phase, this.missionConfig.customCrew);
-    const tier = overrideTier || selectModelTier(this.missionConfig.task, phase, crew);
+    const crew = overrideCrew || getCrewForPhase(phase, this.missionConfig.type, this.missionConfig.customCrew);
+    // Use override (from escalation), then YAML workflow phase_models, then keyword-based selection
+    const tier = overrideTier || getModelForPhase(phase, this.missionConfig.type);
     const icon = getModelIcon(tier);
     const phaseStart = Date.now();
 
@@ -375,7 +387,9 @@ export class MissionControl {
     }
     
     // Generate the prompt for this phase
-    let prompt = this.generatePrompt(phase, crew);
+    const isFirstPhase = this.phaseResults.length === 0;
+    const isLastPhase = this.phaseResults.length === this.phasesToRun.length - 1;
+    let prompt = this.generatePrompt(phase, crew, isFirstPhase, isLastPhase);
     
     // Enhance prompt with persistence instructions if in ralph mode
     if (this.persistenceManager && previousResult) {
@@ -389,10 +403,11 @@ export class MissionControl {
     console.log(colors.warning('🚀 Executing with Copilot CLI...'));
     console.log('');
 
-    // Execute with Copilot CLI
+    // Execute with Copilot CLI using the tier-appropriate model
     const result = await execCopilot(prompt, {
       timeout: 600, // 10 minute timeout per phase
-      allowAllPaths: true
+      allowAllPaths: true,
+      model: getModelForTier(tier)
     });
 
     const duration = Math.floor((Date.now() - phaseStart) / 1000);
@@ -418,7 +433,7 @@ export class MissionControl {
     };
   }
 
-  private generatePrompt(phase: Phase, crew: CrewMember): string {
+  private generatePrompt(phase: Phase, crew: CrewMember, isFirstPhase: boolean = true, isLastPhase: boolean = false): string {
     const crewPrompt = getAgentSystemPrompt(crew);
     
     // Check if plan requirements exist
@@ -446,8 +461,15 @@ ${planReqs.userAnswers.map((qa: any, i: number) => `Q${i+1}: ${qa.question}\nA${
     } catch (error) {
       // No plan requirements available, continue normally
     }
+
+    // Commit instructions appended to the last phase
+    const commitInstructions = isLastPhase ? `
+
+COMMIT & PUSH: After completing this phase, commit all changes using conventional commit format (feat/fix/refactor/test/docs/perf/security: description) and push to the remote branch.` : '';
     
-    return `${crewPrompt}
+    if (isFirstPhase) {
+      // First phase: full context with best-practices reference and complete guardrails
+      return `${crewPrompt}
 
 TASK: ${this.missionConfig.task}${planSection}
 PHASE: ${phase}
@@ -455,13 +477,31 @@ PROJECT: ${this.config.name}
 
 Read ${paths.flightLog} first, update when done.
 Reference ${paths.bestPractices} for standards.
+Record key findings in the flight log so subsequent phases have context.
 
 ${getAutonomousGuardrails()}
 
 ${getCriticalFilesWarning()}
 
 ${VERIFICATION_REQUIREMENTS}
+${commitInstructions}
+Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
+    }
 
+    // Subsequent phases: compact context — flight log has prior phase findings
+    return `${crewPrompt}
+
+TASK: ${this.missionConfig.task}${planSection}
+PHASE: ${phase}
+PROJECT: ${this.config.name}
+
+Read ${paths.flightLog} first — it contains findings from previous phases. Use that context instead of re-reading files or re-fetching issues.
+Update the flight log when done.
+
+${getCompactGuardrails()}
+
+${COMPACT_VERIFICATION}
+${commitInstructions}
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
   }
 
@@ -479,7 +519,7 @@ Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
   }
 
   private writePromptFile(phase: Phase, prompt: string): void {
-    const crew = getCrewForPhase(phase, this.missionConfig.customCrew);
+    const crew = getCrewForPhase(phase, this.missionConfig.type, this.missionConfig.customCrew);
     const content = `# 🚀 ORBIT Mission - Phase: ${phase.toUpperCase()}
 
 ## Crew Member

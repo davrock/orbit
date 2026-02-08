@@ -10,19 +10,16 @@ phases:
   - implement
   - test
   - review
-  - commit
 
 phase_crews:
   implement: pilot
   test: specialist
   review: navigator
-  commit: pilot
 
 phase_models:
   implement: standard
   test: standard
   review: standard
-  commit: fast
 
 # Special behavior flags
 persistence_mode: true

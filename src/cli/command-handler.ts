@@ -43,74 +43,78 @@ export async function handleMissionCommand(
   task: string,
   options: CommandOptions
 ): Promise<void> {
-  // Handle plan mode if requested
-  if (options.plan) {
-    await runPlanMode({ task, dryRun: options.dryRun });
-    console.log('');
-    console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
-    console.log('');
-  }
+  try {
+    // Handle plan mode if requested
+    if (options.plan) {
+      await runPlanMode({ task, dryRun: options.dryRun });
+      console.log('');
+      console.log(colors.secondary('Requirements gathered. Proceeding with mission...'));
+      console.log('');
+    }
 
-  const detected = detectMagicKeywords(task);
+    const detected = detectMagicKeywords(task);
 
-  // Handle flight plan creation
-  if (detected.shouldCreatePlan) {
-    printWarning('🔮 Magic keyword detected: creating flight plan first');
-    await createFlightPlan(detected.cleanedTask, { depth: 2 });
-    console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-    return;
-  }
+    // Handle flight plan creation
+    if (detected.shouldCreatePlan) {
+      printWarning('🔮 Magic keyword detected: creating flight plan first');
+      await createFlightPlan(detected.cleanedTask, { depth: 2 });
+      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
+      return;
+    }
 
-  // Determine model tier
-  const modelTier = determineModelTier(options, detected.modelTier);
+    // Determine model tier
+    const modelTier = determineModelTier(options, detected.modelTier);
 
-  // Handle mission override
-  if (detected.mission === 'ralph') {
-    printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
-    await runMission({
-      mission: 'ralph',
+    // Handle mission override
+    if (detected.mission === 'ralph') {
+      printWarning(`🔮 Magic keyword detected: switching to 'ralph' mode`);
+      await runMission({
+        mission: 'ralph',
+        task: detected.cleanedTask,
+        dryRun: options.dryRun,
+        modelTier,
+        enableCrossValidation: options.crossValidate,
+        enableConsistencyCheck: options.consistencyCheck
+      });
+      return;
+    }
+
+    if (detected.mission === 'ultrawork') {
+      printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
+      await runUltrawork({
+        task: detected.cleanedTask,
+        dryRun: options.dryRun,
+        maxConcurrency: 4,
+        modelTier
+      });
+      return;
+    }
+
+    // Execute normal mission
+    const missionOptions: MissionOptions = {
+      mission,
       task: detected.cleanedTask,
       dryRun: options.dryRun,
-      modelTier,
-      enableCrossValidation: options.crossValidate,
-      enableConsistencyCheck: options.consistencyCheck
-    });
-    return;
-  }
-
-  if (detected.mission === 'ultrawork') {
-    printWarning(`🔮 Magic keyword detected: switching to 'ultrawork' mode`);
-    await runUltrawork({
-      task: detected.cleanedTask,
-      dryRun: options.dryRun,
-      maxConcurrency: 4,
       modelTier
-    });
-    return;
-  }
+    };
 
-  // Execute normal mission
-  const missionOptions: MissionOptions = {
-    mission,
-    task: detected.cleanedTask,
-    dryRun: options.dryRun,
-    modelTier
-  };
+    if (options.interactive !== undefined) {
+      missionOptions.interactive = options.interactive;
+    }
+    if (options.crew) {
+      missionOptions.customCrew = options.crew;
+    }
+    if (options.crossValidate !== undefined) {
+      missionOptions.enableCrossValidation = options.crossValidate;
+    }
+    if (options.consistencyCheck !== undefined) {
+      missionOptions.enableConsistencyCheck = options.consistencyCheck;
+    }
 
-  if (options.interactive !== undefined) {
-    missionOptions.interactive = options.interactive;
+    await runMission(missionOptions);
+  } catch (error) {
+    printWarning(`Mission command failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-  if (options.crew) {
-    missionOptions.customCrew = options.crew;
-  }
-  if (options.crossValidate !== undefined) {
-    missionOptions.enableCrossValidation = options.crossValidate;
-  }
-  if (options.consistencyCheck !== undefined) {
-    missionOptions.enableConsistencyCheck = options.consistencyCheck;
-  }
-
-  await runMission(missionOptions);
 }
 
 function determineModelTier(
@@ -124,27 +128,38 @@ function determineModelTier(
   return 'auto';
 }
 
+interface WorkflowParams {
+  task: string;
+  dryRun?: boolean;
+  modelTier?: 'auto' | 'premium' | 'standard' | 'fast' | 'ecomode';
+  [key: string]: unknown;
+}
+
 export async function handleParallelCommand(
   task: string,
   options: CommandOptions,
-  workflowFn: (params: any) => Promise<any>,
-  workflowParams: any = {}
+  workflowFn: (params: WorkflowParams) => Promise<unknown>,
+  workflowParams: Record<string, unknown> = {}
 ): Promise<void> {
-  const detected = detectMagicKeywords(task);
-  
-  if (detected.shouldCreatePlan) {
-    printWarning('🔮 Magic keyword detected: creating flight plan first');
-    await createFlightPlan(detected.cleanedTask, { depth: 2 });
-    console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
-    return;
+  try {
+    const detected = detectMagicKeywords(task);
+    
+    if (detected.shouldCreatePlan) {
+      printWarning('🔮 Magic keyword detected: creating flight plan first');
+      await createFlightPlan(detected.cleanedTask, { depth: 2 });
+      console.log(colors.secondary('Flight plan created. Run the task without "plan" keyword to execute.'));
+      return;
+    }
+    
+    const modelTier = determineModelTier(options, detected.modelTier);
+    
+    await workflowFn({
+      task: detected.cleanedTask,
+      dryRun: options.dryRun,
+      modelTier,
+      ...workflowParams
+    });
+  } catch (error) {
+    printWarning(`Parallel command failed: ${error instanceof Error ? error.message : String(error)}`);
   }
-  
-  const modelTier = determineModelTier(options, detected.modelTier);
-  
-  await workflowFn({
-    task: detected.cleanedTask,
-    dryRun: options.dryRun,
-    modelTier,
-    ...workflowParams
-  });
 }

@@ -331,12 +331,12 @@ describe('getResumePhases', () => {
   });
 
   it('should handle phases in any order', () => {
-    const allPhases: Phase[] = ['plan', 'implement', 'test', 'commit'];
+    const allPhases: Phase[] = ['plan', 'implement', 'test', 'review'];
     const checkpoint: Checkpoint = {
       version: '1.0',
       mission: 'launch',
       task: 'Task',
-      currentPhase: 'commit',
+      currentPhase: 'review',
       phasesCompleted: ['test', 'plan'],
       modelTier: 'standard',
       timestamp: new Date().toISOString(),
@@ -344,6 +344,6 @@ describe('getResumePhases', () => {
     };
     
     const remaining = getResumePhases(allPhases, checkpoint);
-    expect(remaining).toEqual(['implement', 'commit']);
+    expect(remaining).toEqual(['implement', 'review']);
   });
 });

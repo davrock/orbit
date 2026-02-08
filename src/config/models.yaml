@@ -1,14 +1,11 @@
 # 🧠 ORBIT LLM Model Selection Configuration
 # Optimize cost & quality by matching models to tasks
-# Reference: https://docs.anthropic.com/models (pricing)
+# Models are passed via `copilot --model <name>` to the Copilot CLI
 
 models:
   # Premium models (3x tokens) - complex reasoning, architecture, security
   premium:
-    providers:
-      anthropic: claude-sonnet-4-20250514
-      openai: gpt-4o
-      google: gemini-1.5-pro
+    copilot_model: claude-sonnet-4.5
     best_for:
       - Complex architecture decisions
       - Security vulnerability analysis
@@ -18,10 +15,7 @@ models:
   
   # Standard models (1x tokens) - general development
   standard:
-    providers:
-      anthropic: claude-3.5-haiku
-      openai: gpt-4o-mini
-      google: gemini-flash
+    copilot_model: claude-sonnet-4
     best_for:
       - Feature implementation
       - Test writing
@@ -31,16 +25,20 @@ models:
       
   # Fast/cheap models (0.5x tokens) - simple tasks
   fast:
-    providers:
-      anthropic: claude-3.5-haiku
-      openai: gpt-4o-mini
-      google: gemini-flash
+    copilot_model: claude-haiku-4.5
     best_for:
       - Typo fixes
       - Comment updates
       - Simple formatting
       - Commit messages
       - README updates
+
+  # Ecomode (0.5x tokens) - same as fast
+  ecomode:
+    copilot_model: claude-haiku-4.5
+    best_for:
+      - Budget-constrained tasks
+      - Routine maintenance
 
 # Task-to-model mapping
 task_routing:

@@ -154,6 +154,7 @@ export interface CopilotOptions {
   additionalArgs?: string[];
   rateLimitConfig?: Partial<RateLimitConfig>;
   onRateLimit?: (attempt: number, delayMs: number) => void;
+  model?: string;
 }
 
 /**
@@ -170,7 +171,8 @@ export async function execCopilot(
     allowAllPaths = false,
     additionalArgs = [],
     rateLimitConfig,
-    onRateLimit
+    onRateLimit,
+    model
   } = options;
 
   if (!commandExists('copilot')) {
@@ -186,7 +188,7 @@ export async function execCopilot(
   let lastResult: CopilotResult | null = null;
 
   while (rateLimitHandler.shouldRetry(attempt)) {
-    const result = await executeCopilotOnce(prompt, timeout, allowAllPaths, additionalArgs);
+    const result = await executeCopilotOnce(prompt, timeout, allowAllPaths, additionalArgs, model);
     lastResult = result;
 
     // Check for rate limiting
@@ -282,7 +284,8 @@ async function executeCopilotOnce(
   prompt: string,
   timeout: number,
   allowAllPaths: boolean,
-  additionalArgs: string[]
+  additionalArgs: string[],
+  model?: string
 ): Promise<CopilotResult> {
   // Validate additionalArgs to prevent argument injection
   const validation = validateAdditionalArgs(additionalArgs);
@@ -303,6 +306,10 @@ async function executeCopilotOnce(
 
   if (allowAllPaths) {
     args.push('--allow-all-paths');
+  }
+
+  if (model) {
+    args.push('--model', model);
   }
 
   args.push(...additionalArgs);

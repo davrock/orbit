@@ -11,7 +11,7 @@ import {
 import { getAgentSystemPrompt } from '../agents/index.js';
 
 // Re-export for backward compatibility
-export { getPhasesForMission, getCrewForPhase } from '../workflows/loader.js';
+export { getPhasesForMission, getCrewForPhase, getModelForPhase } from '../workflows/loader.js';
 
 /**
  * Get crew prompt (uses agent system prompts)

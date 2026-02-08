@@ -3,20 +3,17 @@
 
 id: warp
 name: Warp
-description: Minimal workflow for quick changes (implement → commit)
+description: Minimal workflow for quick changes (implement only)
 icon: ⚡
 
 phases:
   - implement
-  - commit
 
 phase_crews:
   implement: pilot
-  commit: pilot
 
 phase_models:
   implement: standard
-  commit: fast
 
 use_when:
   - Quick fixes
