@@ -763,19 +763,38 @@
       "success": true,
       "validations": {},
       "ended": "2026-02-07T19:09:55.700Z"
+    },
+    {
+      "id": "run-1770593928923-0",
+      "task": "Test cargo item",
+      "mission": "warp",
+      "started": "2026-02-08T23:38:48.923Z",
+      "totalDuration": 566,
+      "phases": [
+        {
+          "name": "implement",
+          "started": "2026-02-08T23:38:48.928Z",
+          "duration": 566,
+          "status": "success",
+          "attempts": 1,
+          "modelTier": "standard"
+        }
+      ],
+      "filesChanged": 3,
+      "testsAdded": 0,
+      "retries": 0,
+      "success": true,
+      "validations": {},
+      "ended": "2026-02-08T23:48:15.803Z"
     }
   ],
   "aggregates": {
-    "totalRuns": 23,
-    "successRate": 91,
-    "avgDuration": null,
+    "totalRuns": 24,
+    "successRate": 92,
+    "avgDuration": 347,
     "byMission": {
-      "undefined": {
-        "count": 2,
-        "successRate": 0
-      },
       "warp": {
-        "count": 18,
+        "count": 19,
         "successRate": 100
       },
       "ultrawork": {
@@ -793,8 +812,8 @@
     },
     "byPhase": {
       "implement": {
-        "avgDuration": 231,
-        "successRate": 83
+        "avgDuration": 245,
+        "successRate": 84
       },
       "commit": {
         "avgDuration": 72,

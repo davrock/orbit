@@ -1,7 +1,10 @@
 {
   "fails": 0,
   "noProgress": 0,
-  "types": [],
-  "cycles": 0,
-  "successes": 0
+  "types": [
+    "cargo"
+  ],
+  "cycles": 1,
+  "successes": 1,
+  "lastTask": "test: add comprehensive cargo bay test suite"
 }
