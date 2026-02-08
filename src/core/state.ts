@@ -81,7 +81,7 @@ export function saveGroundControl(state: GroundControlState): void {
   writeJsonFile(getGcFile(), state);
 }
 
-export function recordSuccess(taskType: string): void {
+export function recordSuccess(taskType: string, lastTask?: string): void {
   ensureStateDir();
   updateJsonFile(
     getGcFile(),
@@ -92,7 +92,8 @@ export function recordSuccess(taskType: string): void {
       noProgress: 0,
       successes: state.successes + 1,
       cycles: state.cycles + 1,
-      types: [...state.types.slice(-2), taskType]
+      types: [...state.types.slice(-2), taskType],
+      lastTask: lastTask || state.lastTask
     })
   );
 }

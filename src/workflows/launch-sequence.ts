@@ -23,7 +23,7 @@ import {
   printMissionComplete,
   colors
 } from '../utils/output.js';
-import { getCurrentCommit } from '../utils/git.js';
+import { getCurrentCommit, getRecentCommitMessages } from '../utils/git.js';
 import { execQuiet, commandExists } from '../utils/exec.js';
 import { runMission } from './mission-control.js';
 
@@ -46,6 +46,7 @@ interface WorkItem {
 export class LaunchSequence {
   private options: LaunchOptions;
   private running = true;
+  private lastWorkSource: WorkItem['source'] = 'self';
 
   constructor(options: LaunchOptions = {}) {
     this.options = {
@@ -89,8 +90,12 @@ export class LaunchSequence {
       if (result === 'abort') break;
       if (this.options.once) break;
 
-      console.log(colors.secondary(`💫 Next in ${this.options.loopDelay}s...`));
-      await this.sleep(this.options.loopDelay! * 1000);
+      // Use shorter delay for self-improvement (no external API rate limits)
+      const delay = this.lastWorkSource === 'self'
+        ? Math.min(this.options.loopDelay!, 30)
+        : this.options.loopDelay!;
+      console.log(colors.secondary(`💫 Next in ${delay}s...`));
+      await this.sleep(delay * 1000);
     }
 
     const state = loadGroundControl();
@@ -135,7 +140,7 @@ export class LaunchSequence {
           this.closeGitHubIssue(work.issueNumber);
         }
         
-        recordSuccess(work.source);
+        recordSuccess(work.source, msg);
         appendLog(`Cycle ${cycleNum} [${work.source}]: ${msg}`);
         return 'success';
       } else {
@@ -154,19 +159,23 @@ export class LaunchSequence {
     // 1. Check cargo manifest
     const cargoItem = getNextCargoItem();
     if (cargoItem) {
+      this.lastWorkSource = 'cargo';
       return { source: 'cargo', task: cargoItem.task };
     }
 
     // 2. Check GitHub issues
     const githubIssue = await this.getGitHubIssue();
     if (githubIssue) {
+      this.lastWorkSource = 'github';
       return githubIssue;
     }
 
-    // 3. Self-improvement with structured autonomous prompt
+    // 3. Self-improvement with recent commit context
+    this.lastWorkSource = 'self';
+    const recentCommits = getRecentCommitMessages(10);
     return {
       source: 'self',
-      task: generateSelfImprovementTask()
+      task: generateSelfImprovementTask(recentCommits)
     };
   }
 

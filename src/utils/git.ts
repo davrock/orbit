@@ -39,6 +39,12 @@ export function getLastCommitMessage(): string | undefined {
   return execGit('log -1 --pretty=%B');
 }
 
+export function getRecentCommitMessages(count: number = 10): string[] {
+  const output = execGit(`log --oneline -${count}`);
+  if (!output) return [];
+  return output.split('\n').filter(Boolean);
+}
+
 export function stageAll(): boolean {
   try {
     execSync('git add -A', { stdio: 'pipe' });

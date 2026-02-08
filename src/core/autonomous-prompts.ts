@@ -117,39 +117,50 @@ If any check fails:
 /**
  * Self-improvement task template for evolve mode.
  * Uses structured reasoning and priority-based improvement selection.
+ * Accepts recent commit history to avoid repeating the same work.
  */
-export function generateSelfImprovementTask(): string {
+export function generateSelfImprovementTask(recentCommits: string[] = []): string {
   const p = getConfigPaths();
-  return `You are an autonomous software improvement agent. Your goal is to make ONE meaningful improvement to this codebase.
+  const recentContext = recentCommits.length > 0
+    ? `
+### Recent Changes (already completed — do NOT repeat these)
+${recentCommits.map(c => `- ${c}`).join('\n')}
+
+Choose a DIFFERENT category or area of the codebase than what's listed above.
+`
+    : '';
+
+  return `You are an autonomous software improvement agent. Your goal is to identify ONE type of improvement and apply it comprehensively across the entire codebase.
 
 ${getConstitutionalConstraints()}
 
 ${REASONING_FRAMEWORK}
-
+${recentContext}
 ## YOUR TASK
 
-Analyze this project and implement exactly ONE improvement following the priority hierarchy above.
+Identify the HIGHEST PRIORITY improvement type and apply it to ALL affected files in the codebase — not just one file.
+
+"One improvement" means one TYPE of change (e.g., "migrate console.log to devLog", "add error handling to catch blocks", "replace \`any\` types with proper types"). Apply that change everywhere it's needed across the codebase in a single commit.
 
 ### Analysis Phase
-1. Run \`npm test\` to check current test status
-2. Run \`npm run build\` to verify build works
-3. Check \`git log --oneline -10\` to see recent changes
-4. Read \`${p.flightLog}\` for context
-5. Read \`${p.bestPractices}\` for project standards
-6. Scan for issues in priority order (bugs → security → stability → tests → performance → quality → docs → features)
+1. Check \`git log --oneline -10\` to see recent changes (avoid repeating them)
+2. Read \`${p.flightLog}\` for context
+3. Scan for issues in priority order (bugs → security → stability → tests → performance → quality → docs → features)
+
+Do NOT run \`npm test\` or \`npm run build\` during analysis — they are known to pass. Only run them for verification after making changes.
 
 ### Selection Criteria
 Choose the HIGHEST PRIORITY improvement that:
 - Has clear, measurable impact
-- Can be completed in a single focused change
+- Is a DIFFERENT type of change from the recent commits listed above
 - Has low risk of breaking existing functionality
 - Can be verified with tests
 
 ### Implementation Rules
-- Make the SMALLEST change that solves the problem
-- Add or update tests to cover your change
-- Update documentation if behavior changes
-- Use existing patterns and conventions from the codebase
+- Identify ALL files affected by this type of issue
+- Fix ALL instances across the codebase, not just one file
+- Add or update tests to cover your changes
+- This is ONE commit with ONE type of change applied comprehensively
 
 ### Commit Requirements
 - Commit message format: \`<type>: <description>\`
@@ -161,8 +172,8 @@ ${VERIFICATION_REQUIREMENTS}
 ### Output Format
 After completing:
 1. State what category of improvement you chose and why
-2. Describe the specific change made
-3. List tests added or updated
+2. List ALL files changed
+3. Describe the pattern you fixed
 4. Confirm all verification checks passed
 5. End with: "IMPROVEMENT COMPLETE"
 
