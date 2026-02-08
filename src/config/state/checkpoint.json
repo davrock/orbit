@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "mission": "warp",
+  "task": "Test cargo item",
+  "currentPhase": "implement",
+  "phasesCompleted": [],
+  "modelTier": "standard",
+  "timestamp": "2026-02-08T23:38:48.927Z",
+  "dryRun": false
+}
