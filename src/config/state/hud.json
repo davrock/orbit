@@ -1,14 +1,1 @@
-{
-  "task": "Test cargo item",
-  "phases": [
-    "implement"
-  ],
-  "currentPhase": "implement",
-  "currentCrew": "pilot",
-  "modelTier": "standard",
-  "startTime": "2026-02-08T23:38:48.923Z",
-  "completedPhases": [
-    "implement"
-  ],
-  "status": "complete"
-}
+{}

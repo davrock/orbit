@@ -1,9 +1,10 @@
 {
-  "total": 50,
+  "total": 0,
   "byTier": {
-    "premium": 3,
-    "standard": 39,
-    "fast": 4
+    "premium": 0,
+    "standard": 0,
+    "fast": 0,
+    "ecomode": 0
   },
-  "sessions": 45
+  "sessions": 0
 }

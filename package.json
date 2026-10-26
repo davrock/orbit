@@ -1,6 +1,6 @@
 {
   "name": "@davrock/orbit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "🛸 ORBIT - Orchestrated Robotic Build & Integration Toolkit. AI-powered autonomous software development.",
   "type": "module",
   "main": "dist/cli/index.js",

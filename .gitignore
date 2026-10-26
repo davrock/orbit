@@ -38,3 +38,11 @@ venv/
 dist/
 build/
 *.log
+
+# Runtime state & learned skills
+src/config/skills/skill-*.json
+src/config/plans/plan-*.md
+src/config/state/swarm/
+src/config/state/ultrawork*
+.orbit/
+

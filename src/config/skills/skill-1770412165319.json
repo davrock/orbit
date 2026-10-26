@@ -1,8 +1,0 @@
-{
-  "id": "skill-1770412165319",
-  "pattern": "Add 'pipeline' mode for sequential multi-stage processing with handoffs between stages",
-  "solution": "Files: pipeline.ts, CLI, with, cargo, metrics | IMPLEMENT COMPLETE | │ 10  +  ✅ Created pipeline.ts workflow with sequential stage execution                       │",
-  "context": "warp",
-  "successCount": 1,
-  "lastUsed": "2026-02-06T21:09:25.319Z"
-}

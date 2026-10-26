@@ -1,8 +1,0 @@
-{
-  "id": "skill-1770416332221",
-  "pattern": "Add internationalization support (multiple language READMEs like oh-my-claudecode)",
-  "solution": "Files: translated, package.json, 4, 2, README.ko.md | ✨ IMPLEMENTATION COMPLETE ✨ | │ 14  +  Added internationalization support following oh-my-claudecode pattern:                │",
-  "context": "warp",
-  "successCount": 1,
-  "lastUsed": "2026-02-06T22:18:52.221Z"
-}
