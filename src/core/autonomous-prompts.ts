@@ -3,6 +3,7 @@
 // Based on best practices: Chain-of-Thought, Constitutional AI, and Task Decomposition
 
 import { getConfigPaths } from '../utils/paths.js';
+import type { ProjectConfig } from './types.js';
 
 /**
  * Priority-ordered improvement categories for autonomous operation.
@@ -95,6 +96,7 @@ Apply the improvement hierarchy (in order):
 
 /**
  * Verification requirements for autonomous changes.
+ * Static version kept for backward compatibility.
  */
 export const VERIFICATION_REQUIREMENTS = `
 ## VERIFICATION CHECKLIST (All Must Pass)
@@ -115,11 +117,45 @@ If any check fails:
 `;
 
 /**
+ * Generate verification requirements with the project's actual commands.
+ * This tells the agent exactly what to run and enforces pre-commit checks.
+ */
+export function generateVerificationRequirements(config?: ProjectConfig): string {
+  const typeCheckCmd = config?.typeCheckCmd || 'npx tsc --noEmit';
+  const testCmd = config?.testCmd || 'npm test';
+
+  return `
+## MANDATORY PRE-COMMIT VERIFICATION
+
+🚨 **CRITICAL: You MUST run these checks BEFORE committing. Do NOT commit broken code.**
+
+### Step 1: Type Check (REQUIRED — run this FIRST after every file change)
+\`\`\`
+${typeCheckCmd}
+\`\`\`
+If this fails, fix ALL type errors before proceeding. Do NOT commit with type errors.
+
+### Step 2: Test Suite
+\`\`\`
+${testCmd}
+\`\`\`
+If tests fail, fix them before committing.
+
+### Rules
+- Run the type check command after EVERY batch of file changes, not just at the end
+- If you change more than 5 files, run the type check after each group of changes
+- NEVER commit code that fails type checking — this is the #1 priority
+- If you cannot fix a type error, REVERT your changes to that file instead of committing broken code
+- Do NOT use \`// @ts-ignore\`, \`// @ts-expect-error\`, or \`as any\` to silence type errors
+`;
+}
+
+/**
  * Self-improvement task template for evolve mode.
  * Uses structured reasoning and priority-based improvement selection.
- * Accepts recent commit history to avoid repeating the same work.
+ * Accepts recent commit history and completed categories to avoid repeating the same work.
  */
-export function generateSelfImprovementTask(recentCommits: string[] = []): string {
+export function generateSelfImprovementTask(recentCommits: string[] = [], completedCategories: string[] = [], projectConfig?: ProjectConfig): string {
   const p = getConfigPaths();
   const recentContext = recentCommits.length > 0
     ? `
@@ -130,17 +166,29 @@ Choose a DIFFERENT category or area of the codebase than what's listed above.
 `
     : '';
 
-  return `You are an autonomous software improvement agent. Your goal is to identify ONE type of improvement and apply it comprehensively across the entire codebase.
+  const completedContext = completedCategories.length > 0
+    ? `
+### Improvement Categories Already Completed (DO NOT REPEAT)
+The following improvement categories have ALREADY been applied across the codebase.
+Do NOT attempt any of these again — they are done:
+${completedCategories.map(c => `- ❌ ${c}`).join('\n')}
+
+You MUST choose something NOT on this list. If you cannot find a genuinely new improvement
+that is different from all the above, respond with only: "NO_MORE_IMPROVEMENTS"
+`
+    : '';
+
+  return `You are an autonomous software improvement agent. Your goal is to identify ONE type of improvement and apply it to the codebase.
 
 ${getConstitutionalConstraints()}
 
 ${REASONING_FRAMEWORK}
-${recentContext}
+${recentContext}${completedContext}
 ## YOUR TASK
 
-Identify the HIGHEST PRIORITY improvement type and apply it to ALL affected files in the codebase — not just one file.
+Identify the HIGHEST PRIORITY improvement type that has NOT already been completed (see lists above).
 
-"One improvement" means one TYPE of change (e.g., "migrate console.log to devLog", "add error handling to catch blocks", "replace \`any\` types with proper types"). Apply that change everywhere it's needed across the codebase in a single commit.
+"One improvement" means one TYPE of change (e.g., "migrate console.log to devLog", "add error handling to catch blocks"). Apply that change where it's needed.
 
 ### Analysis Phase
 1. Check \`git log --oneline -10\` to see recent changes (avoid repeating them)
@@ -152,22 +200,22 @@ Do NOT run \`npm test\` or \`npm run build\` during analysis — they are known 
 ### Selection Criteria
 Choose the HIGHEST PRIORITY improvement that:
 - Has clear, measurable impact
-- Is a DIFFERENT type of change from the recent commits listed above
+- Is a DIFFERENT type of change from the recent commits AND completed categories listed above
 - Has low risk of breaking existing functionality
 - Can be verified with tests
 
-### Implementation Rules
-- Identify ALL files affected by this type of issue
-- Fix ALL instances across the codebase, not just one file
-- Add or update tests to cover your changes
-- This is ONE commit with ONE type of change applied comprehensively
+### Scope Guidelines
+- **Target 5-15 files maximum** per improvement — do NOT try to change every file in the codebase at once
+- Focus on the most critical instances first
+- It is better to make a small, correct change than a large, broken one
+- If a change causes TypeScript errors, fix them BEFORE committing — do NOT leave broken code
 
 ### Commit Requirements
 - Commit message format: \`<type>: <description>\`
 - Types: fix, feat, test, refactor, perf, docs, security
 - Description should explain WHAT and WHY
 
-${VERIFICATION_REQUIREMENTS}
+${generateVerificationRequirements(projectConfig)}
 
 ### Output Format
 After completing:
@@ -176,6 +224,8 @@ After completing:
 3. Describe the pattern you fixed
 4. Confirm all verification checks passed
 5. End with: "IMPROVEMENT COMPLETE"
+
+If there are no more meaningful improvements to make, respond with only: "NO_MORE_IMPROVEMENTS"
 
 Begin your analysis now.`;
 }
@@ -234,6 +284,18 @@ export const COMPACT_VERIFICATION = `
 ## VERIFICATION
 Before committing: \`npm run build\` + \`npm test\` must pass. No regressions.
 `;
+
+/**
+ * Generate compact verification with actual project commands.
+ */
+export function generateCompactVerification(config?: ProjectConfig): string {
+  const typeCheckCmd = config?.typeCheckCmd || 'npx tsc --noEmit';
+  const testCmd = config?.testCmd || 'npm test';
+  return `
+## VERIFICATION
+🚨 Before committing, you MUST run \`${typeCheckCmd}\` and verify it passes. Then run \`${testCmd}\`. Do NOT commit if either fails.
+`;
+}
 
 /**
  * Generate task prompt with full context for autonomous improvement.

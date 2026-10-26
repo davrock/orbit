@@ -61,7 +61,8 @@ export function loadGroundControl(): GroundControlState {
       cycles: data.cycles || 0,
       successes: data.successes || 0,
       lastTask: data.lastTask || data.last_task,
-      lastError: data.lastError || data.last_error
+      lastError: data.lastError || data.last_error,
+      completedCategories: data.completedCategories || []
     })
   });
 }
@@ -72,7 +73,8 @@ function createInitialGCState(): GroundControlState {
     noProgress: 0,
     types: [],
     cycles: 0,
-    successes: 0
+    successes: 0,
+    completedCategories: []
   };
 }
 
@@ -95,6 +97,19 @@ export function recordSuccess(taskType: string, lastTask?: string): void {
       types: [...state.types.slice(-2), taskType],
       lastTask: lastTask || state.lastTask
     })
+  );
+}
+
+export function recordCompletedCategories(categories: string[]): void {
+  ensureStateDir();
+  updateJsonFile(
+    getGcFile(),
+    { defaultValue: createInitialGCState() },
+    (state) => {
+      const existing = state.completedCategories || [];
+      const merged = Array.from(new Set([...existing, ...categories]));
+      return { ...state, completedCategories: merged };
+    }
   );
 }
 

@@ -86,6 +86,7 @@ export interface GroundControlState {
   successes: number;
   lastTask?: string;
   lastError?: string;
+  completedCategories?: string[];
 }
 
 export interface CargoItem {

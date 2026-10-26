@@ -73,7 +73,8 @@ describe('State Management', () => {
         noProgress: 0,
         types: [],
         cycles: 0,
-        successes: 0
+        successes: 0,
+        completedCategories: []
       });
     });
 
@@ -85,7 +86,8 @@ describe('State Management', () => {
         cycles: 5,
         successes: 3,
         lastTask: 'test task',
-        lastError: 'test error'
+        lastError: 'test error',
+        completedCategories: ['replace-any-types']
       };
       saveGroundControl(state);
       const loaded = loadGroundControl();
@@ -151,7 +153,8 @@ describe('State Management', () => {
         noProgress: 0,
         types: [],
         cycles: 0,
-        successes: 0
+        successes: 0,
+        completedCategories: []
       });
     });
 
@@ -186,7 +189,8 @@ describe('State Management', () => {
         noProgress: 0,
         types: [],
         cycles: 0,
-        successes: 0
+        successes: 0,
+        completedCategories: []
       });
     });
   });

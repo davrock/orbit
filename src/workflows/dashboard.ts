@@ -645,9 +645,8 @@ ${buildDashboardScript()}
 }
 
 export function openDashboard(): void {
-  if (!existsSync(DASHBOARD_FILE)) {
-    generateDashboard();
-  }
+  // Always regenerate so the dashboard shows fresh data
+  generateDashboard();
   
   // Try to open in browser
   const cmds = [

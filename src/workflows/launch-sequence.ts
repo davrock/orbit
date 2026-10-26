@@ -7,11 +7,13 @@ import {
   saveGroundControl,
   recordSuccess,
   recordFailure,
+  recordCompletedCategories,
   resetGroundControl,
   getNextCargoItem,
   markCargoDelivered,
   appendLog,
-  getRandomQuote
+  getRandomQuote,
+  detectProjectConfig
 } from '../core/index.js';
 import { generateSelfImprovementTask } from '../core/autonomous-prompts.js';
 import {
@@ -23,8 +25,9 @@ import {
   printMissionComplete,
   colors
 } from '../utils/output.js';
-import { getCurrentCommit, getRecentCommitMessages } from '../utils/git.js';
+import { getCurrentCommit, getRecentCommitMessages, getCompletedImprovementCategories, countRecentFixCycles } from '../utils/git.js';
 import { execQuiet, commandExists } from '../utils/exec.js';
+import { execSync } from 'child_process';
 import { runMission } from './mission-control.js';
 
 export interface LaunchOptions {
@@ -36,6 +39,8 @@ export interface LaunchOptions {
 
 const MAX_FAILS = 3;
 const MAX_NO_PROGRESS = 5;
+const MAX_FIX_CYCLE_RATIO = 0.4; // If >40% of recent commits are TS error fixes, we're in a cycle
+const FIX_CYCLE_WINDOW = 20;     // Check last 20 commits for fix cycle detection
 
 interface WorkItem {
   source: 'cargo' | 'github' | 'plan' | 'self';
@@ -113,6 +118,20 @@ export class LaunchSequence {
       await this.sleep(60000);
     }
 
+    // Check for break→fix cycle: if too many recent commits are just fixing TS errors,
+    // the agent is going in circles and should stop
+    if (this.lastWorkSource === 'self') {
+      const fixCount = countRecentFixCycles(FIX_CYCLE_WINDOW);
+      const ratio = fixCount / FIX_CYCLE_WINDOW;
+      if (ratio >= MAX_FIX_CYCLE_RATIO) {
+        console.log(colors.error(`🚨 GROUND CONTROL: Break→fix cycle detected!`));
+        console.log(colors.warning(`   ${fixCount}/${FIX_CYCLE_WINDOW} recent commits are reactive TS error fixes (${Math.round(ratio * 100)}%)`));
+        console.log(colors.warning(`   Improvements are causing more problems than they solve. Aborting.`));
+        appendLog(`Abort: break→fix cycle detected (${fixCount}/${FIX_CYCLE_WINDOW} fix commits)`);
+        return 'abort';
+      }
+    }
+
     // Get next work item
     const work = await this.getWork();
     this.printWorkItem(work);
@@ -131,6 +150,24 @@ export class LaunchSequence {
       
       if (beforeCommit !== afterCommit) {
         const msg = execQuiet('git log -1 --pretty=%B')?.split('\n')[0] || 'Unknown';
+
+        // Check if the agent reported no more improvements
+        const fullMsg = execQuiet('git log -1 --pretty=%B') || '';
+        if (fullMsg.includes('NO_MORE_IMPROVEMENTS')) {
+          console.log(colors.success('🎯 Agent reports: no more improvements to make'));
+          appendLog('Complete: agent found no more improvements');
+          return 'abort';
+        }
+
+        // Post-commit type check gate: revert if the commit broke type checking
+        if (!this.verifyTypeCheck()) {
+          console.log(colors.error('🚨 Post-commit type check failed — reverting commit'));
+          execQuiet('git reset --hard HEAD~1');
+          appendLog(`Cycle ${cycleNum}: reverted "${msg}" — type check failed`);
+          recordFailure('type_check_failed');
+          return 'fail';
+        }
+
         printSuccess(`Success: ${msg}`);
         
         if (work.source === 'cargo') {
@@ -141,6 +178,15 @@ export class LaunchSequence {
         }
         
         recordSuccess(work.source, msg);
+
+        // Persist newly completed improvement categories
+        if (work.source === 'self') {
+          const categories = getCompletedImprovementCategories(5);
+          if (categories.length > 0) {
+            recordCompletedCategories(categories);
+          }
+        }
+
         appendLog(`Cycle ${cycleNum} [${work.source}]: ${msg}`);
         return 'success';
       } else {
@@ -170,12 +216,21 @@ export class LaunchSequence {
       return githubIssue;
     }
 
-    // 3. Self-improvement with recent commit context
+    // 3. Self-improvement with broad commit context and completed categories
     this.lastWorkSource = 'self';
-    const recentCommits = getRecentCommitMessages(10);
+    const recentCommits = getRecentCommitMessages(50);
+    const completedCategories = getCompletedImprovementCategories(200);
+    
+    // Also merge in categories persisted in ground control
+    const gc = loadGroundControl();
+    const allCategories = Array.from(new Set([
+      ...completedCategories,
+      ...(gc.completedCategories || [])
+    ]));
+
     return {
       source: 'self',
-      task: generateSelfImprovementTask(recentCommits)
+      task: generateSelfImprovementTask(recentCommits, allCategories, detectProjectConfig())
     };
   }
 
@@ -225,6 +280,26 @@ export class LaunchSequence {
       case 'self':
         console.log(colors.secondary('🔍 Self-Improvement'));
         break;
+    }
+  }
+
+  /**
+   * Run the project's type check command after a commit.
+   * Returns true if type checking passes (or no type check command exists).
+   * This prevents broken commits from persisting in the repository.
+   */
+  private verifyTypeCheck(): boolean {
+    const config = detectProjectConfig();
+    const typeCheckCmd = config.typeCheckCmd;
+    if (!typeCheckCmd) return true;
+
+    console.log(colors.secondary(`🔍 Verifying: ${typeCheckCmd}`));
+    try {
+      execSync(typeCheckCmd, { stdio: 'pipe', timeout: 120_000 });
+      console.log(colors.success('✓ Type check passed'));
+      return true;
+    } catch {
+      return false;
     }
   }
 

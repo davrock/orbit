@@ -39,7 +39,7 @@ import {
 } from '../core/index.js';
 import { createPersistenceManager, type PersistenceManager } from '../core/persistence.js';
 import { getAgentSystemPrompt } from '../agents/index.js';
-import { getAutonomousGuardrails, getCompactGuardrails, VERIFICATION_REQUIREMENTS, COMPACT_VERIFICATION } from '../core/autonomous-prompts.js';
+import { getAutonomousGuardrails, getCompactGuardrails, generateVerificationRequirements, generateCompactVerification } from '../core/autonomous-prompts.js';
 import {
   printBanner,
   printPhase,
@@ -95,7 +95,9 @@ export class MissionControl {
       type: options.mission,
       task: options.task,
       phases,
-      modelTier: options.modelTier === 'auto' ? 'standard' : (options.modelTier || 'standard'),
+      modelTier: options.modelTier === 'auto'
+        ? selectModelTier(options.task, phases[0])
+        : (options.modelTier || 'standard'),
       dryRun: options.dryRun || false,
       interactive: options.interactive || false,
       customCrew: options.customCrew,
@@ -483,7 +485,7 @@ ${getAutonomousGuardrails()}
 
 ${getCriticalFilesWarning()}
 
-${VERIFICATION_REQUIREMENTS}
+${generateVerificationRequirements(this.config)}
 ${commitInstructions}
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
     }
@@ -500,7 +502,7 @@ Update the flight log when done.
 
 ${getCompactGuardrails()}
 
-${COMPACT_VERIFICATION}
+${generateCompactVerification(this.config)}
 ${commitInstructions}
 Complete the ${phase} phase then say '${phase.toUpperCase()} COMPLETE'`;
   }
